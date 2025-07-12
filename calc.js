@@ -153,12 +153,43 @@ function createDeptDropdown(majorDiv) {
     });
     container.appendChild(select);
 
-    container.appendChild(document.createElement('hr'));
+    // 접기/펼치기 토글 영역 생성
+    const groupToggleArea = document.createElement('div');
+    groupToggleArea.className = 'group-toggle-area';
+
+    // hr 생성
+    const hr = document.createElement('hr');
+    groupToggleArea.appendChild(hr);
 
     // group 리스트를 표시할 div
     const groupListDiv = document.createElement('div');
     groupListDiv.className = 'group-list';
-    container.appendChild(groupListDiv);
+    groupToggleArea.appendChild(groupListDiv);
+
+    container.appendChild(groupToggleArea);
+
+    // 토글 버튼 생성
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'group-toggle-btn';
+    toggleBtn.textContent = '△';
+
+    container.appendChild(toggleBtn);
+
+    // 접기/펼치기 동작
+    let expanded = true;
+    toggleBtn.addEventListener('click', () => {
+        expanded = !expanded;
+        if (expanded) {
+            groupToggleArea.classList.remove('collapsed');
+            toggleBtn.textContent = '△';
+        } else {
+            groupToggleArea.classList.add('collapsed');
+            toggleBtn.textContent = '▽';
+        }
+    });
+
+    container.appendChild(document.createElement('hr'));
 
     // 드롭다운 변경 시 group 리스트 갱신
     select.addEventListener('change', () => updateGroups(container));

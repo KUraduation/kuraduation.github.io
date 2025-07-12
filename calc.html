@@ -45,11 +45,11 @@
             /* 가로 중앙 */
             align-items: flex-start;
             /* 세로 상단 */
-            border-top: 2px solid #000;
+            /* border-top: 2px solid #000; */
             border-right: none;
             border-bottom: none;
             border-left: none;
-            padding-top: 8px;
+            padding-top: 4px;
             /* 버튼과 선 사이 간격 */
             background: transparent;
             position: relative;
@@ -106,12 +106,6 @@
             padding: 2px;
         }
 
-        .dept-select-container hr {
-            border: none;
-            border-top: 1px solid #ccc;
-            margin: 8px 0;
-        }
-
         .dept-select-container .group-container0 {
             display: flex;
             justify-content: space-between;
@@ -130,6 +124,36 @@
             font-size: small;
             background-color: rgba(188, 188, 188, 0.5);
             ;
+        }
+
+        .dept-select-container hr {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 4px 0;
+        }
+
+        .group-toggle-area {
+            display: flex;
+            flex-direction: column;
+
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 1000px;
+            /* 펼쳐진 상태의 충분히 큰 값 */
+        }
+
+        .group-toggle-area.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .group-toggle-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8em;
+            vertical-align: middle;
         }
 
         .group-label {
