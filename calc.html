@@ -37,6 +37,15 @@
             /* IE and Edge */
         }
 
+        /* 총이수학점 */
+        .total-credit-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4em;
+            font-size: 1.1em;
+            margin: 8px 0 8px 8px;
+        }
+
         /* 전공영역 추가 버튼 */
         .plus-line-container {
             width: 100%;
@@ -191,6 +200,13 @@
         <div class="semester-container"></div>
 
         <div class="chart-container">
+            <div class="total-credit-row">
+                <span>총이수학점: </span>
+                <span id="current-credit">0</span>
+                <span>/</span>
+                <input id="target-credit" type="number" min="1" value="130" style="width: 3.5em; text-align:right;">
+                <span id="credit-percent">(0%)</span>
+            </div>
 
             <div id="selectContainer"></div>
 

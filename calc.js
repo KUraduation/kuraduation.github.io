@@ -108,6 +108,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// 현재 수강한 강의 element 목록 반환
+function getTakenCourses() {
+    // todo 여기에 현재 수강한 강의 목록을 반환하는 로직 구현하기
+    // 재수강을 걸러야 하므로 과목 코드로 중복 제거
+    // 각 element는 dataset.credit, dataset.courseCd를 포함해야 함
+    return [];
+}
+
 // majorDiv 값에 따라 해당 전공유형의 학과 목록 드롭다운 생성
 function createDeptDropdown(majorDiv) {
     if (!courses) {
@@ -192,23 +200,25 @@ function createDeptDropdown(majorDiv) {
     container.appendChild(document.createElement('hr'));
 
     // 드롭다운 변경 시 group 리스트 갱신
-    select.addEventListener('change', () => updateGroups(container));
+    select.addEventListener('change', updateChart);
 
     // 최초 1회 group 리스트 표시
-    updateGroups(container);
+    //updateGroups(container, getTakenCourses());
 
     document.getElementById('selectContainer').appendChild(container);
+
+    updateChart();
 }
 
-// group 표시 함수
-function updateGroups(selectContainer) {
+// 그룹 초기화
+function initGroups(selectContainer) {
     const deptList = courses[selectContainer.dataset.majorDiv];
     const groupListDiv = selectContainer.querySelector('.group-list');
 
     groupListDiv.innerHTML = '';
     const selectedDeptCd = selectContainer.querySelector('.dept-select').value;
     const dept = deptList.find(d => d.deptCd === selectedDeptCd);
-    if (dept && Array.isArray(dept.groups)) {
+    if (dept) {
         dept.groups.forEach((group, idx) => {
             const groupContainer = document.createElement('div');
 
@@ -218,19 +228,103 @@ function updateGroups(selectContainer) {
             groupContainer.appendChild(groupLabel);
             const groupProgress = document.createElement('span');
             groupProgress.className = 'group-progress';
-            const minCredit = group.minCredit;
-            const maxCredit = group.maxCredit;
-            let currentCredit = 0; // 현재 수강학점
-            // todo 여기에 수강학점 계산 로직 구현하기
-
-            const progress = currentCredit / minCredit * 100;
-            groupProgress.textContent = `${currentCredit}/${minCredit} (${progress.toFixed(0)}%)`;
             groupContainer.appendChild(groupProgress);
 
+            const minCredit = group.minCredit;
+            const maxCredit = group.maxCredit;
+            const currentCredit = 0; // 현재 수강학점
+
             groupContainer.className = 'group-container' + idx % 2; // 짝수/홀수 스타일링을 위해 클래스 추가
-            // groupCd를 숨겨진 데이터로 포함
+            // groupCd를 데이터로 포함
             groupContainer.dataset.groupCd = group.groupCd || '';
+            
+            // 현재 수강학점, min, max을 데이터로 포함
+            groupContainer.dataset.currentCredit = currentCredit;
+            groupContainer.dataset.minCredit = minCredit;
+            groupContainer.dataset.maxCredit = maxCredit;
+
+            // 포함되는 수강한 과목들을 보관
+            groupContainer.dataset.takenCourses = [];
+
+            updateGroupProgress(groupContainer); // 초기 진행률 업데이트
+
             groupListDiv.appendChild(groupContainer);
         });
     }
+}
+// 그룹 진행률 업데이트
+function updateGroupProgress(groupContainer) {
+    const minCredit = groupContainer.dataset.minCredit;
+    const maxCredit = groupContainer.dataset.maxCredit;
+    const currentCredit =
+        maxCredit > 0
+        ? Math.min(maxCredit, groupContainer.dataset.currentCredit)
+        : groupContainer.dataset.currentCredit;
+
+    const progress = (currentCredit / minCredit * 100).toFixed(0);
+    const groupProgress = groupContainer.querySelector('.group-progress');
+    groupProgress.textContent = `${currentCredit}/${minCredit} (${progress}%)`;
+}
+// 그룹에 과목 추가(학점 업데이트)
+function addCourese(groupContainer, course) {
+    groupContainer.dataset.takenCourses.push(course);
+
+    groupContainer.dataset.currentCredit += course.dataset.credit;
+    updateGroupProgress(groupContainer);
+}
+
+// 차트 전체 업데이트
+function updateChart() {
+    const myMajors = document.querySelectorAll('.dept-select-container');
+
+    myMajors.forEach(selectContainer => {
+        initGroups(selectContainer);
+    });
+
+    const takenCourses = getTakenCourses();
+
+    const targetCredit = parseInt(document.getElementById('target-credit').value, 10);
+    const currentCredit = takenCourses.reduce((sum, course) => sum + (course.dataset.credit || 0), 0);
+    const percent = ((currentCredit / targetCredit) * 100).toFixed(0);
+
+    document.getElementById('current-credit').textContent = currentCredit;
+    document.getElementById('credit-percent').textContent = `(${percent}%)`;
+
+    // 여러 학과에서 인정되는 강의 목록
+    const multipleDeptCourses = [];
+    // 각 강의마다 반복
+    takenCourses.forEach(course => {
+        // 강의가 소속된 그룹
+        const groups = [];
+        // 각 전공유형에 대해 반복
+        myMajors.forEach(selectContainer => {
+            const majorDiv = selectContainer.dataset.majorDiv;
+            const deptCd = selectContainer.querySelector('.dept-select').value;
+            selectContainer.querySelectorAll('.group-container').some(groupContainer => {
+                const groupCd = groupContainer.dataset.groupCd;
+                const searchRes =
+                    courses[majorDiv]
+                    .find(dept => dept.deptCd === deptCd)
+                    .groups.find(g => g.groupCd === groupCd)
+                    .courses.find(c => c.courseCd === course.dataset.courseCd);
+                if (searchRes) {
+                    // 속하면 그 그룹 추가
+                    groups.push(groupContainer);
+                    return true;
+                }
+                return false;
+            });
+        });
+
+        if (groups.length == 1) {
+            // 하나의 그룹에만 속하는 경우
+            addCourese(groups[0], course);
+        }
+        else if (groups.length > 1) {
+            // 여러 그룹에 속하는 경우
+            multipleDeptCourses.push({course, groups});
+        }
+    });
+
+    // todo 여러 학과에서 인정되는 강의 처리
 }
