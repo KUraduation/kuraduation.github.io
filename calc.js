@@ -24,6 +24,81 @@ fetch('courses.json')
     });
 ///////////////// json 로드
 
+// Global variable to store the dragged element
+let draggedCourse = null;
+
+function handleDragStart(e) {
+    draggedCourse = e.target;
+    e.dataTransfer.effectAllowed = 'move';
+    // Store data about the course
+    e.dataTransfer.setData('text/plain', JSON.stringify({
+        code: draggedCourse.dataset.courseCode,
+        name: draggedCourse.dataset.courseName,
+        credit: draggedCourse.dataset.credit,
+        isTakenCourse: draggedCourse.classList.contains('taken-course') // Check if it's an existing taken-course
+    }));
+    // Add a class to the dragged element for styling (optional)
+    setTimeout(() => {
+        draggedCourse.classList.add('dragging');
+    }, 0);
+}
+
+function createTakenCourseElement(courseData) {
+    const takenCourse = document.createElement('div');
+    takenCourse.className = 'taken-course';
+    takenCourse.textContent = courseData.name;
+    takenCourse.dataset.courseCode = courseData.code;
+    takenCourse.dataset.courseName = courseData.name;
+    takenCourse.dataset.credit = courseData.credit;
+    takenCourse.draggable = true; // Make taken courses draggable
+    takenCourse.addEventListener('dragstart', handleDragStart);
+    takenCourse.addEventListener('dragend', handleDragEnd);
+    return takenCourse;
+}
+
+function handleDragOver(e) {
+    e.preventDefault(); // Allow drop
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const targetCell = e.target.closest('.semester-cell');
+    if (!targetCell) return; // Not a semester cell
+
+    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+    if (data.isTakenCourse) {
+        // Moving an existing taken-course
+        if (draggedCourse && draggedCourse.classList.contains('taken-course')) {
+            // Remove from old parent if it was moved from another semester-cell
+            if (draggedCourse.parentNode !== targetCell) {
+                draggedCourse.parentNode.removeChild(draggedCourse);
+            }
+            targetCell.appendChild(draggedCourse);
+        }
+    } else {
+        // Dropping a new course from search results
+        const newTakenCourse = createTakenCourseElement(data);
+        targetCell.appendChild(newTakenCourse);
+    }
+    updateChart(); // Update chart after course is added/moved
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    // If the dragged element was a taken-course
+    if (e.target.classList.contains('taken-course')) {
+        // If dropEffect is 'none', it means it was dropped outside any valid drop target
+        // or the drop was cancelled. In this case, remove it.
+        if (e.dataTransfer.dropEffect === 'none') {
+            e.target.remove();
+        }
+    }
+    draggedCourse = null;
+    updateChart(); // Update chart after course is potentially removed
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     ///////////////// 강의검색 영역
     const majorDivSelect = document.getElementById('majorDiv-select');
@@ -178,6 +253,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 courseItem.dataset.courseCode = course.code;
                 courseItem.dataset.courseName = course.name;
                 courseItem.dataset.credit = course.credit;
+                courseItem.draggable = true; // 드래그 가능하도록 설정
+                courseItem.addEventListener('dragstart', handleDragStart);
                 groupContent.appendChild(courseItem);
             });
 
@@ -233,6 +310,8 @@ document.addEventListener('DOMContentLoaded', function () {
             courseItem.dataset.courseCode = course.code;
             courseItem.dataset.courseName = course.name;
             courseItem.dataset.credit = course.credit;
+            courseItem.draggable = true; // 드래그 가능하도록 설정
+            courseItem.addEventListener('dragstart', handleDragStart);
             searchResult.appendChild(courseItem);
         });
     }
@@ -447,7 +526,8 @@ document.addEventListener('DOMContentLoaded', function () {
             cell.className = 'semester-cell';
             cell.dataset.year = year;
             cell.dataset.semester = index + 1;
-            // 각 셀에는 이제 헤더를 넣지 않습니다.
+            cell.addEventListener('dragover', handleDragOver);
+            cell.addEventListener('drop', handleDrop);
             yearColumn.appendChild(cell);
         });
 
@@ -490,21 +570,26 @@ document.addEventListener('DOMContentLoaded', function () {
 ///////////////// 차트 영역
 // 현재 수강한 강의 element 목록 반환
 function getTakenCourses() {
-    // todo 여기에 현재 수강한 강의 목록을 반환하는 로직 구현하기
-    // 재수강을 걸러야 하므로 과목 코드로 중복 제거
-    // 각 element는 dataset.credit, dataset.courseCd를 포함해야 함
-
-    //test
-    const codes = ["COSE101", "COSE213"];
-
-    const testCourses = [];
-    codes.forEach(code => {
-        const course = document.createElement('div');
-        course.dataset.credit = 3;
-        course.dataset.courseCd = code;
-        testCourses.push(course);
+    /*
+    const takenCourses = [];
+    const semesterCells = document.querySelectorAll('.semester-cell');
+    semesterCells.forEach(cell => {
+        cell.querySelectorAll('.taken-course').forEach(course => {
+            takenCourses.push(course);
+        });
     });
-    return testCourses;
+    // 재수강을 걸러야 하므로 과목 코드로 중복 제거 (나중에 필요시 구현)
+    return takenCourses;*/
+    const takenCourses = [];
+    const codeSet = new Set(); // 중복 제거를 위한 Set
+    document.getElementById('semester-grid-container').querySelectorAll('.taken-course').forEach(course => {
+        const courseCode = course.dataset.courseCode;
+        if (!codeSet.has(courseCode)) {
+            codeSet.add(courseCode);
+            takenCourses.push(course);
+        }
+    });
+    return takenCourses;
 }
 
 // majorDiv 값에 따라 해당 전공유형의 학과 목록 드롭다운 생성
@@ -692,7 +777,7 @@ function updateChart() {
                     courses[majorDiv]
                         .find(dept => dept.deptCd === deptCd)
                         .groups.find(g => g.groupCd === groupCd)
-                        .courses.find(c => c.code === course.dataset.courseCd);
+                        .courses.find(c => c.code === course.dataset.courseCode);
                 if (searchRes) {
                     // 속하면 그 그룹 추가
                     groups.push(groupContainer);

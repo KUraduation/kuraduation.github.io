@@ -132,8 +132,17 @@
     border-radius: 8px;
     padding: 8px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* 자식 요소(강의)를 가로로 배치 */
+    flex-wrap: wrap;      /* 공간이 부족하면 다음 줄로 넘김 */
     gap: 4px;
+    align-content: flex-start; /* 여러 줄일 경우 위에서부터 채움 */
+    overflow-y: auto;     /* 내용이 넘칠 경우 세로 스크롤 */
+    scrollbar-width: none; /* 스크롤바 숨기기 (Firefox) */
+    -ms-overflow-style: none; /* 스크롤바 숨기기 (IE/Edge) */
+}
+
+.semester-cell::-webkit-scrollbar {
+    display: none; /* 스크롤바 숨기기 (Chrome/Safari/Opera) */
 }
 
 .semester-header {
@@ -441,4 +450,24 @@
 .sortable-ghost {
     opacity: 0.5;
     background: #ffe;
+}
+
+.taken-course {
+    background-color: #e0e0e0;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 0.85em;
+    cursor: grab;
+    white-space: nowrap; /* 텍스트가 한 줄에 표시되도록 */
+    overflow: hidden;     /* 넘치는 텍스트 숨김 */
+    text-overflow: ellipsis; /* 넘치는 텍스트를 ...으로 표시 */
+    max-width: calc(50% - 4px); /* 2열 배치를 위해 너비 제한 (gap 4px 고려) */
+    box-sizing: border-box; /* padding과 border가 너비에 포함되도록 */
+    flex-shrink: 0; /* 줄어들지 않도록 */
+}
+
+.taken-course:hover {
+    background-color: #d0d0d0;
+    border-color: #aaa;
 }
