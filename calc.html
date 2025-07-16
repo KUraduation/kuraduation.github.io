@@ -14,30 +14,53 @@
 
     <div class="main-container">
         <div class="course-container">
-            <div class="search-box">
-                <div id="search-type-selector">
-                    <label><input type="radio" name="searchType" value="byDept" checked> 학과로 검색</label>
-                    <label><input type="radio" name="searchType" value="byCourseName"> 강의명으로 검색</label>
-                </div>
-
-                <div id="dept-search-container">
-                    <select id="majorDiv-select"></select>
-                    <input type="text" id="dept-search-input" placeholder="학과 이름 입력" list="dept-suggestions" autocomplete="off">
-                    <datalist id="dept-suggestions"></datalist>
-                    <button id="dept-search-btn">검색</button>
-                </div>
-
-                <div id="course-search-container">
-                    <input type="text" id="course-search-input" placeholder="강의명 또는 학수번호 입력" list="course-suggestions" autocomplete="off">
-                    <datalist id="course-suggestions"></datalist>
-                    <button id="course-search-btn">검색</button>
-                </div>
+            <div class="container-header">
+                <span>강의 검색</span>
             </div>
-            <hr style="border-bottom: 1px solid black; width: 100%;"/>
-            <div id="search-result"></div>
+            <div id="course-container-content">
+                <div class="search-box">
+                    <div id="search-type-selector">
+                        <label><input type="radio" name="searchType" value="byDept" checked> 학과로 검색</label>
+                        <label><input type="radio" name="searchType" value="byCourseName"> 강의명으로 검색</label>
+                    </div>
+
+                    <div id="dept-search-container">
+                        <select id="majorDiv-select"></select>
+                        <input type="text" id="dept-search-input" placeholder="학과 이름 입력" list="dept-suggestions"
+                            autocomplete="off">
+                        <datalist id="dept-suggestions"></datalist>
+                        <button id="dept-search-btn">검색</button>
+                    </div>
+
+                    <div id="course-search-container">
+                        <input type="text" id="course-search-input" placeholder="강의명 또는 학수번호 입력" list="course-suggestions"
+                            autocomplete="off">
+                        <datalist id="course-suggestions"></datalist>
+                        <button id="course-search-btn">검색</button>
+                    </div>
+                </div>
+                <hr style="border-bottom: 1px solid black; width: 100%;" />
+                <div id="search-result"></div>
+            </div>
         </div>
 
-        <div class="semester-container"></div>
+        <div id="container-divider">
+            <button id="container-toggle-btn" class="toggle-btn">◀</button>
+        </div>
+
+        <div class="semester-container">
+            <div id="semester-row-headers">
+                <!-- 로우 헤더가 여기에 동적으로 추가됩니다. -->
+            </div>
+            <div id="semester-scroll-container">
+                <div id="semester-grid-container">
+                    <!-- 학년 컬럼들이 여기에 동적으로 추가됩니다. -->
+                </div>
+                <div class="add-year-column">
+                    <button id="add-year-btn" class="plus-rect-btn">+</button>
+                </div>
+            </div>
+        </div>
 
         <div class="chart-container">
             <div class="total-credit-row">
@@ -51,7 +74,7 @@
             <div id="selectContainer"></div>
 
             <div class="plus-line-container">
-                <button class="plus-rect-btn">+</button>
+                <button id="major-add-btn" class="plus-rect-btn">+</button>
             </div>
         </div>
     </div>

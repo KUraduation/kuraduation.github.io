@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     ///////////////// 차트 영역
     // 전공유형 플러스 버튼 설정
-    const plusBtn = document.querySelector('.plus-rect-btn');
+    const plusBtn = document.getElementById('major-add-btn');
     let menu = null;
 
     plusBtn.addEventListener('click', function (e) {
@@ -373,13 +373,119 @@ document.addEventListener('DOMContentLoaded', function () {
     // 초기 차트 업데이트
     updateChart();
     ///////////////// 차트 영역
+
+    ///////////////// 강의 컨테이너 토글
+    const courseContainer = document.querySelector('.course-container');
+    const toggleBtn = document.getElementById('container-toggle-btn');
+    const divider = document.getElementById('container-divider');
+
+    divider.addEventListener('click', () => {
+        courseContainer.classList.toggle('collapsed');
+        toggleBtn.classList.toggle('collapsed');
+    });
+    ///////////////// 강의 컨테이너 토글
+
+    ///////////////// 학기 컨테이너 영역
+    const semesterScrollContainer = document.getElementById('semester-scroll-container');
+    const semesterGridContainer = document.getElementById('semester-grid-container');
+    const addYearBtn = document.getElementById('add-year-btn');
+    const semesterRowHeaders = document.getElementById('semester-row-headers');
+
+    const semesterNames = ["1학기", "여름", "2학기", "겨울"];
+
+    // 로우 헤더 생성
+    const semesterHeader = document.createElement('div');
+    semesterHeader.textContent = 'ㅤ';
+    semesterRowHeaders.appendChild(semesterHeader); 
+    semesterNames.forEach(name => {
+        const header = document.createElement('div');
+        header.className = 'row-header';
+        header.textContent = name;
+        semesterRowHeaders.appendChild(header);
+    });
+
+
+    function getNextYearNumber() {
+        const existingYears = Array.from(semesterGridContainer.querySelectorAll('.year-column'))
+                                   .map(col => parseInt(col.dataset.year, 10))
+                                   .sort((a, b) => a - b);
+        let nextYear = 1;
+        for (const year of existingYears) {
+            if (year === nextYear) {
+                nextYear++;
+            } else {
+                break;
+            }
+        }
+        return nextYear;
+    }
+
+    function createYearColumn(year) {
+        const yearColumn = document.createElement('div');
+        yearColumn.className = 'year-column';
+        yearColumn.dataset.year = year;
+
+        const header = document.createElement('div');
+        header.className = 'semester-header';
+        header.innerHTML = `<span>${year}학년</span>`;
+
+        if (year > 4) {
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-year-btn';
+            removeBtn.textContent = '✕';
+            removeBtn.title = '학년 삭제';
+            removeBtn.addEventListener('click', () => {
+                yearColumn.remove();
+            });
+            header.appendChild(removeBtn);
+        }
+
+        yearColumn.appendChild(header);
+
+        semesterNames.forEach((name, index) => {
+            const cell = document.createElement('div');
+            cell.className = 'semester-cell';
+            cell.dataset.year = year;
+            cell.dataset.semester = index + 1;
+            // 각 셀에는 이제 헤더를 넣지 않습니다.
+            yearColumn.appendChild(cell);
+        });
+
+        return yearColumn;
+    }
+
+    function addYearColumn() {
+        const nextYear = getNextYearNumber();
+        const newYearColumn = createYearColumn(nextYear);
+        
+        // 정렬된 상태로 삽입
+        const columns = Array.from(semesterGridContainer.querySelectorAll('.year-column'));
+        const insertionIndex = columns.findIndex(col => parseInt(col.dataset.year, 10) > nextYear);
+        
+        if (insertionIndex === -1) {
+            semesterGridContainer.appendChild(newYearColumn);
+        } else {
+            semesterGridContainer.insertBefore(newYearColumn, columns[insertionIndex]);
+        }
+    }
+
+    addYearBtn.addEventListener('click', addYearColumn);
+
+    // 마우스 휠로 가로 스크롤
+    semesterScrollContainer.addEventListener('wheel', (evt) => {
+        if (evt.deltaY !== 0) {
+            evt.preventDefault();
+            semesterScrollContainer.scrollLeft += evt.deltaY;
+        }
+    });
+
+    // 초기 4개 학년 생성
+    for (let i = 1; i <= 4; i++) {
+        const newYearColumn = createYearColumn(i);
+        semesterGridContainer.appendChild(newYearColumn);
+    }
+    ///////////////// 학기 컨테이너 영역
 });
-
-///////////////// 강의검색 영역
-
-
-
-///////////////// 강의검색 영역
 
 ///////////////// 차트 영역
 // 현재 수강한 강의 element 목록 반환
