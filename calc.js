@@ -7,8 +7,6 @@ const majorDivs = [
     "심화전공",
     "학생설계전공"
 ];
-let courses = null; // courses.json의 데이터를 저장할 배열
-
 fetch('courses.json')
     .then(response => {
         if (!response.ok) {
@@ -18,6 +16,8 @@ fetch('courses.json')
     })
     .then(data => {
         courses = data; // courses 설정
+        // 데이터 로드 완료 후 커스텀 이벤트 발생
+        window.dispatchEvent(new Event('coursesLoaded'));
     })
     .catch(error => {
         console.error('JSON 파일을 불러오는 중 오류 발생:', error);
@@ -25,6 +25,268 @@ fetch('courses.json')
 ///////////////// json 로드
 
 document.addEventListener('DOMContentLoaded', function () {
+    ///////////////// 강의검색 영역
+    const majorDivSelect = document.getElementById('majorDiv-select');
+    majorDivs.forEach((majorDiv, idx) => {
+        const option = document.createElement('option');
+        option.value = idx;
+        option.textContent = majorDiv;
+        majorDivSelect.appendChild(option);
+    });
+
+    const searchResult = document.getElementById('search-result');
+    const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
+    const deptSearchContainer = document.getElementById('dept-search-container');
+    const courseSearchContainer = document.getElementById('course-search-container');
+
+    searchTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            if (this.value === 'byDept') {
+                deptSearchContainer.style.display = 'flex';
+                courseSearchContainer.style.display = 'none';
+            } else {
+                deptSearchContainer.style.display = 'none';
+                courseSearchContainer.style.display = 'flex';
+            }
+            searchResult.innerHTML = '';
+        });
+    });
+
+    // --- 자동완성 기능 ---
+    const deptDatalist = document.getElementById('dept-suggestions');
+    const courseDatalist = document.getElementById('course-suggestions');
+    const deptSearchInput = document.getElementById('dept-search-input');
+    const courseSearchInput = document.getElementById('course-search-input');
+
+    // 학과 자동완성 목록 업데이트
+    function updateDeptDatalist() {
+        if (!courses) return;
+        const selectedMajorDiv = majorDivSelect.value;
+        const deptList = courses[selectedMajorDiv];
+        deptDatalist.innerHTML = '';
+        if (deptList) {
+            deptList.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept.deptNm;
+                deptDatalist.appendChild(option);
+            });
+        }
+    }
+
+    // 강의명/학수번호 자동완성 목록 업데이트
+    function updateCourseDatalist() {
+        if (!courses) return;
+        const keyword = courseSearchInput.value.trim().toLowerCase();
+        courseDatalist.innerHTML = '';
+        if (keyword.length < 2) return;
+
+        const suggestions = new Set();
+        const maxSuggestions = 50; // 자동완성 후보 최대 개수
+
+        for (const divList of courses) {
+            if (suggestions.size >= maxSuggestions) break;
+            for (const dept of divList) {
+                if (suggestions.size >= maxSuggestions) break;
+                if (dept.groups) {
+                    for (const group of dept.groups) {
+                        if (suggestions.size >= maxSuggestions) break;
+                        if (group.courses) {
+                            for (const course of group.courses) {
+                                const courseName = course.name.toLowerCase();
+                                const courseCode = course.code.toLowerCase();
+                                if (courseName.includes(keyword) || courseCode.includes(keyword)) {
+                                    suggestions.add(`${course.name} (${course.code})`);
+                                    if (suggestions.size >= maxSuggestions) break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        suggestions.forEach(suggestion => {
+            const option = document.createElement('option');
+            option.value = suggestion;
+            courseDatalist.appendChild(option);
+        });
+    }
+    
+    // 이벤트 리스너 연결
+    majorDivSelect.addEventListener('change', () => {
+        deptSearchInput.value = ''; // 전공 유형 변경 시 입력 초기화
+        updateDeptDatalist();
+    });
+    
+    // courses.json 로드 완료 시 초기 학과 목록 로드
+    window.addEventListener('coursesLoaded', updateDeptDatalist);
+
+    // 자동완성 항목 선택 시 바로 검색 실행
+    deptSearchInput.addEventListener('input', function() {
+        const inputValue = this.value;
+        const options = deptDatalist.options;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === inputValue) {
+                searchDept();
+                return;
+            }
+        }
+    });
+
+    courseSearchInput.addEventListener('input', function() {
+        updateCourseDatalist(); // 입력 시마다 자동완성 목록 갱신
+        const inputValue = this.value;
+        const options = courseDatalist.options;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === inputValue) {
+                searchCourseByName();
+                return;
+            }
+        }
+    });
+
+
+    // 1. 학과로 검색 기능
+    const deptSearchBtn = document.getElementById('dept-search-btn');
+
+    function renderDeptSearchResult(dept) {
+        searchResult.innerHTML = '';
+        if (!dept) {
+            searchResult.textContent = '해당 학과를 찾을 수 없습니다.';
+            return;
+        }
+
+        dept.groups.forEach(group => {
+            // 그룹 컨테이너
+            const groupContainer = document.createElement('div');
+            groupContainer.className = 'result-group';
+
+            // 그룹 헤더 (토글 기능)
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'result-group-header';
+            groupHeader.innerHTML = `<span>${group.groupNm}</span>`;
+            
+            // 그룹 콘텐츠 (강의 목록)
+            const groupContent = document.createElement('div');
+            groupContent.className = 'result-group-content';
+
+            group.courses.forEach(course => {
+                const courseItem = document.createElement('div');
+                courseItem.className = 'course-item';
+                courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
+                // 드래그를 위한 데이터 속성 추가
+                courseItem.dataset.courseCode = course.code;
+                courseItem.dataset.courseName = course.name;
+                courseItem.dataset.credit = course.credit;
+                groupContent.appendChild(courseItem);
+            });
+
+            // 헤더 클릭 시 접기/펴기
+            groupHeader.addEventListener('click', () => {
+                groupHeader.classList.toggle('collapsed');
+                groupContent.classList.toggle('collapsed');
+            });
+
+            groupContainer.appendChild(groupHeader);
+            groupContainer.appendChild(groupContent);
+            searchResult.appendChild(groupContainer);
+        });
+    }
+
+    function searchDept() {
+        const keyword = deptSearchInput.value.trim();
+        const selectedMajorDiv = majorDivSelect.value;
+
+        if (!keyword || !courses) {
+            searchResult.textContent = '학과 이름을 입력하세요.';
+            return;
+        }
+        
+        const deptList = courses[selectedMajorDiv];
+        const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
+
+        renderDeptSearchResult(foundDept);
+    }
+
+    deptSearchBtn.addEventListener('click', searchDept);
+    deptSearchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchDept();
+        }
+    });
+
+    // 2. 강의명으로 검색 기능
+    const courseSearchBtn = document.getElementById('course-search-btn');
+
+    function renderCourseSearchResult(foundCourses) {
+        searchResult.innerHTML = '';
+        if (foundCourses.length === 0) {
+            searchResult.textContent = '해당 강의를 찾을 수 없습니다.';
+            return;
+        }
+        foundCourses.forEach(course => {
+            const courseItem = document.createElement('div');
+            courseItem.className = 'course-item';
+            courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
+            // 드래그를 위한 데이터 속성 추가
+            courseItem.dataset.courseCode = course.code;
+            courseItem.dataset.courseName = course.name;
+            courseItem.dataset.credit = course.credit;
+            searchResult.appendChild(courseItem);
+        });
+    }
+
+    function searchCourseByName() {
+        let keyword = courseSearchInput.value.trim().toLowerCase();
+        // 자동완성 형식("강의명 (학수번호)")에서 키워드 추출
+        const match = keyword.match(/^(.*) \((.*)\)$/);
+        if (match) {
+            keyword = match[1].toLowerCase(); // 괄호 앞의 강의명 또는 학수번호 전체를 키워드로 사용
+        }
+
+        if (keyword.length < 2) {
+            searchResult.textContent = '2글자 이상 입력하세요.';
+            return;
+        }
+        if (!courses) {
+            searchResult.textContent = '강의 데이터가 로딩 중입니다. 잠시 후 다시 시도해주세요.';
+            return;
+        }
+
+        const foundCourses = [];
+        const addedCodes = new Set(); // 중복 추가 방지
+        for (const divList of courses) {
+            for (const dept of divList) {
+                if (dept.groups) {
+                    for (const group of dept.groups) {
+                        if (group.courses) {
+                            for (const course of group.courses) {
+                                const courseName = course.name.toLowerCase();
+                                const courseCode = course.code.toLowerCase();
+                                if (!addedCodes.has(course.code) && (courseName.includes(keyword) || courseCode.includes(keyword))) {
+                                    foundCourses.push(course);
+                                    addedCodes.add(course.code);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        renderCourseSearchResult(foundCourses);
+    }
+
+    courseSearchBtn.addEventListener('click', searchCourseByName);
+    courseSearchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchCourseByName();
+        }
+    });
+    ///////////////// 강의검색 영역
+
+    ///////////////// 차트 영역
     // 전공유형 플러스 버튼 설정
     const plusBtn = document.querySelector('.plus-rect-btn');
     let menu = null;
@@ -104,14 +366,22 @@ document.addEventListener('DOMContentLoaded', function () {
         new Sortable(selectContainer, {
             animation: 150,
             ghostClass: 'sortable-ghost',
-            onEnd: function (evt) {updateChart();} // 드래그 후 차트 업데이트
+            onEnd: function (evt) { updateChart(); } // 드래그 후 차트 업데이트
         });
     }
 
     // 초기 차트 업데이트
     updateChart();
+    ///////////////// 차트 영역
 });
 
+///////////////// 강의검색 영역
+
+
+
+///////////////// 강의검색 영역
+
+///////////////// 차트 영역
 // 현재 수강한 강의 element 목록 반환
 function getTakenCourses() {
     // todo 여기에 현재 수강한 강의 목록을 반환하는 로직 구현하기
@@ -249,7 +519,7 @@ function initGroups(selectContainer) {
             groupContainer.className = 'group-container' + idx % 2; // 짝수/홀수 스타일링을 위해 클래스 추가
             // groupCd를 데이터로 포함
             groupContainer.dataset.groupCd = group.groupCd || '';
-            
+
             // 현재 수강학점, min, max을 데이터로 포함
             groupContainer.dataset.currentCredit = currentCredit;
             groupContainer.dataset.minCredit = minCredit;
@@ -317,9 +587,9 @@ function updateChart() {
 
                 const searchRes =
                     courses[majorDiv]
-                    .find(dept => dept.deptCd === deptCd)
-                    .groups.find(g => g.groupCd === groupCd)
-                    .courses.find(c => c.code === course.dataset.courseCd);
+                        .find(dept => dept.deptCd === deptCd)
+                        .groups.find(g => g.groupCd === groupCd)
+                        .courses.find(c => c.code === course.dataset.courseCd);
                 if (searchRes) {
                     // 속하면 그 그룹 추가
                     groups.push(groupContainer);
@@ -333,12 +603,12 @@ function updateChart() {
         }
         else if (groups.length > 1) {
             // 여러 그룹에 속하는 경우
-            multipleDeptCourses.push({course, groups});
+            multipleDeptCourses.push({ course, groups });
         }
     });
 
     // 여러 학과에서 인정되는 강의 처리
-    multipleDeptCourses.forEach(({course, groups}) => {
+    multipleDeptCourses.forEach(({ course, groups }) => {
         // 각 그룹에 대해 강의 추가
         groups.some(groupContainer => {
             if (groupContainer.dataset.minCredit <= groupContainer.dataset.currentCredit) {
@@ -350,3 +620,4 @@ function updateChart() {
         });
     });
 }
+///////////////// 차트 영역
