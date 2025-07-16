@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 로우 헤더 생성
     const semesterHeader = document.createElement('div');
-    semesterHeader.textContent = 'ㅤ';
+    semesterHeader.innerHTML = `<span>ㅤ</span>`;
     semesterRowHeaders.appendChild(semesterHeader); 
     semesterNames.forEach(name => {
         const header = document.createElement('div');
@@ -671,12 +671,9 @@ function updateChart() {
 
     const takenCourses = getTakenCourses();
 
-    const targetCredit = parseInt(document.getElementById('target-credit').value, 10);
     const currentCredit = takenCourses.reduce((sum, course) => sum + (parseInt(course.dataset.credit) || 0), 0);
-    const percent = ((currentCredit / targetCredit) * 100).toFixed(0);
 
     document.getElementById('current-credit').textContent = currentCredit;
-    document.getElementById('credit-percent').textContent = `(${percent}%)`;
 
     // 여러 학과에서 인정되는 강의 목록
     const multipleDeptCourses = [];

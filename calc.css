@@ -93,7 +93,7 @@
 
 #semester-row-headers {
     display: grid;
-    grid-template-rows: .5fr 3fr 1fr 3fr 1fr;
+    grid-template-rows: 0fr 3fr 1fr 3fr 1fr;
     gap: 8px;
     text-align: center;
 }
@@ -121,7 +121,7 @@
 
 .year-column {
     display: grid;
-    grid-template-rows: .5fr 3fr 1fr 3fr 1fr; /* 1/2학기, 여름/겨울계절 비율 */
+    grid-template-rows: 0fr 3fr 1fr 3fr 1fr; /* 1/2학기, 여름/겨울계절 비율 */
     gap: 8px; /* 학기 셀 사이의 간격 */
     width: 250px; /* 각 학년 컬럼의 너비 */
     flex-shrink: 0; /* 컬럼 너비가 줄어들지 않도록 함 */
