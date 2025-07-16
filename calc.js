@@ -537,6 +537,12 @@ document.addEventListener('DOMContentLoaded', function () {
             cell.dataset.semester = index + 1;
             cell.addEventListener('dragover', handleDragOver);
             cell.addEventListener('drop', handleDrop);
+
+            const creditTotalElement = document.createElement('div');
+            creditTotalElement.className = 'semester-credit-total';
+            creditTotalElement.textContent = '0학점'; // 초기값
+            cell.appendChild(creditTotalElement);
+
             yearColumn.appendChild(cell);
         });
 
@@ -827,6 +833,18 @@ function updateChart() {
             addCourese(groupContainer, course);
             return true; // 첫 번째 그룹에만 추가
         });
+    });
+
+    // 각 semester-cell의 학점 합계 업데이트
+    document.querySelectorAll('.semester-cell').forEach(cell => {
+        let totalCredits = 0;
+        cell.querySelectorAll('.taken-course').forEach(courseEl => {
+            totalCredits += parseInt(courseEl.dataset.credit) || 0;
+        });
+        const creditTotalElement = cell.querySelector('.semester-credit-total');
+        if (creditTotalElement) {
+            creditTotalElement.textContent = `${totalCredits}학점`;
+        }
     });
 
     // 강의 추가/삭제 시 검색 결과 업데이트

@@ -93,7 +93,7 @@
 
 #semester-row-headers {
     display: grid;
-    grid-template-rows: 0fr 3fr 1fr 3fr 1fr;
+    grid-template-rows: 0fr 3fr 1.2fr 3fr 1.2fr;
     gap: 8px;
     text-align: center;
 }
@@ -121,7 +121,7 @@
 
 .year-column {
     display: grid;
-    grid-template-rows: 0fr 3fr 1fr 3fr 1fr; /* 1/2학기, 여름/겨울계절 비율 */
+    grid-template-rows: 0fr 3fr 1.2fr 3fr 1.2fr; /* 1/2학기, 여름/겨울계절 비율 */
     gap: 8px; /* 학기 셀 사이의 간격 */
     width: 250px; /* 각 학년 컬럼의 너비 */
     flex-shrink: 0; /* 컬럼 너비가 줄어들지 않도록 함 */
@@ -132,13 +132,14 @@
     border-radius: 8px;
     padding: 8px;
     display: flex;
-    flex-direction: row; /* 자식 요소(강의)를 가로로 배치 */
-    flex-wrap: wrap;      /* 공간이 부족하면 다음 줄로 넘김 */
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 4px;
-    align-content: flex-start; /* 여러 줄일 경우 위에서부터 채움 */
-    overflow-y: auto;     /* 내용이 넘칠 경우 세로 스크롤 */
-    scrollbar-width: none; /* 스크롤바 숨기기 (Firefox) */
-    -ms-overflow-style: none; /* 스크롤바 숨기기 (IE/Edge) */
+    align-content: flex-start;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    position: relative; /* 자식 요소의 절대 위치 지정을 위해 */
 }
 
 .semester-cell::-webkit-scrollbar {
@@ -488,4 +489,17 @@
 .course-item.taken-in-search {
     text-decoration: line-through;
     color: #999;
+}
+
+.semester-credit-total {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-size: 0.75em;
+    color: #666;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 2px 4px;
+    border-radius: 3px;
+    pointer-events: none; /* 클릭 이벤트를 방지하여 아래 요소에 영향을 주지 않도록 */
+    z-index: 1; /* 다른 요소 위에 표시 */
 }
