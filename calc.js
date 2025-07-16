@@ -50,6 +50,7 @@ function createTakenCourseElement(courseData) {
     takenCourse.dataset.courseCode = courseData.code;
     takenCourse.dataset.courseName = courseData.name;
     takenCourse.dataset.credit = courseData.credit;
+    takenCourse.title = `${courseData.name} (${courseData.credit}학점)`; // 툴팁 추가
     takenCourse.draggable = true; // Make taken courses draggable
     takenCourse.addEventListener('dragstart', handleDragStart);
     takenCourse.addEventListener('dragend', handleDragEnd);
@@ -224,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 1. 학과로 검색 기능
     const deptSearchBtn = document.getElementById('dept-search-btn');
 
-    function renderDeptSearchResult(dept) {
+    function renderDeptSearchResult(dept, takenCourseCodes) {
         searchResult.innerHTML = '';
         if (!dept) {
             searchResult.textContent = '해당 학과를 찾을 수 없습니다.';
@@ -248,6 +249,9 @@ document.addEventListener('DOMContentLoaded', function () {
             group.courses.forEach(course => {
                 const courseItem = document.createElement('div');
                 courseItem.className = 'course-item';
+                if (takenCourseCodes.has(course.code)) {
+                    courseItem.classList.add('taken-in-search');
+                }
                 courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
                 // 드래그를 위한 데이터 속성 추가
                 courseItem.dataset.courseCode = course.code;
@@ -282,7 +286,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const deptList = courses[selectedMajorDiv];
         const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
 
-        renderDeptSearchResult(foundDept);
+        const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
+        renderDeptSearchResult(foundDept, takenCourseCodes);
     }
 
     deptSearchBtn.addEventListener('click', searchDept);
@@ -296,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 2. 강의명으로 검색 기능
     const courseSearchBtn = document.getElementById('course-search-btn');
 
-    function renderCourseSearchResult(foundCourses) {
+    function renderCourseSearchResult(foundCourses, takenCourseCodes) {
         searchResult.innerHTML = '';
         if (foundCourses.length === 0) {
             searchResult.textContent = '해당 강의를 찾을 수 없습니다.';
@@ -305,6 +310,9 @@ document.addEventListener('DOMContentLoaded', function () {
         foundCourses.forEach(course => {
             const courseItem = document.createElement('div');
             courseItem.className = 'course-item';
+            if (takenCourseCodes.has(course.code)) {
+                courseItem.classList.add('taken-in-search');
+            }
             courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
             // 드래그를 위한 데이터 속성 추가
             courseItem.dataset.courseCode = course.code;
@@ -353,7 +361,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         }
-        renderCourseSearchResult(foundCourses);
+        const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
+        renderCourseSearchResult(foundCourses, takenCourseCodes);
     }
 
     courseSearchBtn.addEventListener('click', searchCourseByName);
@@ -719,6 +728,18 @@ function initGroups(selectContainer) {
             // 포함되는 수강한 과목들을 보관
             groupContainer._takenCourses = [];
 
+            // 마우스 호버 시 수강 과목 하이라이트
+            groupContainer.addEventListener('mouseenter', () => {
+                groupContainer._takenCourses.forEach(courseEl => {
+                    courseEl.classList.add('highlight');
+                });
+            });
+            groupContainer.addEventListener('mouseleave', () => {
+                groupContainer._takenCourses.forEach(courseEl => {
+                    courseEl.classList.remove('highlight');
+                });
+            });
+
             updateGroupProgress(groupContainer); // 초기 진행률 업데이트
 
             groupListDiv.appendChild(groupContainer);
@@ -807,5 +828,24 @@ function updateChart() {
             return true; // 첫 번째 그룹에만 추가
         });
     });
+
+    // 강의 추가/삭제 시 검색 결과 업데이트
+    const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
+    const deptSearchInput = document.getElementById('dept-search-input');
+    const courseSearchInput = document.getElementById('course-search-input');
+
+    let currentSearchType = null;
+    searchTypeRadios.forEach(radio => {
+        if (radio.checked) {
+            currentSearchType = radio.value;
+        }
+    });
+
+    if (currentSearchType === 'byDept' && deptSearchInput.value.trim() !== '') {
+        document.getElementById('dept-search-btn').click();
+    } else if (currentSearchType === 'byCourseName' && courseSearchInput.value.trim() !== '') {
+        document.getElementById('course-search-btn').click();
+    }
 }
+
 ///////////////// 차트 영역

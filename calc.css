@@ -390,6 +390,10 @@
     background-color: rgba(212, 212, 212, 0.5);
     ;
 }
+.dept-select-container .group-container0:hover {
+    background-color: #555;
+    color: white;
+}
 
 .dept-select-container .group-container1 {
     display: flex;
@@ -399,6 +403,10 @@
     font-size: small;
     background-color: rgba(188, 188, 188, 0.5);
     ;
+}
+.dept-select-container .group-container1:hover {
+    background-color: #555;
+    color: white;
 }
 
 .dept-select-container hr {
@@ -470,4 +478,14 @@
 .taken-course:hover {
     background-color: #d0d0d0;
     border-color: #aaa;
+}
+
+.taken-course.highlight {
+    background-color: #555; /* 진한 회색 */
+    color: white;
+}
+
+.course-item.taken-in-search {
+    text-decoration: line-through;
+    color: #999;
 }
