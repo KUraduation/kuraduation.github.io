@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.removeEventListener('click', closeMenu);
     }
 
-    // 전공유형 드래그 순서변경 설정
+    /* 전공유형 드래그 순서변경 설정
     const selectContainer = document.getElementById('selectContainer');
     if (selectContainer) {
         new Sortable(selectContainer, {
@@ -457,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function () {
             onEnd: function (evt) { updateChart(); } // 드래그 후 차트 업데이트
         });
     }
+    */
 
     // 초기 차트 업데이트
     updateChart();
