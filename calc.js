@@ -7,6 +7,322 @@ const majorDivs = [
     "심화전공",
     "학생설계전공"
 ];
+
+// 덱 시스템 변수들
+let currentDeck = 'deck1';
+let deckCount = 3;
+const maxDeckCount = 5;
+
+// 복사/붙여넣기 시스템 변수
+let copiedDeckData = null;
+
+// 히스토리 관리 시스템 변수
+let historyStack = [];
+let currentHistoryIndex = -1;
+const maxHistorySize = 50; // 최대 히스토리 개수
+
+// 덱 데이터 구조
+const decks = {
+    deck1: {
+        name: "덱1",
+        courses: [],
+        totalCredits: 0
+    },
+    deck2: {
+        name: "덱2", 
+        courses: [],
+        totalCredits: 0
+    },
+    deck3: {
+        name: "덱3",
+        courses: [],
+        totalCredits: 0
+    }
+};
+
+// 통합된 복사/붙여넣기 함수
+function copyOrPasteDeck() {
+    if (copiedDeckData) {
+        // 복사된 덱이 있으면 붙여넣기 실행
+        pasteDeck(currentDeck);
+        // 붙여넣기 후 복사 데이터 초기화
+        copiedDeckData = null;
+        updateCopyPasteButton();
+    } else {
+        // 복사된 덱이 없으면 복사 실행
+        if (!decks[currentDeck]) return;
+        
+        // 현재 덱 저장
+        saveCurrentDeck();
+        
+        // 현재 활성 덱 데이터 복사
+        copiedDeckData = {
+            name: decks[currentDeck].name,
+            courses: [...decks[currentDeck].courses],
+            totalCredits: decks[currentDeck].totalCredits
+        };
+        
+        console.log('Current deck copied:', currentDeck, copiedDeckData);
+        updateCopyPasteButton();
+    }
+}
+
+// 덱 초기화 함수
+function resetDeck(deckId) {
+    if (!decks[deckId]) return;
+    
+    // 초기화 확인
+    if (!confirm(`"${decks[deckId].name}"의 모든 과목을 초기화하시겠습니까?`)) {
+        return;
+    }
+    
+    // 덱 데이터 초기화
+    decks[deckId] = {
+        name: decks[deckId].name,
+        courses: [],
+        totalCredits: 0
+    };
+    
+    // 현재 덱이 초기화된 덱이면 즉시 반영
+    if (currentDeck === deckId) {
+        // 모든 과목 제거
+        document.querySelectorAll('.taken-course').forEach(course => course.remove());
+        
+        // 차트 업데이트
+        updateChart();
+    }
+    
+    console.log('Deck reset:', deckId);
+}
+
+// 덱 붙여넣기 함수
+function pasteDeck(targetDeckId) {
+    if (!copiedDeckData || !decks[targetDeckId]) return;
+    
+    // 현재 덱 저장
+    saveCurrentDeck();
+    
+    // 덱 데이터 붙여넣기
+    decks[targetDeckId] = {
+        name: copiedDeckData.name,
+        courses: [...copiedDeckData.courses],
+        totalCredits: copiedDeckData.totalCredits
+    };
+    
+    console.log('Deck pasted to:', targetDeckId, decks[targetDeckId]);
+    
+    // 현재 덱이 붙여넣기 대상이면 즉시 로드
+    if (currentDeck === targetDeckId) {
+        loadDeck(targetDeckId);
+        updateChart();
+    }
+}
+
+// 통합된 복사/붙여넣기 버튼 상태 업데이트
+function updateCopyPasteButton() {
+    const copyPasteBtn = document.getElementById('deck-copy-paste-btn');
+    if (copyPasteBtn) {
+        if (copiedDeckData) {
+            copyPasteBtn.textContent = '📄';
+            copyPasteBtn.title = '덱 붙여넣기 (복사된 덱 있음)';
+            copyPasteBtn.classList.add('paste-mode');
+        } else {
+            copyPasteBtn.textContent = '📋';
+            copyPasteBtn.title = '현재 덱 복사';
+            copyPasteBtn.classList.remove('paste-mode');
+        }
+    }
+}
+
+// 덱 전환 함수
+function switchDeck(deckId) {
+    console.log('switchDeck called with:', deckId);
+    if (!decks[deckId]) {
+        console.log('Deck not found:', deckId);
+        return;
+    }
+    
+    // 현재 덱 저장
+    saveCurrentDeck();
+    
+    // 새 덱으로 전환
+    currentDeck = deckId;
+    console.log('Current deck changed to:', currentDeck);
+    
+    // UI 업데이트
+    updateDeckTabs();
+    
+    // 덱 데이터 로드
+    loadDeck(deckId);
+    
+    // 차트 업데이트
+    updateChart();
+}
+
+// 현재 덱 저장
+function saveCurrentDeck() {
+    const takenCourses = getTakenCourses();
+    const coursesData = takenCourses.map(course => ({
+        code: course.dataset.courseCode,
+        name: course.dataset.courseName,
+        credit: course.dataset.credit,
+        year: course.closest('.semester-cell').dataset.year,
+        semester: course.closest('.semester-cell').dataset.semester
+    }));
+    
+    decks[currentDeck].courses = coursesData;
+    decks[currentDeck].totalCredits = takenCourses.reduce((sum, course) => 
+        sum + (parseInt(course.dataset.credit) || 0), 0);
+}
+
+// 히스토리에 현재 상태 저장
+function saveToHistory() {
+    const currentState = {
+        courses: getTakenCourses().map(course => ({
+            code: course.dataset.courseCode,
+            name: course.dataset.courseName,
+            credit: course.dataset.credit,
+            year: course.closest('.semester-cell').dataset.year,
+            semester: course.closest('.semester-cell').dataset.semester
+        })),
+        timestamp: Date.now()
+    };
+    
+    // 현재 인덱스 이후의 히스토리 제거
+    historyStack = historyStack.slice(0, currentHistoryIndex + 1);
+    
+    // 새 상태 추가
+    historyStack.push(currentState);
+    currentHistoryIndex++;
+    
+    // 히스토리 크기 제한
+    if (historyStack.length > maxHistorySize) {
+        historyStack.shift();
+        currentHistoryIndex--;
+    }
+    
+    updateHistoryButtons();
+}
+
+// 히스토리에서 상태 복원
+function restoreFromHistory(historyIndex) {
+    if (historyIndex < 0 || historyIndex >= historyStack.length) return;
+    
+    const state = historyStack[historyIndex];
+    
+    // 기존 과목들 제거
+    document.querySelectorAll('.taken-course').forEach(course => course.remove());
+    
+    // 히스토리의 과목들 추가
+    state.courses.forEach(courseData => {
+        const targetCell = document.querySelector(
+            `.semester-cell[data-year="${courseData.year}"][data-semester="${courseData.semester}"]`
+        );
+        if (targetCell) {
+            const newCourse = createTakenCourseElement(courseData);
+            targetCell.appendChild(newCourse);
+        }
+    });
+    
+    currentHistoryIndex = historyIndex;
+    updateHistoryButtons();
+    updateChart();
+}
+
+// Undo 실행
+function undo() {
+    if (currentHistoryIndex > 0) {
+        restoreFromHistory(currentHistoryIndex - 1);
+    }
+}
+
+// Redo 실행
+function redo() {
+    if (currentHistoryIndex < historyStack.length - 1) {
+        restoreFromHistory(currentHistoryIndex + 1);
+    }
+}
+
+// 히스토리 버튼 상태 업데이트
+function updateHistoryButtons() {
+    const undoBtn = document.getElementById('undo-btn');
+    const redoBtn = document.getElementById('redo-btn');
+    
+    if (undoBtn) {
+        undoBtn.disabled = currentHistoryIndex <= 0;
+    }
+    
+    if (redoBtn) {
+        redoBtn.disabled = currentHistoryIndex >= historyStack.length - 1;
+    }
+}
+
+// 덱 데이터 로드
+function loadDeck(deckId) {
+    // 기존 과목들 제거
+    document.querySelectorAll('.taken-course').forEach(course => course.remove());
+    
+    // 덱의 과목들 추가
+    decks[deckId].courses.forEach(courseData => {
+        const targetCell = document.querySelector(
+            `.semester-cell[data-year="${courseData.year}"][data-semester="${courseData.semester}"]`
+        );
+        if (targetCell) {
+            const newCourse = createTakenCourseElement(courseData);
+            targetCell.appendChild(newCourse);
+        }
+    });
+}
+
+// 덱 탭 UI 업데이트
+function updateDeckTabs() {
+    document.querySelectorAll('.deck-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.deck === currentDeck) {
+            tab.classList.add('active');
+        }
+    });
+}
+
+// 새 덱 추가
+function addNewDeck() {
+    if (deckCount >= maxDeckCount) return;
+    
+    deckCount++;
+    const newDeckId = `deck${deckCount}`;
+    
+    // 현재 덱 저장
+    saveCurrentDeck();
+    
+    // 새 덱 생성 (현재 덱 복사)
+    decks[newDeckId] = {
+        name: `덱${deckCount}`,
+        courses: [...decks[currentDeck].courses],
+        totalCredits: decks[currentDeck].totalCredits
+    };
+    
+    // 새 덱 탭 추가
+    const deckTabs = document.querySelector('.deck-tabs');
+    const newTab = document.createElement('button');
+    newTab.className = 'deck-tab';
+    newTab.dataset.deck = newDeckId;
+    newTab.textContent = `덱${deckCount}`;
+    newTab.addEventListener('click', () => switchDeck(newDeckId));
+    
+    // 플러스 버튼 앞에 삽입
+    const addBtn = document.getElementById('add-deck-btn');
+    deckTabs.insertBefore(newTab, addBtn);
+    
+    // 새 덱으로 전환
+    switchDeck(newDeckId);
+    
+    // 플러스 버튼 숨기기 (최대 개수 도달 시)
+    if (deckCount >= maxDeckCount) {
+        if (addBtn) {
+            addBtn.style.display = 'none';
+        }
+    }
+}
 fetch('courses.json')
     .then(response => {
         if (!response.ok) {
@@ -83,6 +399,9 @@ function handleDrop(e) {
         const newTakenCourse = createTakenCourseElement(data);
         targetCell.appendChild(newTakenCourse);
     }
+    
+    // 히스토리에 저장
+    saveToHistory();
     updateChart(); // Update chart after course is added/moved
 }
 
@@ -94,6 +413,8 @@ function handleDragEnd(e) {
         // or the drop was cancelled. In this case, remove it.
         if (e.dataTransfer.dropEffect === 'none') {
             e.target.remove();
+            // 히스토리에 저장
+            saveToHistory();
         }
     }
     draggedCourse = null;
@@ -581,6 +902,101 @@ document.addEventListener('DOMContentLoaded', function () {
         semesterGridContainer.appendChild(newYearColumn);
     }
     ///////////////// 학기 컨테이너 영역
+
+    ///////////////// 덱 시스템 이벤트 리스너
+    // 덱 탭 클릭 이벤트 - DOM이 완전히 로드된 후 실행
+    setTimeout(() => {
+        const deckTabs = document.querySelectorAll('.deck-tab');
+        console.log('Found deck tabs:', deckTabs.length);
+        
+        deckTabs.forEach(tab => {
+            console.log('Adding event listener to deck tab:', tab.dataset.deck);
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const deckId = tab.dataset.deck;
+                console.log('Deck tab clicked:', deckId);
+                switchDeck(deckId);
+            });
+        });
+
+        // 통합된 덱 복사/붙여넣기 버튼 이벤트
+        const copyPasteBtn = document.getElementById('deck-copy-paste-btn');
+        if (copyPasteBtn) {
+            copyPasteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Copy/Paste button clicked for current deck:', currentDeck);
+                copyOrPasteDeck();
+            });
+        }
+
+        // 덱 초기화 버튼 이벤트
+        const resetBtn = document.getElementById('deck-reset-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Reset button clicked for current deck:', currentDeck);
+                resetDeck(currentDeck);
+            });
+        }
+
+        // 새 덱 추가 버튼 이벤트
+        const addDeckBtn = document.getElementById('add-deck-btn');
+        if (addDeckBtn) {
+            addDeckBtn.addEventListener('click', addNewDeck);
+            console.log('Add deck button event listener added');
+        }
+
+        // 히스토리 버튼 이벤트 리스너
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        
+        if (undoBtn) {
+            undoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                undo();
+            });
+        }
+        
+        if (redoBtn) {
+            redoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                redo();
+            });
+        }
+
+        // 초기 복사/붙여넣기 버튼 상태 설정
+        updateCopyPasteButton();
+        
+        // 초기 히스토리 버튼 상태 설정
+        updateHistoryButtons();
+    }, 100);
+
+    // 키보드 단축키 이벤트 리스너
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+Z (Undo)
+        if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault();
+            undo();
+        }
+        // Ctrl+Y 또는 Ctrl+Shift+Z (Redo)
+        else if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'Z')) {
+            e.preventDefault();
+            redo();
+        }
+    });
+
+    // 과목 추가/삭제 시 덱 자동 저장 - updateChart 함수 오버라이드 수정
+    const originalUpdateChart = window.updateChart || function() {};
+    window.updateChart = function() {
+        originalUpdateChart();
+        saveCurrentDeck();
+    };
+    ///////////////// 덱 시스템 이벤트 리스너
 });
 
 ///////////////// 차트 영역
@@ -763,7 +1179,24 @@ function updateGroupProgress(groupContainer) {
 
     const progress = (currentCredit / minCredit * 100).toFixed(0);
     const groupProgress = groupContainer.querySelector('.group-progress');
+    
+    // 기존 텍스트 내용
     groupProgress.textContent = `${currentCredit}/${minCredit} (${progress}%)`;
+    
+    // 진행률에 따른 배경색 변경
+    const progressPercent = Math.min(100, parseFloat(progress));
+    groupProgress.style.background = `linear-gradient(to right, #ff69b4 ${progressPercent}%, transparent ${progressPercent}%)`;
+    groupProgress.style.borderRadius = '4px';
+    groupProgress.style.padding = '2px 4px';
+    groupProgress.style.transition = 'background 0.3s ease';
+    
+    // 100% 이상일 때 전체 핑크색
+    if (progressPercent >= 100) {
+        groupProgress.style.background = '#ff69b4';
+        groupProgress.style.color = 'white';
+    } else {
+        groupProgress.style.color = 'inherit';
+    }
 }
 // 그룹에 과목 추가(학점 업데이트)
 function addCourese(groupContainer, course) {
