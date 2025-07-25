@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
-
+<!-- 
+    졸업학점계산기
+-->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,22 +18,12 @@
         <div class="course-container">
             <div class="container-header">
                 <span>강의 검색</span>
-                <div class="deck-tabs">
-                    <button class="deck-tab active" data-deck="deck1">덱1</button>
-                    <button class="deck-tab" data-deck="deck2">덱2</button>
-                    <button class="deck-tab" data-deck="deck3">덱3</button>
-                    <button class="add-deck-btn" id="add-deck-btn">+</button>
-                </div>
             </div>
             <div id="course-container-content">
                 <div class="search-box">
                     <div id="search-type-selector">
                         <label><input type="radio" name="searchType" value="byDept" checked> 학과로 검색</label>
                         <label><input type="radio" name="searchType" value="byCourseName"> 강의명으로 검색</label>
-                        <div class="deck-controls">
-                            <button class="deck-copy-paste-btn" id="deck-copy-paste-btn" title="현재 덱 복사">📋</button>
-                            <button class="deck-reset-btn" id="deck-reset-btn" title="현재 덱 초기화">🔄</button>
-                        </div>
                     </div>
                     
                     <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
@@ -78,12 +70,28 @@
         </div>
 
         <div class="chart-container">
-            <div class="total-credit-row">
-                <span>총이수학점: </span>
-                <span id="current-credit">0</span>
-                <div class="history-controls">
-                    <button class="history-btn" id="undo-btn" title="실행 취소" disabled>↶</button>
-                    <button class="history-btn" id="redo-btn" title="다시 실행" disabled>↷</button>
+            <div class="deck-management">
+                <div class="deck-tabs-row">
+                    <div class="deck-tabs">
+                        <button class="deck-tab active" data-deck="deck1">덱1</button>
+                        <button class="deck-tab" data-deck="deck2">덱2</button>
+                        <button class="deck-tab" data-deck="deck3">덱3</button>
+                        <button class="add-deck-btn" id="add-deck-btn">+</button>
+                    </div>
+                </div>
+                <div class="deck-controls-row">
+                    <div class="deck-controls">
+                        <button class="deck-copy-paste-btn" id="deck-copy-paste-btn" title="현재 덱 복사">복사</button>
+                        <button class="deck-reset-btn" id="deck-reset-btn" title="현재 덱 초기화">덱 초기화</button>
+                    </div>
+                    <div class="history-controls">
+                        <button class="history-btn" id="undo-btn" title="실행 취소" disabled>↶</button>
+                        <button class="history-btn" id="redo-btn" title="다시 실행" disabled>↷</button>
+                    </div>
+                </div>
+                <div class="total-credit-row">
+                    <span>총이수학점: </span>
+                    <span id="current-credit">0</span>
                 </div>
             </div>
 
