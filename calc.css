@@ -1,6 +1,31 @@
 /* css
 */
 
+/* 로컬 폰트 불러오기 */
+@font-face {
+    font-family: 'Cafe24OhsquareAir-v2.0';
+    src: url('./Cafe24OhsquareAir-v2.0.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NanumSquareNeo-Variable';
+    src: url('./NanumSquareNeo-Variable.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 전체 애플리케이션에 폰트 적용 */
+* {
+    font-family: 'Cafe24OhsquareAir-v2.0' !important;
+}
+
+/* 추가로 body에도 적용 */
+body {
+    font-family: 'Cafe24OhsquareAir-v2.0';
+}
+
 /* 과목 정보 팝업 스타일 */
 .course-popup {
     position: fixed;
@@ -372,6 +397,7 @@
 }
 
 .row-header {
+    font-family: 'NanumSquareNeo-Variable' !important;
     font-weight: bold;
     font-size: 0.9em;
     display: flex;
@@ -424,7 +450,7 @@
 .semester-header {
     font-weight: bold;
     font-size: 1.0em;
-    font-family: 'Noto Sans KR', sans-serif; /* 손글씨체 */
+    font-family: 'NanumSquareNeo-Variable' !important;
     color: white; /* 텍스트 색상을 하얀색으로 변경 */
     margin-bottom: 2px;
     display: flex;
@@ -465,6 +491,7 @@
     /* Firefox */
     -ms-overflow-style: none;
     /* IE and Edge */
+    margin-left: 7px; /* semester-container와의 간격 추가 */
 }
 /* 세 영역의 스타일 끝 */
 
