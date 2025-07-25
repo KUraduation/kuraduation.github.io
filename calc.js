@@ -8,6 +8,9 @@ const majorDivs = [
     "학생설계전공"
 ];
 
+const years = ['2021', '2022', '2023', '2024', '2025'];
+const courses = {};
+
 // 덱 시스템 변수들
 let currentDeck = 'deck1';
 let deckCount = 3;
@@ -323,21 +326,25 @@ function addNewDeck() {
         }
     }
 }
-fetch('courses.json')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('네트워크 오류');
-        }
-        return response.json();
-    })
-    .then(data => {
-        courses = data; // courses 설정
-        // 데이터 로드 완료 후 커스텀 이벤트 발생
-        window.dispatchEvent(new Event('coursesLoaded'));
-    })
-    .catch(error => {
-        console.error('JSON 파일을 불러오는 중 오류 발생:', error);
-    });
+
+Promise.all(years.map(year =>
+    fetch(`${year}.json`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`네트워크 오류: ${year}.json`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            courses[year] = data;
+        })
+)).then(() => {
+    console.log('모든 강의 데이터 로드 완료:', courses);
+    // 데이터 로드 완료 후 커스텀 이벤트 발생
+    window.dispatchEvent(new Event('coursesLoaded'));
+}).catch(error => {
+    console.error('JSON 파일을 불러오는 중 오류 발생:', error);
+});
 ///////////////// json 로드
 
 // Global variable to store the dragged element
@@ -424,12 +431,22 @@ function handleDragEnd(e) {
 document.addEventListener('DOMContentLoaded', function () {
     ///////////////// 강의검색 영역
     const majorDivSelect = document.getElementById('majorDiv-select');
+    const searchYearSelect = document.getElementById('search-year-select');
+
     majorDivs.forEach((majorDiv, idx) => {
         const option = document.createElement('option');
         option.value = idx;
         option.textContent = majorDiv;
         majorDivSelect.appendChild(option);
     });
+
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = `${year}년`;
+        searchYearSelect.appendChild(option);
+    });
+    searchYearSelect.value = years[years.length - 1]; // 최신 년도로 기본 설정
 
     const searchResult = document.getElementById('search-result');
     const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
@@ -457,9 +474,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 학과 자동완성 목록 업데이트
     function updateDeptDatalist() {
-        if (!courses) return;
+        const selectedYear = searchYearSelect.value;
+        if (!courses[selectedYear]) return;
+
         const selectedMajorDiv = majorDivSelect.value;
-        const deptList = courses[selectedMajorDiv];
+        const deptList = courses[selectedYear][selectedMajorDiv];
         deptDatalist.innerHTML = '';
         if (deptList) {
             deptList.forEach(dept => {
@@ -472,7 +491,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 강의명/학수번호 자동완성 목록 업데이트
     function updateCourseDatalist() {
-        if (!courses) return;
+        const selectedYear = searchYearSelect.value;
+        if (!courses[selectedYear]) return;
+
         const keyword = courseSearchInput.value.trim().toLowerCase();
         courseDatalist.innerHTML = '';
         if (keyword.length < 2) return;
@@ -480,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const suggestions = new Set();
         const maxSuggestions = 50; // 자동완성 후보 최대 개수
 
-        for (const divList of courses) {
+        for (const divList of courses[selectedYear]) {
             if (suggestions.size >= maxSuggestions) break;
             for (const dept of divList) {
                 if (suggestions.size >= maxSuggestions) break;
@@ -512,6 +533,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // 이벤트 리스너 연결
     majorDivSelect.addEventListener('change', () => {
         deptSearchInput.value = ''; // 전공 유형 변경 시 입력 초기화
+        updateDeptDatalist();
+    });
+    searchYearSelect.addEventListener('change', () => {
+        deptSearchInput.value = '';
         updateDeptDatalist();
     });
     
@@ -598,13 +623,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function searchDept() {
         const keyword = deptSearchInput.value.trim();
         const selectedMajorDiv = majorDivSelect.value;
+        const selectedYear = searchYearSelect.value;
 
-        if (!keyword || !courses) {
+        if (!keyword || !courses[selectedYear]) {
             searchResult.textContent = '학과 이름을 입력하세요.';
             return;
         }
         
-        const deptList = courses[selectedMajorDiv];
+        const deptList = courses[selectedYear][selectedMajorDiv];
         const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
 
         const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
@@ -647,6 +673,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function searchCourseByName() {
         let keyword = courseSearchInput.value.trim().toLowerCase();
+        const selectedYear = searchYearSelect.value;
         // 자동완성 형식("강의명 (학수번호)")에서 키워드 추출
         const match = keyword.match(/^(.*) \((.*)\)$/);
         if (match) {
@@ -657,14 +684,14 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResult.textContent = '2글자 이상 입력하세요.';
             return;
         }
-        if (!courses) {
+        if (!courses[selectedYear]) {
             searchResult.textContent = '강의 데이터가 로딩 중입니다. 잠시 후 다시 시도해주세요.';
             return;
         }
 
         const foundCourses = [];
         const addedCodes = new Set(); // 중복 추가 방지
-        for (const divList of courses) {
+        for (const divList of courses[selectedYear]) {
             for (const dept of divList) {
                 if (dept.groups) {
                     for (const group of dept.groups) {
@@ -1026,11 +1053,12 @@ function getTakenCourses() {
 
 // majorDiv 값에 따라 해당 전공유형의 학과 목록 드롭다운 생성
 function createDeptDropdown(majorDiv) {
-    if (!courses) {
+    const selectedYear = years[years.length - 1]; // 기본값으로 최신 년도
+    if (!courses[selectedYear]) {
         console.error('courses 데이터가 아직 로드되지 않았습니다.');
         return;
     }
-    const deptList = courses[majorDiv];
+    const deptList = courses[selectedYear][majorDiv];
 
     // 컨테이너 생성
     const container = document.createElement('div');
@@ -1050,13 +1078,34 @@ function createDeptDropdown(majorDiv) {
     closeBtn.style.padding = '0';
     closeBtn.style.lineHeight = '1';
     closeBtn.setAttribute('aria-label', '닫기');
-    closeBtn.onclick = () => container.remove();
+    closeBtn.onclick = () => {
+        container.remove();
+        updateChart();
+    };
     container.appendChild(closeBtn);
 
-    // 레이블 생성
+    // 헤더 (레이블 + 년도 선택)
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+
     const label = document.createElement('div');
     label.textContent = majorDivs[majorDiv];
-    container.appendChild(label);
+    header.appendChild(label);
+
+    const yearSelect = document.createElement('select');
+    yearSelect.className = 'year-select';
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = `${year}년`;
+        yearSelect.appendChild(option);
+    });
+    yearSelect.value = selectedYear;
+    header.appendChild(yearSelect);
+    container.appendChild(header);
+
 
     // 드롭다운 생성
     const select = document.createElement('select');
@@ -1068,6 +1117,20 @@ function createDeptDropdown(majorDiv) {
         select.appendChild(option);
     });
     container.appendChild(select);
+
+    // 년도 변경 시 학과 목록 업데이트
+    yearSelect.addEventListener('change', () => {
+        const newYear = yearSelect.value;
+        const newDeptList = courses[newYear][majorDiv];
+        select.innerHTML = '';
+        newDeptList.forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept.deptCd;
+            option.textContent = dept.deptNm;
+            select.appendChild(option);
+        });
+        updateChart();
+    });
 
     // 접기/펼치기 토글 영역 생성
     const groupToggleArea = document.createElement('div');
@@ -1117,7 +1180,9 @@ function createDeptDropdown(majorDiv) {
 
 // 그룹 초기화
 function initGroups(selectContainer) {
-    const deptList = courses[selectContainer.dataset.majorDiv];
+    const year = selectContainer.querySelector('.year-select').value;
+    const majorDiv = selectContainer.dataset.majorDiv;
+    const deptList = courses[year][majorDiv];
     const groupListDiv = selectContainer.querySelector('.group-list');
 
     groupListDiv.innerHTML = '';
@@ -1177,7 +1242,7 @@ function updateGroupProgress(groupContainer) {
     currentCredit = maxCredit > 0 ? Math.min(maxCredit, currentCredit)
         : currentCredit;
 
-    const progress = (currentCredit / minCredit * 100).toFixed(0);
+    const progress = (minCredit > 0) ? (currentCredit / minCredit * 100).toFixed(0) : 0;
     const groupProgress = groupContainer.querySelector('.group-progress');
     
     // 기존 텍스트 내용
@@ -1230,12 +1295,13 @@ function updateChart() {
         // 각 전공유형에 대해 반복
         myMajors.forEach(selectContainer => {
             const majorDiv = selectContainer.dataset.majorDiv;
+            const year = selectContainer.querySelector('.year-select').value;
             const deptCd = selectContainer.querySelector('.dept-select').value;
             selectContainer.querySelectorAll('.group-container0, .group-container1').forEach(groupContainer => {
                 const groupCd = groupContainer.dataset.groupCd;
 
                 const searchRes =
-                    courses[majorDiv]
+                    courses[year][majorDiv]
                         .find(dept => dept.deptCd === deptCd)
                         .groups.find(g => g.groupCd === groupCd)
                         .courses.find(c => c.code === course.dataset.courseCode);
@@ -1260,7 +1326,8 @@ function updateChart() {
     multipleDeptCourses.forEach(({ course, groups }) => {
         // 각 그룹에 대해 강의 추가
         groups.some(groupContainer => {
-            if (groupContainer.dataset.minCredit <= groupContainer.dataset.currentCredit) {
+            if (parseInt(groupContainer.dataset.minCredit) > 0 &&
+                parseInt(groupContainer.dataset.currentCredit) >= parseInt(groupContainer.dataset.minCredit)) {
                 // 최소 학점을 초과한 그룹은 건너뛰기
                 return false;
             }
