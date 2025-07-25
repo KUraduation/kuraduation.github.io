@@ -1179,13 +1179,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         
-        // 중복 학수번호 확인
-        const existingCourses = getTakenCourses();
-        if (existingCourses.some(course => course.dataset.courseCode === code)) {
-            alert('이미 추가된 학수번호입니다.');
-            return;
-        }
-        
         // 교양과목 추가
         addCustomCourse(name, code, parseInt(credit));
     });
