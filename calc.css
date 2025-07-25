@@ -34,14 +34,30 @@
     user-select: none;
 }
 
+.deck-management {
+    padding: 8px;
+}
+
+.deck-tabs-row {
+    margin-bottom: 8px;
+}
+
 .deck-tabs {
     display: flex;
     gap: 4px;
     align-items: center;
+    justify-content: flex-start;
+}
+
+.deck-controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .deck-tab {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: white;
+    color: black;
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 4px 8px;
@@ -51,31 +67,36 @@
     user-select: none;
 }
 
-.deck-tab:hover {
+.deck-tab:hover:not(.active) {
     background-color: rgba(255, 255, 255, 0.9);
     border-color: #999;
 }
 
 .deck-tab.active {
-    background-color: #007bff;
+    background-color: #a0203a;
     color: white;
-    border-color: #0056b3;
+    border-color: #a0203a;
+}
+
+.deck-tab.active:hover {
+    background-color: #8a1c32;
+    border-color: #8a1c32;
 }
 
 .deck-copy-paste-btn {
     background-color: rgba(255, 255, 255, 0.8);
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 4px 6px;
+    padding: 4px 8px;
     font-size: 0.8em;
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
-    width: 24px;
     height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
 }
 
 .deck-copy-paste-btn:hover {
@@ -84,13 +105,14 @@
 }
 
 .deck-copy-paste-btn.paste-mode {
-    background-color: rgba(76, 175, 80, 0.8);
-    border-color: #4CAF50;
+    background-color: #a0203a;
+    color: white;
+    border-color: #a0203a;
 }
 
 .deck-copy-paste-btn.paste-mode:hover {
-    background-color: rgba(76, 175, 80, 0.9);
-    border-color: #45a049;
+    background-color: #8a1c32;
+    border-color: #8a1c32;
 }
 
 .add-deck-btn {
@@ -300,23 +322,22 @@
 .deck-controls {
     display: flex;
     gap: 4px;
-    margin-left: auto;
 }
 
 .deck-reset-btn {
     background-color: rgba(255, 255, 255, 0.8);
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 4px 6px;
+    padding: 4px 8px;
     font-size: 0.8em;
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
-    width: 24px;
     height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
 }
 
 .deck-reset-btn:hover {
@@ -424,13 +445,13 @@
     gap: 0.4em;
     font-size: 1.1em;
     padding: 8px 0 8px 8px;
-    border-bottom: black 1px solid;
+    border-top: black 1px solid;
+    margin-top: 16px;
 }
 
 .history-controls {
     display: flex;
     gap: 4px;
-    margin-left: auto;
 }
 
 .history-btn {
