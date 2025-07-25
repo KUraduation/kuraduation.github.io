@@ -1182,6 +1182,7 @@ function updateChart(options = { save: true }) {
     });
 
     multipleDeptCourses.forEach(({ course, groups }) => {
+        /* 가장 진행률이 낮은 그룹에 추가
         const sortedGroups = groups.sort((a, b) => {
             const progressA = (parseInt(a.dataset.currentCredit) / parseInt(a.dataset.minCredit)) || 0;
             const progressB = (parseInt(b.dataset.currentCredit) / parseInt(b.dataset.minCredit)) || 0;
@@ -1189,6 +1190,11 @@ function updateChart(options = { save: true }) {
         });
 
         const targetGroup = sortedGroups[0];
+        */
+
+        // 첫 번째 그룹에 추가 (가장 진행률이 낮은 그룹을 선택하는 로직은 주석 처리)
+        const targetGroup = groups[0];
+
         if (targetGroup) {
              addCourese(targetGroup, course);
         }
