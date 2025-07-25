@@ -18,17 +18,16 @@
         <div class="course-container">
             <div class="container-header">
                 <span>강의 검색</span>
+                <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
+                    <label for="search-year-select" style="font-size: small;">기준년도</label>
+                    <select id="search-year-select"></select>
+                </div>
             </div>
             <div id="course-container-content">
                 <div class="search-box">
                     <div id="search-type-selector">
                         <label><input type="radio" name="searchType" value="byDept" checked> 학과로 검색</label>
                         <label><input type="radio" name="searchType" value="byCourseName"> 강의명으로 검색</label>
-                    </div>
-                    
-                    <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
-                        <label for="search-year-select" style="font-size: small;">기준년도</label>
-                        <select id="search-year-select" style="flex-grow: 1;"></select>
                     </div>
 
                     <div id="dept-search-container">

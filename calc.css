@@ -99,6 +99,17 @@
     align-items: center;
     font-weight: bold;
     user-select: none;
+    padding-bottom: 4px;
+}
+
+#search-year-container select {
+    min-width: 80px;
+    font-size: 0.9em;
+}
+
+#search-year-container label {
+    font-weight: normal;
+    color: #666;
 }
 
 .deck-management {

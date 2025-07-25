@@ -31,7 +31,7 @@ let decks = {
         courses: []
     },
     deck2: {
-        name: "덱2",
+        name: "덱2", 
         courses: []
     },
     deck3: {
@@ -341,7 +341,7 @@ function updateHistoryButtons() {
 function loadDeck(deckId) {
     document.querySelectorAll('.taken-course').forEach(course => course.remove());
     if (!decks[deckId] || !decks[deckId].courses) return;
-
+    
     decks[deckId].courses.forEach(courseData => {
         const targetCell = document.querySelector(
             `.semester-cell[data-year="${courseData.year}"][data-semester="${courseData.semester}"]`
@@ -374,18 +374,18 @@ function addNewDeck() {
     decks[newDeckId] = { name: `덱${deckCount}`, courses: [] };
     
     const deckTabs = document.querySelector('.deck-tabs');
-    const newTab = document.createElement('button');
-    newTab.className = 'deck-tab';
-    newTab.dataset.deck = newDeckId;
-    newTab.textContent = `덱${deckCount}`;
-    newTab.addEventListener('click', () => switchDeck(newDeckId));
-    
-    const addBtn = document.getElementById('add-deck-btn');
-    deckTabs.insertBefore(newTab, addBtn);
+        const newTab = document.createElement('button');
+        newTab.className = 'deck-tab';
+        newTab.dataset.deck = newDeckId;
+        newTab.textContent = `덱${deckCount}`;
+        newTab.addEventListener('click', () => switchDeck(newDeckId));
+        
+        const addBtn = document.getElementById('add-deck-btn');
+            deckTabs.insertBefore(newTab, addBtn);
     
     if (deckCount >= maxDeckCount) {
         if (addBtn) addBtn.style.display = 'none';
-    }
+        }
     switchDeck(newDeckId);
 }
 
@@ -1101,8 +1101,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('undo-btn').addEventListener('click', undo);
     document.getElementById('redo-btn').addEventListener('click', redo);
 
-    updateCopyPasteButton();
-    updateHistoryButtons();
+        updateCopyPasteButton();
+        updateHistoryButtons();
 
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
@@ -1187,12 +1187,12 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
         const deptList = courses[year] ? courses[year][majorDiv] : [];
         select.innerHTML = ''; // Clear existing options
         if (deptList) {
-            deptList.forEach(dept => {
-                const option = document.createElement('option');
-                option.value = dept.deptCd;
-                option.textContent = dept.deptNm;
-                select.appendChild(option);
-            });
+    deptList.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.deptCd;
+        option.textContent = dept.deptNm;
+        select.appendChild(option);
+    });
         }
         if (deptToSelect) {
             select.value = deptToSelect;
@@ -1231,9 +1231,9 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     container.appendChild(document.createElement('hr'));
     select.addEventListener('change', () => updateChart());
     document.getElementById('selectContainer').appendChild(container);
-    
+
     if (!selectedYear) {
-        updateChart();
+    updateChart();
     }
 }
 
