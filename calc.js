@@ -12,14 +12,6 @@ const majorDivs = [
 const years = ['2021', '2022', '2023', '2024', '2025'];
 const courses = {};
 
-// 과목 매핑 시스템 (년도별 과목 변경사항 대응)
-const courseMapping = {
-    // 구 과목명 → 신 과목명 (2023년 이전 → 2024년 이후)
-    "자유정의진리I": "학문세계의탐구I",
-    "자유정의진리II": "학문세계의탐구II"
-    // 향후 다른 과목 변경사항도 여기에 추가 가능
-};
-
 // 평점 시스템
 const gradeSystem = {
     'A+': 4.5,
@@ -34,26 +26,6 @@ const gradeSystem = {
 };
 
 const gradeOptions = Object.keys(gradeSystem);
-
-// 역방향 매핑 (신 과목명 → 구 과목명)
-const reverseCourseMapping = {};
-Object.keys(courseMapping).forEach(oldCourse => {
-    const newCourse = courseMapping[oldCourse];
-    reverseCourseMapping[newCourse] = oldCourse;
-});
-
-// 과목 매핑 함수: 기준년도에 따라 과목명을 적절히 변환
-function getMappedCourseName(courseName, baseYear) {
-    const baseYearInt = parseInt(baseYear);
-    
-    if (baseYearInt <= 2023) {
-        // 2023년 이전 기준: 신 과목명을 구 과목명으로 변환
-        return reverseCourseMapping[courseName] || courseName;
-    } else {
-        // 2024년 이후 기준: 구 과목명을 신 과목명으로 변환
-        return courseMapping[courseName] || courseName;
-    }
-}
 
 // 덱 시스템 변수들
 let currentDeck = 'deck1';
@@ -844,7 +816,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const deptSearchBtn = document.getElementById('dept-search-btn');
 
-    function renderDeptSearchResult(dept, selectedYear) {
+    function renderDeptSearchResult(dept, takenCourseCodes) {
         searchResult.innerHTML = '';
         if (!dept) {
             searchResult.textContent = '해당 학과를 찾을 수 없습니다.';
@@ -863,8 +835,7 @@ document.addEventListener('DOMContentLoaded', function () {
             group.courses.forEach(course => {
                 const courseItem = document.createElement('div');
                 courseItem.className = 'course-item';
-                // 매핑을 고려한 수강 여부 확인
-                if (isCourseAlreadyTaken(course, selectedYear)) {
+                if (takenCourseCodes.has(course.code)) {
                     courseItem.classList.add('taken-in-search');
                 }
                 courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
@@ -897,7 +868,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const deptList = courses[selectedYear][selectedMajorDiv];
         const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
 
-        renderDeptSearchResult(foundDept, selectedYear);
+        const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
+        renderDeptSearchResult(foundDept, takenCourseCodes);
     }
 
     deptSearchBtn.addEventListener('click', searchDept);
@@ -910,7 +882,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const courseSearchBtn = document.getElementById('course-search-btn');
 
-    function renderCourseSearchResult(foundCourses, selectedYear) {
+    function renderCourseSearchResult(foundCourses, takenCourseCodes) {
         searchResult.innerHTML = '';
         if (foundCourses.length === 0) {
             searchResult.textContent = '해당 강의를 찾을 수 없습니다.';
@@ -919,8 +891,7 @@ document.addEventListener('DOMContentLoaded', function () {
         foundCourses.forEach(course => {
             const courseItem = document.createElement('div');
             courseItem.className = 'course-item';
-            // 매핑을 고려한 수강 여부 확인
-            if (isCourseAlreadyTaken(course, selectedYear)) {
+            if (takenCourseCodes.has(course.code)) {
                 courseItem.classList.add('taken-in-search');
             }
             courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
@@ -970,7 +941,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         }
-        renderCourseSearchResult(foundCourses, selectedYear);
+        const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
+        renderCourseSearchResult(foundCourses, takenCourseCodes);
     }
 
     courseSearchBtn.addEventListener('click', searchCourseByName);
@@ -1216,37 +1188,6 @@ function getTakenCourses() {
         }
     });
     return takenCourses;
-}
-
-// 검색 결과에서 매핑된 과목들도 고려하여 수강 여부를 확인하는 함수
-function isCourseAlreadyTaken(searchCourse, baseYear) {
-    const takenCourses = getTakenCourses();
-    
-    for (const takenCourse of takenCourses) {
-        const takenCourseName = takenCourse.dataset.courseName;
-        const takenCourseCode = takenCourse.dataset.courseCode;
-        
-        // 1. 학수번호가 같으면 동일 과목
-        if (searchCourse.code === takenCourseCode) {
-            return true;
-        }
-        
-        // 2. 매핑된 과목명 확인
-        const mappedSearchCourseName = getMappedCourseName(searchCourse.name, baseYear);
-        const mappedTakenCourseName = getMappedCourseName(takenCourseName, baseYear);
-        
-        if (mappedSearchCourseName === mappedTakenCourseName) {
-            return true;
-        }
-        
-        // 3. 직접 매핑 관계 확인 (자유정의진리I ↔ 학문세계의탐구I)
-        if ((courseMapping[takenCourseName] === searchCourse.name) || 
-            (reverseCourseMapping[takenCourseName] === searchCourse.name)) {
-            return true;
-        }
-    }
-    
-    return false;
 }
 
 function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
@@ -1507,18 +1448,7 @@ function updateChart(options = { save: true }) {
                 const group = dept.groups.find(g => g.groupCd === groupCd);
                 if (!group) return;
 
-                // 과목 매핑 적용: 기준년도에 따라 과목명을 변환하여 매칭
-                const originalCourseName = course.dataset.courseName;
-                const mappedCourseName = getMappedCourseName(originalCourseName, year);
-                
-                // 학수번호로 먼저 매칭 시도
-                let searchRes = group.courses.find(c => c.code === course.dataset.courseCode);
-                
-                // 학수번호 매칭이 안 되면 과목명으로 매칭 (매핑 적용)
-                if (!searchRes) {
-                    searchRes = group.courses.find(c => c.name === mappedCourseName);
-                }
-                
+                const searchRes = group.courses.find(c => c.code === course.dataset.courseCode);
                 if (searchRes) {
                     groups.push(groupContainer);
                 }
