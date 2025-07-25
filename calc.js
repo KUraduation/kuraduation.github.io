@@ -1192,8 +1192,8 @@ function updateChart(options = { save: true }) {
         const targetGroup = sortedGroups[0];
         */
 
-        // 첫 번째 그룹에 추가 (가장 진행률이 낮은 그룹을 선택하는 로직은 주석 처리)
-        const targetGroup = groups[0];
+        // 진행률 100% 아닌 첫 그룹 선택
+        const targetGroup = groups.find(g => parseInt(g.dataset.currentCredit) < parseInt(g.dataset.minCredit)) || groups[0];
 
         if (targetGroup) {
              addCourese(targetGroup, course);
