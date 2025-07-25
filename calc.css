@@ -72,6 +72,7 @@
     width: 100%;
     height: 97vh;
     align-items: stretch; /* 자식 요소들이 같은 높이를 갖도록 함 */
+    position: relative; /* 팝업 위치 기준점 */
 }
 
 /* 세 영역의 스타일 시작 */
@@ -110,6 +111,97 @@
 #search-year-container label {
     font-weight: normal;
     color: #666;
+}
+
+/* 교양과목 추가 관련 스타일 */
+#search-type-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#custom-course-container {
+    display: none;
+}
+
+/* 교양과목 입력 폼 */
+.custom-course-form-container {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-course-form-container h3 {
+    margin: 0 0 12px 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.custom-course-form {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+.custom-course-form label {
+    font-weight: bold;
+    color: #555;
+}
+
+.custom-course-form input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.custom-course-form input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.custom-course-buttons {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.custom-course-add-btn {
+    background-color: #a0203a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.custom-course-add-btn:hover {
+    background-color: #8a1c32;
+}
+
+.custom-course-cancel-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.custom-course-cancel-btn:hover {
+    background-color: #5a6268;
 }
 
 .deck-management {
@@ -467,35 +559,15 @@
 .result-group-header {
     background-color: #f0f0f0;
     padding: 8px 12px;
-    cursor: pointer;
     user-select: none;
     font-weight: bold;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-}
-
-.result-group-header::after {
-    content: '▲';
-    font-size: 0.8em;
-    transition: transform 0.2s;
-}
-
-.result-group-header.collapsed::after {
-    transform: rotate(180deg);
 }
 
 .result-group-content {
     padding: 4px 8px;
-    max-height: 1000px; /* 충분히 큰 값 */
-    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
-    overflow: hidden;
-}
-
-.result-group-content.collapsed {
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
 }
 
 .course-item {
