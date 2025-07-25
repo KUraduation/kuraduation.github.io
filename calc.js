@@ -41,35 +41,36 @@ let decks = {
     }
 };
 
-// --- 쿠키 관련 함수 ---
-function setCookie(name, value, days) {
-    let expires = "";
-    if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
+// --- localStorage 관련 함수 ---
+function saveToLocalStorage(key, data) {
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+        console.error('localStorage 저장 오류:', error);
     }
-    document.cookie = name + "=" + (encodeURIComponent(value) || "") + expires + "; path=/; SameSite=Lax";
 }
 
-function getCookie(name) {
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+function loadFromLocalStorage(key) {
+    try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+    } catch (error) {
+        console.error('localStorage 로드 오류:', error);
+        return null;
     }
-    return null; 
 }
 
-function deleteCookie(name) {
-    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+function removeFromLocalStorage(key) {
+    try {
+        localStorage.removeItem(key);
+    } catch (error) {
+        console.error('localStorage 삭제 오류:', error);
+    }
 }
 
 
-// --- 상태 저장 및 복원 (학기별 분할 쿠키 사용) ---
-function saveStateToCookie() {
+// --- 상태 저장 및 복원 (localStorage 사용) ---
+function saveStateToLocalStorage() {
     saveCurrentDeck(); // 현재 DOM 상태를 decks 객체에 최종 반영
 
     const majorSelections = [];
@@ -81,74 +82,38 @@ function saveStateToCookie() {
         });
     });
 
-    // 1. 메타데이터 저장
-    const metaState = {
+    // 모든 데이터를 하나의 객체로 통합하여 저장
+    const appState = {
         deckCount,
         currentDeck,
-        majorSelections
+        majorSelections,
+        decks,
+        version: '2.0' // 향후 호환성을 위한 버전 정보
     };
-    setCookie('appMetaState', JSON.stringify(metaState), 365);
 
-    // 2. 각 덱의 학기별 데이터를 별도 쿠키에 저장
-    for (const deckId in decks) {
-        if (Object.hasOwnProperty.call(decks, deckId)) {
-            const deckNum = deckId.replace('deck', '');
-            const semesterCourses = {}; // 학기별로 과목 그룹화
-
-            // 기존 해당 덱의 학기 쿠키 모두 삭제
-            for(let y = 1; y <= 10; y++) { // 충분한 학년 범위
-                for(let s = 1; s <= 4; s++) {
-                    deleteCookie(`d${deckNum}_${y}_${s}`);
-                }
-            }
-
-            decks[deckId].courses.forEach(course => {
-                const key = `${course.year}_${course.semester}`;
-                if (!semesterCourses[key]) {
-                    semesterCourses[key] = [];
-                }
-                semesterCourses[key].push(course);
-            });
-
-            for (const key in semesterCourses) {
-                const [year, semester] = key.split('_');
-                const cookieName = `d${deckNum}_${year}_${semester}`;
-                setCookie(cookieName, JSON.stringify(semesterCourses[key]), 365);
-            }
-        }
-    }
+    saveToLocalStorage('graduationCalculatorData', appState);
 }
 
-function loadStateFromCookie() {
-    const savedMetaState = getCookie('appMetaState');
-    if (!savedMetaState) return;
+function loadStateFromLocalStorage() {
+    const savedState = loadFromLocalStorage('graduationCalculatorData');
+    if (!savedState) return;
 
     try {
-        const metaState = JSON.parse(savedMetaState);
-
         // 메타데이터 복원
-        deckCount = metaState.deckCount || 3;
-        currentDeck = metaState.currentDeck || 'deck1';
-
-        // 각 덱 데이터 복원
-        const loadedDecks = {};
-        for (let i = 1; i <= deckCount; i++) {
-            const deckId = `deck${i}`;
-            loadedDecks[deckId] = { name: `덱${i}`, courses: [] };
-
-            // 학년, 학기별로 쿠키를 읽어와 courses 배열 재구성
-            for (let y = 1; y <= 10; y++) { // 충분히 큰 학년 범위
-                for (let s = 1; s <= 4; s++) {
-                    const cookieName = `d${i}_${y}_${s}`;
-                    const savedSemester = getCookie(cookieName);
-                    if (savedSemester) {
-                        const semesterCourses = JSON.parse(savedSemester);
-                        loadedDecks[deckId].courses.push(...semesterCourses);
-                    }
-                }
-            }
+        deckCount = savedState.deckCount || 3;
+        currentDeck = savedState.currentDeck || 'deck1';
+        
+        // 덱 데이터 복원 (기본값 설정)
+        if (savedState.decks) {
+            decks = savedState.decks;
+        } else {
+            // 기본 덱 구조로 초기화
+            decks = {
+                deck1: { name: "덱1", courses: [] },
+                deck2: { name: "덱2", courses: [] },
+                deck3: { name: "덱3", courses: [] }
+            };
         }
-        decks = loadedDecks;
 
         // 덱 탭 UI 재생성
         const deckTabsContainer = document.querySelector('.deck-tabs');
@@ -168,8 +133,8 @@ function loadStateFromCookie() {
         // 전공 선택 영역 복원
         const selectContainer = document.getElementById('selectContainer');
         selectContainer.innerHTML = ''; // 기존 영역 초기화
-        if (metaState.majorSelections) {
-            metaState.majorSelections.forEach(selection => {
+        if (savedState.majorSelections) {
+            savedState.majorSelections.forEach(selection => {
                 createDeptDropdown(selection.majorDiv, selection.year, selection.deptCd);
             });
         }
@@ -180,7 +145,7 @@ function loadStateFromCookie() {
         updateChart({ save: false }); // 첫 로드 시에는 다시 저장하지 않음
 
     } catch (e) {
-        console.error("쿠키 로드 오류:", e);
+        console.error("localStorage 로드 오류:", e);
     }
 }
 
@@ -203,21 +168,13 @@ function copyOrPasteDeck() {
 function resetDeck(deckId) {
     if (!decks[deckId] || !confirm(`"${decks[deckId].name}"의 모든 과목을 초기화하시겠습니까?`)) return;
     
-    const deckNum = deckId.replace('deck', '');
-    // 해당 덱의 모든 학기 쿠키 삭제
-    for(let y=1; y<=10; y++) { // 충분한 학년 범위
-        for(let s=1; s<=4; s++) {
-            deleteCookie(`d${deckNum}_${y}_${s}`);
-        }
-    }
-
     decks[deckId].courses = [];
     
     if (currentDeck === deckId) {
         document.querySelectorAll('.taken-course').forEach(course => course.remove());
-        updateChart(); // updateChart가 내부적으로 saveStateToCookie 호출
+        updateChart(); // updateChart가 내부적으로 saveStateToLocalStorage 호출
     } else {
-        saveStateToCookie();
+        saveStateToLocalStorage();
     }
 }
 
@@ -232,7 +189,7 @@ function pasteDeck(targetDeckId) {
         loadDeck(targetDeckId);
         updateChart();
     } else {
-        saveStateToCookie();
+        saveStateToLocalStorage();
     }
 }
 
@@ -638,7 +595,7 @@ function handleDragEnd(e) {
 document.addEventListener('DOMContentLoaded', function () {
     
     window.addEventListener('coursesLoaded', () => {
-        loadStateFromCookie();
+        loadStateFromLocalStorage();
         updateDeptDatalist();
     });
 
@@ -1454,6 +1411,6 @@ function updateChart(options = { save: true }) {
     }
     
     if (options.save) {
-        saveStateToCookie();
+        saveStateToLocalStorage();
     }
 }
