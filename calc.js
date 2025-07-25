@@ -20,6 +20,21 @@ const courseMapping = {
     // 향후 다른 과목 변경사항도 여기에 추가 가능
 };
 
+// 평점 시스템
+const gradeSystem = {
+    'A+': 4.5,
+    'A': 4.0,
+    'B+': 3.5,
+    'B': 3.0,
+    'C+': 2.5,
+    'C': 2.0,
+    'D+': 1.5,
+    'D': 1.0,
+    'F': 0.0
+};
+
+const gradeOptions = Object.keys(gradeSystem);
+
 // 역방향 매핑 (신 과목명 → 구 과목명)
 const reverseCourseMapping = {};
 Object.keys(courseMapping).forEach(oldCourse => {
@@ -255,6 +270,7 @@ function saveCurrentDeck() {
         code: course.dataset.courseCode,
         name: course.dataset.courseName,
         credit: course.dataset.credit,
+        grade: course.dataset.grade || '', // 평점 정보 추가
         year: course.closest('.semester-cell').dataset.year,
         semester: course.closest('.semester-cell').dataset.semester
     }));
@@ -269,6 +285,7 @@ function saveToHistory() {
             code: course.dataset.courseCode,
             name: course.dataset.courseName,
             credit: course.dataset.credit,
+            grade: course.dataset.grade || '', // 평점 정보 추가
             year: course.closest('.semester-cell').dataset.year,
             semester: course.closest('.semester-cell').dataset.semester
         })),
@@ -405,6 +422,7 @@ function showCoursePopup(courseElement, event) {
     const courseCode = courseElement.dataset.courseCode;
     const courseName = courseElement.dataset.courseName;
     const credit = courseElement.dataset.credit;
+    const currentGrade = courseElement.dataset.grade || '';
     
     // 팝업 생성
     const popup = document.createElement('div');
@@ -422,9 +440,62 @@ function showCoursePopup(courseElement, event) {
     info.innerHTML = `<div><strong>학점:</strong> ${credit}학점</div>`;
     popup.appendChild(info);
     
+    // 평점 선택 영역
+    const gradeSection = document.createElement('div');
+    gradeSection.className = 'course-popup-grade';
+    gradeSection.innerHTML = '<div><strong>평점:</strong></div>';
+    
+    const gradeSelect = document.createElement('select');
+    gradeSelect.className = 'grade-select';
+    gradeSelect.style.width = '100%';
+    gradeSelect.style.padding = '4px';
+    gradeSelect.style.marginTop = '4px';
+    
+    // 기본 옵션 (평점 미입력)
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = '평점 선택';
+    gradeSelect.appendChild(defaultOption);
+    
+    // 평점 옵션들 추가
+    gradeOptions.forEach(grade => {
+        const option = document.createElement('option');
+        option.value = grade;
+        option.textContent = `${grade} (${gradeSystem[grade]})`;
+        gradeSelect.appendChild(option);
+    });
+    
+    gradeSelect.value = currentGrade;
+    gradeSection.appendChild(gradeSelect);
+    popup.appendChild(gradeSection);
+    
     // 버튼 영역
     const buttons = document.createElement('div');
     buttons.className = 'course-popup-buttons';
+    
+    // 저장 버튼
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'course-popup-save-btn';
+    saveBtn.textContent = '저장';
+    saveBtn.style.backgroundColor = '#28a745';
+    saveBtn.style.color = 'white';
+    saveBtn.style.border = 'none';
+    saveBtn.style.padding = '8px 16px';
+    saveBtn.style.borderRadius = '4px';
+    saveBtn.style.cursor = 'pointer';
+    saveBtn.addEventListener('click', () => {
+        const selectedGrade = gradeSelect.value;
+        courseElement.dataset.grade = selectedGrade;
+        
+        // 제목 업데이트
+        const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
+        courseElement.title = `${courseName} (${credit}학점)${gradeText}`;
+        
+        saveToHistory();
+        updateChart();
+        closeCoursePopup();
+    });
+    buttons.appendChild(saveBtn);
     
     // 삭제 버튼
     const deleteBtn = document.createElement('button');
@@ -552,7 +623,12 @@ function createTakenCourseElement(courseData) {
     takenCourse.dataset.courseCode = courseData.code;
     takenCourse.dataset.courseName = courseData.name;
     takenCourse.dataset.credit = courseData.credit;
-    takenCourse.title = `${courseData.name} (${courseData.credit}학점)`;
+    takenCourse.dataset.grade = courseData.grade || ''; // 평점 정보 추가
+    
+    // 제목에 평점 정보도 포함
+    const gradeText = courseData.grade ? ` (${courseData.grade})` : '';
+    takenCourse.title = `${courseData.name} (${courseData.credit}학점)${gradeText}`;
+    
     takenCourse.draggable = true;
     takenCourse.addEventListener('dragstart', handleDragStart);
     takenCourse.addEventListener('dragend', handleDragEnd);
@@ -1390,8 +1466,36 @@ function updateChart(options = { save: true }) {
     myMajors.forEach(initGroups);
 
     const takenCourses = getTakenCourses();
-    const currentCredit = takenCourses.reduce((sum, course) => sum + (parseInt(course.dataset.credit) || 0), 0);
+    let currentCredit = 0;
+    let totalGradePoints = 0;
+    let totalGradedCredits = 0;
+    
+    takenCourses.forEach(course => {
+        const credit = parseInt(course.dataset.credit) || 0;
+        const grade = course.dataset.grade;
+        
+        // F학점이면 학점 인정 안함
+        if (grade !== 'F') {
+            currentCredit += credit;
+        }
+        
+        // 평점 계산 (평점이 입력된 과목만)
+        if (grade && gradeSystem[grade] !== undefined) {
+            totalGradePoints += gradeSystem[grade] * credit;
+            totalGradedCredits += credit;
+        }
+    });
+    
     document.getElementById('current-credit').textContent = currentCredit;
+    
+    // 전체 평점 계산 및 표시
+    const overallGpaElement = document.getElementById('overall-gpa');
+    if (totalGradedCredits > 0) {
+        const overallGpa = (totalGradePoints / totalGradedCredits).toFixed(2);
+        overallGpaElement.textContent = overallGpa;
+    } else {
+        overallGpaElement.textContent = 'N/A';
+    }
 
     const multipleDeptCourses = [];
     takenCourses.forEach(course => {
@@ -1456,12 +1560,38 @@ function updateChart(options = { save: true }) {
 
     document.querySelectorAll('.semester-cell').forEach(cell => {
         let totalCredits = 0;
+        let totalGradePoints = 0;
+        let gradedCourseCount = 0;
+        
         cell.querySelectorAll('.taken-course').forEach(courseEl => {
-            totalCredits += parseInt(courseEl.dataset.credit) || 0;
+            const credit = parseInt(courseEl.dataset.credit) || 0;
+            const grade = courseEl.dataset.grade;
+            
+            // F학점이면 학점 인정 안함, 그 외에는 학점 인정
+            if (grade !== 'F') {
+                totalCredits += credit;
+            }
+            
+            // 평점 계산 (평점이 입력된 과목만)
+            if (grade && gradeSystem[grade] !== undefined) {
+                totalGradePoints += gradeSystem[grade] * credit;
+                gradedCourseCount += credit;
+            }
         });
+        
         const creditTotalElement = cell.querySelector('.semester-credit-total');
         if (creditTotalElement) {
-            creditTotalElement.textContent = `${totalCredits}학점`;
+            let displayText = `${totalCredits}학점`;
+            
+            // 평점 평균 계산 및 표시
+            if (gradedCourseCount > 0) {
+                const gpa = (totalGradePoints / gradedCourseCount).toFixed(2);
+                displayText += ` (평균: ${gpa})`;
+            } else if (cell.querySelectorAll('.taken-course').length > 0) {
+                displayText += ` (평균: N/A)`;
+            }
+            
+            creditTotalElement.textContent = displayText;
         }
     });
 
