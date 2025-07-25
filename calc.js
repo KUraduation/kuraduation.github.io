@@ -240,11 +240,11 @@ function updateCopyPasteButton() {
     const copyPasteBtn = document.getElementById('deck-copy-paste-btn');
     if (copyPasteBtn) {
         if (copiedDeckData) {
-            copyPasteBtn.textContent = '📄';
+            copyPasteBtn.textContent = '붙여넣기';
             copyPasteBtn.title = '덱 붙여넣기 (복사된 덱 있음)';
             copyPasteBtn.classList.add('paste-mode');
         } else {
-            copyPasteBtn.textContent = '📋';
+            copyPasteBtn.textContent = '복사';
             copyPasteBtn.title = '현재 덱 복사';
             copyPasteBtn.classList.remove('paste-mode');
         }
@@ -406,8 +406,150 @@ Promise.all(years.map(year =>
 });
 
 let draggedCourse = null;
+let currentPopup = null; // 현재 열린 팝업 추적
+
+// 과목 팝업 표시 함수
+function showCoursePopup(courseElement, event) {
+    // 기존 팝업이 있으면 제거
+    if (currentPopup) {
+        currentPopup.remove();
+        currentPopup = null;
+    }
+    
+    const courseCode = courseElement.dataset.courseCode;
+    const courseName = courseElement.dataset.courseName;
+    const credit = courseElement.dataset.credit;
+    
+    // 과목의 상세 정보 찾기
+    const courseDetails = findCourseDetails(courseCode);
+    
+    // 팝업 생성
+    const popup = document.createElement('div');
+    popup.className = 'course-popup';
+    
+    // 제목
+    const title = document.createElement('div');
+    title.className = 'course-popup-title';
+    if (courseDetails) {
+        title.textContent = `[${courseCode}] ${courseName}`;
+    } else {
+        title.textContent = `[${courseCode}] ${courseName}`;
+    }
+    popup.appendChild(title);
+    
+    // 상세 정보
+    const info = document.createElement('div');
+    info.className = 'course-popup-info';
+    if (courseDetails) {
+        info.innerHTML = `
+            <div><strong>학과:</strong> ${courseDetails.deptName}</div>
+            <div><strong>학점:</strong> ${credit}학점</div>
+        `;
+    } else {
+        info.innerHTML = `<div><strong>학점:</strong> ${credit}학점</div>`;
+    }
+    popup.appendChild(info);
+    
+    // 버튼 영역
+    const buttons = document.createElement('div');
+    buttons.className = 'course-popup-buttons';
+    
+    // 삭제 버튼
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'course-popup-delete-btn';
+    deleteBtn.textContent = '삭제';
+    deleteBtn.addEventListener('click', () => {
+        if (confirm(`"${courseName}" 과목을 삭제하시겠습니까?`)) {
+            courseElement.remove();
+            saveToHistory();
+            updateChart();
+            closeCoursePopup();
+        }
+    });
+    buttons.appendChild(deleteBtn);
+    
+    // 닫기 버튼
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'course-popup-close-btn';
+    closeBtn.textContent = '닫기';
+    closeBtn.addEventListener('click', closeCoursePopup);
+    buttons.appendChild(closeBtn);
+    
+    popup.appendChild(buttons);
+    
+    // 팝업 위치 설정 (마우스 위치 기준)
+    document.body.appendChild(popup);
+    
+    let x = event.clientX;
+    let y = event.clientY;
+    
+    // 화면을 벗어나지 않도록 조정
+    const popupRect = popup.getBoundingClientRect();
+    if (x + popupRect.width > window.innerWidth) {
+        x = window.innerWidth - popupRect.width - 10;
+    }
+    if (y + popupRect.height > window.innerHeight) {
+        y = window.innerHeight - popupRect.height - 10;
+    }
+    
+    popup.style.left = x + 'px';
+    popup.style.top = y + 'px';
+    
+    currentPopup = popup;
+    
+    // 외부 클릭 시 팝업 닫기
+    setTimeout(() => {
+        document.addEventListener('click', handleOutsideClick);
+    }, 0);
+}
+
+// 팝업 닫기 함수
+function closeCoursePopup() {
+    if (currentPopup) {
+        currentPopup.remove();
+        currentPopup = null;
+        document.removeEventListener('click', handleOutsideClick);
+    }
+}
+
+// 외부 클릭 처리
+function handleOutsideClick(event) {
+    if (currentPopup && !currentPopup.contains(event.target)) {
+        closeCoursePopup();
+    }
+}
+
+// 과목 상세 정보 찾기 함수
+function findCourseDetails(courseCode) {
+    for (const year of years) {
+        if (!courses[year]) continue;
+        
+        for (const divList of courses[year]) {
+            for (const dept of divList) {
+                if (dept.groups) {
+                    for (const group of dept.groups) {
+                        const course = group.courses.find(c => c.code === courseCode);
+                        if (course) {
+                            return {
+                                deptName: dept.deptNm,
+                                groupName: group.groupNm,
+                                ...course
+                            };
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return null;
+}
 
 function handleDragStart(e) {
+    // 드래그 시작 시 팝업 닫기
+    if (currentPopup) {
+        closeCoursePopup();
+    }
+    
     draggedCourse = e.target;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', JSON.stringify({
@@ -432,6 +574,27 @@ function createTakenCourseElement(courseData) {
     takenCourse.draggable = true;
     takenCourse.addEventListener('dragstart', handleDragStart);
     takenCourse.addEventListener('dragend', handleDragEnd);
+    
+    // 클릭 이벤트 추가 (팝업 표시)
+    let clickTimeout;
+    takenCourse.addEventListener('mousedown', () => {
+        // 드래그와 클릭을 구분하기 위한 타이머
+        clickTimeout = setTimeout(() => {
+            clickTimeout = null;
+        }, 200);
+    });
+    
+    takenCourse.addEventListener('click', (e) => {
+        // 드래그 중이면 클릭 이벤트 무시
+        if (draggedCourse === takenCourse || !clickTimeout) {
+            return;
+        }
+        
+        e.preventDefault();
+        e.stopPropagation();
+        showCoursePopup(takenCourse, e);
+    });
+    
     return takenCourse;
 }
 

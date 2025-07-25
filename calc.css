@@ -1,6 +1,70 @@
 /* css
 */
 
+/* 과목 정보 팝업 스타일 */
+.course-popup {
+    position: fixed;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.course-popup-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 12px;
+    line-height: 1.4;
+    word-break: keep-all;
+}
+
+.course-popup-info {
+    margin-bottom: 16px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.course-popup-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.course-popup-delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.course-popup-delete-btn:hover {
+    background-color: #c82333;
+}
+
+.course-popup-close-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.course-popup-close-btn:hover {
+    background-color: #5a6268;
+}
+
 /* 화면 가로 삼등분을 위한 컨테이너 */
 .main-container {
     display: flex;
@@ -646,18 +710,21 @@
     border-radius: 4px;
     padding: 4px 6px;
     font-size: 0.85em;
-    cursor: grab;
+    cursor: pointer; /* 클릭 가능하다는 시각적 피드백 */
     white-space: nowrap; /* 텍스트가 한 줄에 표시되도록 */
     overflow: hidden;     /* 넘치는 텍스트 숨김 */
     text-overflow: ellipsis; /* 넘치는 텍스트를 ...으로 표시 */
     max-width: calc(50% - 4px); /* 2열 배치를 위해 너비 제한 (gap 4px 고려) */
     box-sizing: border-box; /* padding과 border가 너비에 포함되도록 */
     flex-shrink: 0; /* 줄어들지 않도록 */
+    transition: all 0.2s ease; /* 부드러운 전환 효과 */
 }
 
 .taken-course:hover {
     background-color: #d0d0d0;
     border-color: #aaa;
+    transform: translateY(-1px); /* 살짝 위로 올라가는 효과 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
 }
 
 .taken-course.highlight {
