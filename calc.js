@@ -28,18 +28,15 @@ const maxHistorySize = 50; // 최대 히스토리 개수
 let decks = {
     deck1: {
         name: "덱1",
-        courses: [],
-        totalCredits: 0
+        courses: []
     },
     deck2: {
         name: "덱2",
-        courses: [],
-        totalCredits: 0
+        courses: []
     },
     deck3: {
         name: "덱3",
-        courses: [],
-        totalCredits: 0
+        courses: []
     }
 };
 
@@ -62,12 +59,17 @@ function getCookie(name) {
         while (c.charAt(0) == ' ') c = c.substring(1, c.length);
         if (c.indexOf(nameEQ) == 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
     }
-    return null;
+    return null; 
 }
 
-// --- 상태 저장 및 복원 ---
+function deleteCookie(name) {
+    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+
+
+// --- 상태 저장 및 복원 (학기별 분할 쿠키 사용) ---
 function saveStateToCookie() {
-    saveCurrentDeck(); // 현재 DOM의 수강과목 정보를 decks 객체에 최종 반영
+    saveCurrentDeck(); // 현재 DOM 상태를 decks 객체에 최종 반영
 
     const majorSelections = [];
     document.querySelectorAll('.dept-select-container').forEach(container => {
@@ -78,55 +80,95 @@ function saveStateToCookie() {
         });
     });
 
-    const appState = {
-        decks,
+    // 1. 메타데이터 저장
+    const metaState = {
         deckCount,
         currentDeck,
         majorSelections
     };
+    setCookie('appMetaState', JSON.stringify(metaState), 365);
 
-    try {
-        setCookie('graduationCalculatorState', JSON.stringify(appState), 365);
-    } catch (e) {
-        console.error("쿠키 저장 오류:", e);
+    // 2. 각 덱의 학기별 데이터를 별도 쿠키에 저장
+    for (const deckId in decks) {
+        if (Object.hasOwnProperty.call(decks, deckId)) {
+            const deckNum = deckId.replace('deck', '');
+            const semesterCourses = {}; // 학기별로 과목 그룹화
+
+            // 기존 해당 덱의 학기 쿠키 모두 삭제
+            for(let y = 1; y <= 10; y++) { // 충분한 학년 범위
+                for(let s = 1; s <= 4; s++) {
+                    deleteCookie(`d${deckNum}_${y}_${s}`);
+                }
+            }
+
+            decks[deckId].courses.forEach(course => {
+                const key = `${course.year}_${course.semester}`;
+                if (!semesterCourses[key]) {
+                    semesterCourses[key] = [];
+                }
+                semesterCourses[key].push(course);
+            });
+
+            for (const key in semesterCourses) {
+                const [year, semester] = key.split('_');
+                const cookieName = `d${deckNum}_${year}_${semester}`;
+                setCookie(cookieName, JSON.stringify(semesterCourses[key]), 365);
+            }
+        }
     }
 }
 
 function loadStateFromCookie() {
-    const savedState = getCookie('graduationCalculatorState');
-    if (!savedState) return;
+    const savedMetaState = getCookie('appMetaState');
+    if (!savedMetaState) return;
 
     try {
-        const appState = JSON.parse(savedState);
+        const metaState = JSON.parse(savedMetaState);
 
-        // 덱 데이터 복원
-        decks = appState.decks || decks;
-        deckCount = appState.deckCount || deckCount;
-        currentDeck = appState.currentDeck || currentDeck;
+        // 메타데이터 복원
+        deckCount = metaState.deckCount || 3;
+        currentDeck = metaState.currentDeck || 'deck1';
+
+        // 각 덱 데이터 복원
+        const loadedDecks = {};
+        for (let i = 1; i <= deckCount; i++) {
+            const deckId = `deck${i}`;
+            loadedDecks[deckId] = { name: `덱${i}`, courses: [] };
+
+            // 학년, 학기별로 쿠키를 읽어와 courses 배열 재구성
+            for (let y = 1; y <= 10; y++) { // 충분히 큰 학년 범위
+                for (let s = 1; s <= 4; s++) {
+                    const cookieName = `d${i}_${y}_${s}`;
+                    const savedSemester = getCookie(cookieName);
+                    if (savedSemester) {
+                        const semesterCourses = JSON.parse(savedSemester);
+                        loadedDecks[deckId].courses.push(...semesterCourses);
+                    }
+                }
+            }
+        }
+        decks = loadedDecks;
 
         // 덱 탭 UI 재생성
         const deckTabsContainer = document.querySelector('.deck-tabs');
         const addBtn = document.getElementById('add-deck-btn');
         deckTabsContainer.querySelectorAll('.deck-tab').forEach(tab => tab.remove());
         
-        for (let i = 1; i <= deckCount; i++) {
-            const deckId = `deck${i}`;
-            if (decks[deckId]) {
-                const newTab = document.createElement('button');
-                newTab.className = 'deck-tab';
-                newTab.dataset.deck = deckId;
-                newTab.textContent = decks[deckId].name;
-                newTab.addEventListener('click', () => switchDeck(deckId));
-                deckTabsContainer.insertBefore(newTab, addBtn);
-            }
-        }
-        addBtn.style.display = deckCount >= maxDeckCount ? 'none' : 'flex';
+        Object.keys(decks).forEach(deckId => {
+             const newTab = document.createElement('button');
+             newTab.className = 'deck-tab';
+             newTab.dataset.deck = deckId;
+             newTab.textContent = decks[deckId].name;
+             newTab.addEventListener('click', () => switchDeck(deckId));
+             deckTabsContainer.insertBefore(newTab, addBtn);
+        });
+        addBtn.style.display = Object.keys(decks).length >= maxDeckCount ? 'none' : 'flex';
 
         // 전공 선택 영역 복원
         const selectContainer = document.getElementById('selectContainer');
         selectContainer.innerHTML = ''; // 기존 영역 초기화
-        if (appState.majorSelections) {
-            appState.majorSelections.forEach(selection => {
+        if (metaState.majorSelections) {
+            metaState.majorSelections.forEach(selection => {
                 createDeptDropdown(selection.majorDiv, selection.year, selection.deptCd);
             });
         }
@@ -160,12 +202,19 @@ function copyOrPasteDeck() {
 function resetDeck(deckId) {
     if (!decks[deckId] || !confirm(`"${decks[deckId].name}"의 모든 과목을 초기화하시겠습니까?`)) return;
     
+    const deckNum = deckId.replace('deck', '');
+    // 해당 덱의 모든 학기 쿠키 삭제
+    for(let y=1; y<=10; y++) { // 충분한 학년 범위
+        for(let s=1; s<=4; s++) {
+            deleteCookie(`d${deckNum}_${y}_${s}`);
+        }
+    }
+
     decks[deckId].courses = [];
-    decks[deckId].totalCredits = 0;
     
     if (currentDeck === deckId) {
         document.querySelectorAll('.taken-course').forEach(course => course.remove());
-        updateChart();
+        updateChart(); // updateChart가 내부적으로 saveStateToCookie 호출
     } else {
         saveStateToCookie();
     }
@@ -209,7 +258,7 @@ function switchDeck(deckId) {
     currentDeck = deckId;
     updateDeckTabs();
     loadDeck(deckId);
-    updateChart();
+    updateChart(); // 여기서 saveStateToCookie가 호출됨
 }
 
 // 현재 덱 저장
@@ -225,8 +274,6 @@ function saveCurrentDeck() {
     }));
     
     decks[currentDeck].courses = coursesData;
-    decks[currentDeck].totalCredits = takenCourses.reduce((sum, course) => 
-        sum + (parseInt(course.dataset.credit) || 0), 0);
 }
 
 // 히스토리에 현재 상태 저장
@@ -324,7 +371,7 @@ function addNewDeck() {
     const newDeckId = `deck${deckCount}`;
     saveCurrentDeck();
     
-    decks[newDeckId] = { name: `덱${deckCount}`, courses: [], totalCredits: 0 };
+    decks[newDeckId] = { name: `덱${deckCount}`, courses: [] };
     
     const deckTabs = document.querySelector('.deck-tabs');
     const newTab = document.createElement('button');
@@ -921,11 +968,10 @@ function getTakenCourses() {
 
 function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     const yearToUse = selectedYear || years[years.length - 1];
-    if (!courses[yearToUse]) {
+    if (!courses[yearToUse] || !courses[yearToUse][majorDiv]) {
         console.error('courses 데이터가 아직 로드되지 않았습니다.');
         return;
     }
-    const deptList = courses[yearToUse][majorDiv];
 
     const container = document.createElement('div');
     container.className = 'dept-select-container';
@@ -972,31 +1018,28 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
 
     const select = document.createElement('select');
     select.className = 'dept-select';
-    if (deptList) {
-        deptList.forEach(dept => {
-            const option = document.createElement('option');
-            option.value = dept.deptCd;
-            option.textContent = dept.deptNm;
-            select.appendChild(option);
-        });
-    }
-    if (selectedDeptCd) {
-        select.value = selectedDeptCd;
-    }
     container.appendChild(select);
 
-    yearSelect.addEventListener('change', () => {
-        const newYear = yearSelect.value;
-        const newDeptList = courses[newYear][majorDiv];
-        select.innerHTML = '';
-        if (newDeptList) {
-            newDeptList.forEach(dept => {
+    const populateDeptSelect = (year, deptToSelect) => {
+        const deptList = courses[year] ? courses[year][majorDiv] : [];
+        select.innerHTML = ''; // Clear existing options
+        if (deptList) {
+            deptList.forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept.deptCd;
                 option.textContent = dept.deptNm;
                 select.appendChild(option);
             });
         }
+        if (deptToSelect) {
+            select.value = deptToSelect;
+        }
+    };
+
+    populateDeptSelect(yearToUse, selectedDeptCd);
+
+    yearSelect.addEventListener('change', () => {
+        populateDeptSelect(yearSelect.value, null);
         updateChart();
     });
 
@@ -1023,10 +1066,10 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     });
 
     container.appendChild(document.createElement('hr'));
-    select.addEventListener('change', updateChart);
+    select.addEventListener('change', () => updateChart());
     document.getElementById('selectContainer').appendChild(container);
     
-    if (!selectedYear) { // 사용자가 직접 추가한 경우에만 차트 업데이트 및 저장
+    if (!selectedYear) {
         updateChart();
     }
 }
