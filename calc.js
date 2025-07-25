@@ -32,7 +32,7 @@ let decks = {
         courses: []
     },
     deck2: {
-        name: "덱2",
+        name: "덱2", 
         courses: []
     },
     deck3: {
@@ -342,7 +342,7 @@ function updateHistoryButtons() {
 function loadDeck(deckId) {
     document.querySelectorAll('.taken-course').forEach(course => course.remove());
     if (!decks[deckId] || !decks[deckId].courses) return;
-
+    
     decks[deckId].courses.forEach(courseData => {
         const targetCell = document.querySelector(
             `.semester-cell[data-year="${courseData.year}"][data-semester="${courseData.semester}"]`
@@ -375,18 +375,18 @@ function addNewDeck() {
     decks[newDeckId] = { name: `덱${deckCount}`, courses: [] };
     
     const deckTabs = document.querySelector('.deck-tabs');
-    const newTab = document.createElement('button');
-    newTab.className = 'deck-tab';
-    newTab.dataset.deck = newDeckId;
-    newTab.textContent = `덱${deckCount}`;
-    newTab.addEventListener('click', () => switchDeck(newDeckId));
-    
-    const addBtn = document.getElementById('add-deck-btn');
-    deckTabs.insertBefore(newTab, addBtn);
+        const newTab = document.createElement('button');
+        newTab.className = 'deck-tab';
+        newTab.dataset.deck = newDeckId;
+        newTab.textContent = `덱${deckCount}`;
+        newTab.addEventListener('click', () => switchDeck(newDeckId));
+        
+        const addBtn = document.getElementById('add-deck-btn');
+            deckTabs.insertBefore(newTab, addBtn);
     
     if (deckCount >= maxDeckCount) {
         if (addBtn) addBtn.style.display = 'none';
-    }
+        }
     switchDeck(newDeckId);
 }
 
@@ -421,9 +421,6 @@ function showCoursePopup(courseElement, event) {
     const courseName = courseElement.dataset.courseName;
     const credit = courseElement.dataset.credit;
     
-    // 과목의 상세 정보 찾기
-    const courseDetails = findCourseDetails(courseCode);
-    
     // 팝업 생성
     const popup = document.createElement('div');
     popup.className = 'course-popup';
@@ -431,24 +428,13 @@ function showCoursePopup(courseElement, event) {
     // 제목
     const title = document.createElement('div');
     title.className = 'course-popup-title';
-    if (courseDetails) {
-        title.textContent = `[${courseCode}] ${courseName}`;
-    } else {
-        title.textContent = `[${courseCode}] ${courseName}`;
-    }
+    title.textContent = `[${courseCode}] ${courseName}`;
     popup.appendChild(title);
     
     // 상세 정보
     const info = document.createElement('div');
     info.className = 'course-popup-info';
-    if (courseDetails) {
-        info.innerHTML = `
-            <div><strong>학과:</strong> ${courseDetails.deptName}</div>
-            <div><strong>학점:</strong> ${credit}학점</div>
-        `;
-    } else {
-        info.innerHTML = `<div><strong>학점:</strong> ${credit}학점</div>`;
-    }
+    info.innerHTML = `<div><strong>학점:</strong> ${credit}학점</div>`;
     popup.appendChild(info);
     
     // 버튼 영역
@@ -520,29 +506,39 @@ function handleOutsideClick(event) {
     }
 }
 
-// 과목 상세 정보 찾기 함수
-function findCourseDetails(courseCode) {
-    for (const year of years) {
-        if (!courses[year]) continue;
-        
-        for (const divList of courses[year]) {
-            for (const dept of divList) {
-                if (dept.groups) {
-                    for (const group of dept.groups) {
-                        const course = group.courses.find(c => c.code === courseCode);
-                        if (course) {
-                            return {
-                                deptName: dept.deptNm,
-                                groupName: group.groupNm,
-                                ...course
-                            };
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return null;
+
+
+// 교양과목을 검색 결과에 추가하는 함수
+function addCustomCourse(name, code, credit) {
+    const searchResult = document.getElementById('search-result');
+    
+    // 검색 결과 영역 초기화
+    searchResult.innerHTML = '';
+    
+    // 교양과목 헤더 추가
+    const header = document.createElement('div');
+    header.className = 'result-group-header';
+    header.innerHTML = '<span>추가된 교양과목</span>';
+    searchResult.appendChild(header);
+    
+    // 교양과목 컨테이너 추가
+    const content = document.createElement('div');
+    content.className = 'result-group-content';
+    
+    // 과목 아이템 생성
+    const courseItem = document.createElement('div');
+    courseItem.className = 'course-item';
+    courseItem.textContent = `[${code}] ${name} (${credit}학점)`;
+    courseItem.dataset.courseCode = code;
+    courseItem.dataset.courseName = name;
+    courseItem.dataset.credit = credit;
+    courseItem.draggable = true;
+    courseItem.addEventListener('dragstart', handleDragStart);
+    
+    content.appendChild(courseItem);
+    searchResult.appendChild(content);
+    
+    console.log(`교양과목 추가됨: ${name} (${code}, ${credit}학점)`);
 }
 
 function handleDragStart(e) {
@@ -669,14 +665,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const deptSearchContainer = document.getElementById('dept-search-container');
     const courseSearchContainer = document.getElementById('course-search-container');
 
+    const customCourseContainer = document.getElementById('custom-course-container');
+    
     searchTypeRadios.forEach(radio => {
         radio.addEventListener('change', function () {
             if (this.value === 'byDept') {
                 deptSearchContainer.style.display = 'flex';
                 courseSearchContainer.style.display = 'none';
-            } else {
+                customCourseContainer.style.display = 'none';
+            } else if (this.value === 'byCourseName') {
                 deptSearchContainer.style.display = 'none';
                 courseSearchContainer.style.display = 'flex';
+                customCourseContainer.style.display = 'none';
+            } else if (this.value === 'customCourse') {
+                deptSearchContainer.style.display = 'none';
+                courseSearchContainer.style.display = 'none';
+                customCourseContainer.style.display = 'flex';
             }
             searchResult.innerHTML = '';
         });
@@ -810,10 +814,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 groupContent.appendChild(courseItem);
             });
 
-            groupHeader.addEventListener('click', () => {
-                groupHeader.classList.toggle('collapsed');
-                groupContent.classList.toggle('collapsed');
-            });
+
 
             groupContainer.appendChild(groupHeader);
             groupContainer.appendChild(groupContent);
@@ -1101,9 +1102,42 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('add-deck-btn').addEventListener('click', addNewDeck);
     document.getElementById('undo-btn').addEventListener('click', undo);
     document.getElementById('redo-btn').addEventListener('click', redo);
+    
+    // 교양과목 추가 버튼 이벤트
+    document.getElementById('custom-course-add-btn').addEventListener('click', () => {
+        const nameInput = document.getElementById('custom-course-name');
+        const codeInput = document.getElementById('custom-course-code');
+        const creditInput = document.getElementById('custom-course-credit');
+        
+        const name = nameInput.value.trim();
+        const code = codeInput.value.trim();
+        const credit = creditInput.value.trim();
+        
+        if (!name || !code || !credit) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
+        
+        // 중복 학수번호 확인
+        const existingCourses = getTakenCourses();
+        if (existingCourses.some(course => course.dataset.courseCode === code)) {
+            alert('이미 추가된 학수번호입니다.');
+            return;
+        }
+        
+        // 교양과목 추가
+        addCustomCourse(name, code, parseInt(credit));
+    });
+    
+    // 교양과목 초기화 버튼 이벤트
+    document.getElementById('custom-course-clear-btn').addEventListener('click', () => {
+        document.getElementById('custom-course-name').value = '';
+        document.getElementById('custom-course-code').value = '';
+        document.getElementById('custom-course-credit').value = '';
+    });
 
-    updateCopyPasteButton();
-    updateHistoryButtons();
+        updateCopyPasteButton();
+        updateHistoryButtons();
 
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
@@ -1188,12 +1222,12 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
         const deptList = courses[year] ? courses[year][majorDiv] : [];
         select.innerHTML = ''; // Clear existing options
         if (deptList) {
-            deptList.forEach(dept => {
-                const option = document.createElement('option');
-                option.value = dept.deptCd;
-                option.textContent = dept.deptNm;
-                select.appendChild(option);
-            });
+    deptList.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.deptCd;
+        option.textContent = dept.deptNm;
+        select.appendChild(option);
+    });
         }
         if (deptToSelect) {
             select.value = deptToSelect;
@@ -1232,9 +1266,9 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     container.appendChild(document.createElement('hr'));
     select.addEventListener('change', () => updateChart());
     document.getElementById('selectContainer').appendChild(container);
-    
+
     if (!selectedYear) {
-        updateChart();
+    updateChart();
     }
 }
 

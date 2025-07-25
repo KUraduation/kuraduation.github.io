@@ -18,17 +18,17 @@
         <div class="course-container">
             <div class="container-header">
                 <span>강의 검색</span>
+                <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
+                    <label for="search-year-select" style="font-size: small;">기준년도</label>
+                    <select id="search-year-select"></select>
+                </div>
             </div>
             <div id="course-container-content">
                 <div class="search-box">
                     <div id="search-type-selector">
-                        <label><input type="radio" name="searchType" value="byDept" checked> 학과로 검색</label>
-                        <label><input type="radio" name="searchType" value="byCourseName"> 강의명으로 검색</label>
-                    </div>
-                    
-                    <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
-                        <label for="search-year-select" style="font-size: small;">기준년도</label>
-                        <select id="search-year-select" style="flex-grow: 1;"></select>
+                        <label><input type="radio" name="searchType" value="byDept" checked> 학과 검색</label>
+                        <label><input type="radio" name="searchType" value="byCourseName"> 강의명 검색</label>
+                        <label><input type="radio" name="searchType" value="customCourse"> 직접 추가</label>
                     </div>
 
                     <div id="dept-search-container">
@@ -45,6 +45,22 @@
                         <datalist id="course-suggestions"></datalist>
                         <button id="course-search-btn">검색</button>
                     </div>
+
+                    <div id="custom-course-container">
+                        <div class="custom-course-form">
+                            <label>과목명:</label>
+                            <input type="text" id="custom-course-name" placeholder="예: 대학영어">
+                            <label>학수번호:</label>
+                            <input type="text" id="custom-course-code" placeholder="예: ENGL001">
+                            <label>학점:</label>
+                            <input type="number" id="custom-course-credit" placeholder="예: 3" min="1" max="6">
+                            <div class="custom-course-buttons">
+                                <button id="custom-course-add-btn" class="custom-course-add-btn">추가</button>
+                                <button id="custom-course-clear-btn" class="custom-course-cancel-btn">초기화</button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <hr style="border-bottom: 1px solid black; width: 100%;" />
                 <div id="search-result"></div>
