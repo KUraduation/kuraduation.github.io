@@ -1175,35 +1175,37 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     container.className = 'dept-select-container';
     container.dataset.majorDiv = majorDiv;
 
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '✕';
-    closeBtn.style.position = 'absolute';
-    closeBtn.style.top = '4px';
-    closeBtn.style.right = '4px';
-    closeBtn.style.background = 'transparent';
-    closeBtn.style.border = 'none';
-    closeBtn.style.fontSize = '1em';
-    closeBtn.style.cursor = 'pointer';
-    closeBtn.style.padding = '0';
-    closeBtn.style.lineHeight = '1';
-    closeBtn.setAttribute('aria-label', '닫기');
-    closeBtn.onclick = () => {
-        container.remove();
-        updateChart();
-    };
-    container.appendChild(closeBtn);
-
     const header = document.createElement('div');
     header.style.display = 'flex';
     header.style.justifyContent = 'space-between';
     header.style.alignItems = 'center';
+    header.style.padding = '4px 0';
 
+    // 왼쪽: 전공 제목
     const label = document.createElement('div');
     label.textContent = majorDivs[majorDiv];
+    label.style.fontWeight = 'bold';
     header.appendChild(label);
 
+    // 오른쪽: 기준년도 라벨 + 드롭다운 + 삭제 버튼
+    const rightSection = document.createElement('div');
+    rightSection.style.display = 'flex';
+    rightSection.style.alignItems = 'center';
+    rightSection.style.gap = '6px';
+
+    // 기준년도 라벨
+    const yearLabel = document.createElement('span');
+    yearLabel.textContent = '기준년도';
+    yearLabel.style.fontSize = '0.85em';
+    yearLabel.style.color = '#666';
+    rightSection.appendChild(yearLabel);
+
+    // 년도 선택 드롭다운
     const yearSelect = document.createElement('select');
     yearSelect.className = 'year-select';
+    yearSelect.style.position = 'static'; // absolute 제거
+    yearSelect.style.fontSize = '0.9em';
+    yearSelect.style.padding = '2px 4px';
     years.forEach(year => {
         const option = document.createElement('option');
         option.value = year;
@@ -1211,7 +1213,34 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
         yearSelect.appendChild(option);
     });
     yearSelect.value = yearToUse;
-    header.appendChild(yearSelect);
+    rightSection.appendChild(yearSelect);
+
+    // 삭제 버튼
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.background = 'transparent';
+    closeBtn.style.border = 'none';
+    closeBtn.style.fontSize = '1em';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.style.padding = '2px 4px';
+    closeBtn.style.lineHeight = '1';
+    closeBtn.style.color = '#666';
+    closeBtn.setAttribute('aria-label', '닫기');
+    closeBtn.onclick = () => {
+        container.remove();
+        updateChart();
+    };
+    closeBtn.addEventListener('mouseenter', () => {
+        closeBtn.style.color = '#000';
+        closeBtn.style.backgroundColor = '#f0f0f0';
+    });
+    closeBtn.addEventListener('mouseleave', () => {
+        closeBtn.style.color = '#666';
+        closeBtn.style.backgroundColor = 'transparent';
+    });
+    rightSection.appendChild(closeBtn);
+
+    header.appendChild(rightSection);
     container.appendChild(header);
 
     const select = document.createElement('select');

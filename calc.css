@@ -623,6 +623,7 @@ body {
     font-size: 1.1em;
     padding: 8px 0 8px 8px;
     border-top: black 1px solid;
+    border-bottom: black 1px solid;
     margin-top: 16px;
 }
 
@@ -713,6 +714,13 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* 진입년도 선택 */
+.year-select {
+    min-width: 70px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
 }
 
 /* 학과 선택 */
