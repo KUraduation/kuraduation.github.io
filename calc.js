@@ -478,6 +478,7 @@ function showCoursePopup(courseElement, event) {
     const majorSection = document.createElement('div');
     majorSection.className = 'course-popup-major';
     majorSection.style.marginTop = '12px';
+    majorSection.style.marginBottom = '20px'; // 버튼과의 간격 추가
     majorSection.innerHTML = '<div><strong>전공 과목:</strong></div>';
 
     const majorCheckbox = document.createElement('input');

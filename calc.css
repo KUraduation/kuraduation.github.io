@@ -61,6 +61,12 @@ body {
     font-size: 0.9em;
 }
 
+.course-popup-major {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 0.9em;
+}
+
 .grade-select {
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -677,16 +683,27 @@ body {
 
 /* 강의검색기 영역 끝 */
 
-/* 총 이수학점 */
+/* 총 이수학점 섹션 */
+.total-credit-section {
+    border-top: black 1px solid;
+    border-bottom: black 1px solid;
+    margin-top: 16px;
+    padding: 8px;
+}
+
 .total-credit-row {
     display: flex;
     align-items: center;
     gap: 0.4em;
     font-size: 1.1em;
-    padding: 8px 0 8px 8px;
-    border-top: black 1px solid;
-    border-bottom: black 1px solid;
-    margin-top: 16px;
+    margin-bottom: 4px;
+}
+
+.gpa-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 1.0em;
 }
 
 .history-controls {
