@@ -147,6 +147,12 @@ body {
     padding-bottom: 4px;
 }
 
+.logo-image {
+    height: 32px; /* 로고 높이 조정 */
+    width: auto; /* 비율 유지 */
+    object-fit: contain; /* 이미지 비율 유지하며 크기 조정 */
+}
+
 #search-year-container select {
     min-width: 80px;
     font-size: 0.9em;
