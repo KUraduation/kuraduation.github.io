@@ -262,12 +262,14 @@ function saveCurrentDeck() {
             const coursesInSemester = [];
 
             cell.querySelectorAll('.taken-course').forEach(course => {
-                coursesInSemester.push({
+                const courseData = {
                     code: course.dataset.courseCode,
                     name: course.dataset.courseName,
                     credit: course.dataset.credit,
                     grade: course.dataset.grade || '',
-                });
+                    isMajor: course.dataset.isMajor === 'true', // 전공 여부 저장
+                };
+                coursesInSemester.push(courseData);
             });
 
             // 빈 학기도 저장하여 구조를 유지
@@ -658,7 +660,7 @@ function createTakenCourseElement(courseData) {
     takenCourse.dataset.courseName = courseData.name;
     takenCourse.dataset.credit = courseData.credit;
     takenCourse.dataset.grade = courseData.grade || ''; // 평점 정보 추가
-    takenCourse.dataset.isMajor = courseData.isMajor !== undefined ? courseData.isMajor : isMajorCourse(courseData.groupNm); // 전공 여부 자동 분류
+    takenCourse.dataset.isMajor = courseData.isMajor !== undefined ? courseData.isMajor.toString() : isMajorCourse(courseData.groupNm).toString(); // 전공 여부 자동 분류
 
     // 제목에 평점 정보도 포함
     const gradeText = courseData.grade ? ` (${courseData.grade})` : '';
