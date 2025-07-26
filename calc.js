@@ -1067,7 +1067,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const header = document.createElement('div');
         header.className = 'semester-header';
-        header.innerHTML = `<span>${year}학년</span>`;
+        header.innerHTML = `
+            <span class="year-title">${year}학년</span>
+            <span class="year-stats">학점: <span id="year-${year}-credit">0</span>, 평점: <span id="year-${year}-gpa">N/A</span></span>
+        `;
 
         if (year > 4) {
             const removeBtn = document.createElement('button');
@@ -1078,6 +1081,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 yearColumn.remove();
                 updateChart();
             });
+            
+            // 삭제 버튼을 헤더 우측 상단에 배치
+            removeBtn.style.position = 'absolute';
+            removeBtn.style.top = '0';
+            removeBtn.style.right = '0';
+            removeBtn.style.fontSize = '0.8em';
+            
+            header.style.position = 'relative';
             header.appendChild(removeBtn);
         }
 
@@ -1395,6 +1406,52 @@ function addCourese(groupContainer, course) {
     updateGroupProgress(groupContainer);
 }
 
+// 학년별 학점 및 평점 계산 함수
+function updateYearStats() {
+    document.querySelectorAll('.year-column').forEach(yearColumn => {
+        const year = yearColumn.dataset.year;
+        let yearTotalCredits = 0;
+        let yearTotalGradePoints = 0;
+        let yearGradedCredits = 0;
+        
+        // 해당 학년의 모든 학기 셀을 순회
+        yearColumn.querySelectorAll('.semester-cell').forEach(cell => {
+            cell.querySelectorAll('.taken-course').forEach(courseEl => {
+                const credit = parseInt(courseEl.dataset.credit) || 0;
+                const grade = courseEl.dataset.grade;
+                
+                // F학점이면 학점 인정 안함
+                if (grade !== 'F') {
+                    yearTotalCredits += credit;
+                }
+                
+                // 평점 계산 (평점이 입력된 과목만)
+                if (grade && gradeSystem[grade] !== undefined) {
+                    yearTotalGradePoints += gradeSystem[grade] * credit;
+                    yearGradedCredits += credit;
+                }
+            });
+        });
+        
+        // 학년별 학점 표시
+        const creditElement = document.getElementById(`year-${year}-credit`);
+        if (creditElement) {
+            creditElement.textContent = yearTotalCredits;
+        }
+        
+        // 학년별 평점 표시
+        const gpaElement = document.getElementById(`year-${year}-gpa`);
+        if (gpaElement) {
+            if (yearGradedCredits > 0) {
+                const yearGpa = (yearTotalGradePoints / yearGradedCredits).toFixed(2);
+                gpaElement.textContent = yearGpa;
+            } else {
+                gpaElement.textContent = 'N/A';
+            }
+        }
+    });
+}
+
 function updateChart(options = { save: true }) {
     const myMajors = document.querySelectorAll('.dept-select-container');
     myMajors.forEach(initGroups);
@@ -1532,6 +1589,9 @@ function updateChart(options = { save: true }) {
     } else if (currentSearchType === 'byCourseName' && courseSearchInput.value.trim() !== '') {
         document.getElementById('course-search-btn').click();
     }
+    
+    // 학년별 학점 및 평점 계산
+    updateYearStats();
     
     if (options.save) {
         saveStateToLocalStorage();

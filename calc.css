@@ -473,9 +473,24 @@ body {
     color: white; /* 텍스트 색상을 하얀색으로 변경 */
     margin-bottom: 2px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
     user-select: none;
+    gap: 8px;
+    text-align: center;
+    flex-wrap: wrap;
+}
+
+.year-title {
+    font-size: 1.0em;
+    font-weight: bold;
+}
+
+.year-stats {
+    font-size: 0.8em;
+    font-weight: normal;
+    white-space: nowrap;
 }
 
 .remove-year-btn {
