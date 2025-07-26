@@ -701,7 +701,12 @@ function createYearColumn(year) {
 
     const header = document.createElement('div');
     header.className = 'semester-header';
-    header.innerHTML = `<span>${year}학년</span>`;
+    header.innerHTML = `
+        <div class="year-info">
+            <span class="year-title">${year}학년</span>
+            <span class="year-stats">학점: 0, 평점: N/A</span>
+        </div>
+    `;
 
     if (year > 4) {
         const removeBtn = document.createElement('button');
@@ -1552,10 +1557,54 @@ function updateChart(options = { save: true }) {
         document.getElementById('course-search-btn').click();
     }
 
+    // 학년별 학점과 평점 업데이트
+    updateYearStats();
+
     if (options.save) {
         // 차트 업데이트 시마다 현재 덱 저장
         saveCurrentDeck();
 
         saveStateToLocalStorage();
     }
+}
+
+// 학년별 학점과 평점을 계산하고 업데이트하는 함수
+function updateYearStats() {
+    document.querySelectorAll('.year-column').forEach(yearColumn => {
+        const year = parseInt(yearColumn.dataset.year);
+        const yearStatsElement = yearColumn.querySelector('.year-stats');
+        
+        if (!yearStatsElement) return;
+
+        let totalCredits = 0;
+        let totalGradePoints = 0;
+        let gradedCourseCount = 0;
+
+        // 해당 학년의 모든 semester-cell에서 과목들을 가져와서 계산
+        yearColumn.querySelectorAll('.semester-cell .taken-course').forEach(courseEl => {
+            const credit = parseInt(courseEl.dataset.credit) || 0;
+            const grade = courseEl.dataset.grade;
+
+            // F학점이면 학점 인정 안함, 그 외에는 학점 인정
+            if (grade !== 'F') {
+                totalCredits += credit;
+            }
+
+            // 평점 계산 (평점이 입력된 과목만)
+            if (grade && gradeSystem[grade] !== undefined) {
+                totalGradePoints += gradeSystem[grade] * credit;
+                gradedCourseCount += credit;
+            }
+        });
+
+        // 평점 평균 계산
+        let gpaText = 'N/A';
+        if (gradedCourseCount > 0) {
+            const gpa = (totalGradePoints / gradedCourseCount).toFixed(2);
+            gpaText = gpa;
+        }
+
+        // 학점과 평점 업데이트
+        yearStatsElement.textContent = `학점: ${totalCredits}, 평점: ${gpaText}`;
+    });
 }

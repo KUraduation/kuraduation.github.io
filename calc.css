@@ -420,12 +420,13 @@ body {
     gap: 8px;
     text-align: center;
     margin-left: 3px; /* 오른쪽으로 이동 */
+    margin-top: 15px; /* 아래로 이동 */
 }
 
 .row-header {
     font-family: 'NanumSquareNeo-Variable' !important;
     font-weight: bold;
-    font-size: 0.9em;
+    font-size: 0.8em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -483,6 +484,31 @@ body {
     justify-content: space-between;
     align-items: center;
     user-select: none;
+}
+
+.year-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 30px;
+    padding: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    width: 100%;
+}
+
+.year-title {
+    font-weight: bold;
+    font-size: 1.0em;
+}
+
+.year-stats {
+    font-size: 0.85em;
+    font-weight: normal;
+    opacity: 0.9;
 }
 
 .remove-year-btn {
