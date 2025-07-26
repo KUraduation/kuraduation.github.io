@@ -12,6 +12,13 @@ const majorDivs = [
 const years = ['2021', '2022', '2023', '2024', '2025'];
 const courses = {};
 
+// 전공 과목 자동 분류 함수
+function isMajorCourse(groupNm) {
+    if (!groupNm) return false;
+    // 전공필수, 전공선택이 포함된 과목을 전공으로 분류
+    return /전공(필수|선택)/.test(groupNm);
+}
+
 // 평점 시스템
 const gradeSystem = {
     'A+': 4.5,
@@ -467,6 +474,31 @@ function showCoursePopup(courseElement, event) {
     gradeSection.appendChild(gradeSelect);
     popup.appendChild(gradeSection);
 
+    // 전공 여부 체크박스 영역
+    const majorSection = document.createElement('div');
+    majorSection.className = 'course-popup-major';
+    majorSection.style.marginTop = '12px';
+    majorSection.innerHTML = '<div><strong>전공 과목:</strong></div>';
+
+    const majorCheckbox = document.createElement('input');
+    majorCheckbox.type = 'checkbox';
+    majorCheckbox.id = 'major-checkbox';
+    majorCheckbox.checked = courseElement.dataset.isMajor === 'true';
+    majorCheckbox.style.marginTop = '4px';
+    majorCheckbox.style.marginRight = '8px';
+
+    const majorLabel = document.createElement('label');
+    majorLabel.htmlFor = 'major-checkbox';
+    majorLabel.textContent = '이 과목을 전공 평점 계산에 포함';
+    majorLabel.style.cursor = 'pointer';
+
+    const majorContainer = document.createElement('div');
+    majorContainer.style.marginTop = '4px';
+    majorContainer.appendChild(majorCheckbox);
+    majorContainer.appendChild(majorLabel);
+    majorSection.appendChild(majorContainer);
+    popup.appendChild(majorSection);
+
     // 버튼 영역
     const buttons = document.createElement('div');
     buttons.className = 'course-popup-buttons';
@@ -483,7 +515,10 @@ function showCoursePopup(courseElement, event) {
     saveBtn.style.cursor = 'pointer';
     saveBtn.addEventListener('click', () => {
         const selectedGrade = gradeSelect.value;
+        const isMajor = majorCheckbox.checked;
+        
         courseElement.dataset.grade = selectedGrade;
+        courseElement.dataset.isMajor = isMajor;
 
         // 제목 업데이트
         const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
@@ -606,6 +641,7 @@ function handleDragStart(e) {
         code: draggedCourse.dataset.courseCode,
         name: draggedCourse.dataset.courseName,
         credit: draggedCourse.dataset.credit,
+        groupNm: draggedCourse.dataset.groupNm || '',
         isTakenCourse: draggedCourse.classList.contains('taken-course')
     }));
     setTimeout(() => {
@@ -621,6 +657,7 @@ function createTakenCourseElement(courseData) {
     takenCourse.dataset.courseName = courseData.name;
     takenCourse.dataset.credit = courseData.credit;
     takenCourse.dataset.grade = courseData.grade || ''; // 평점 정보 추가
+    takenCourse.dataset.isMajor = courseData.isMajor !== undefined ? courseData.isMajor : isMajorCourse(courseData.groupNm); // 전공 여부 자동 분류
 
     // 제목에 평점 정보도 포함
     const gradeText = courseData.grade ? ` (${courseData.grade})` : '';
@@ -918,6 +955,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 courseItem.dataset.courseCode = course.code;
                 courseItem.dataset.courseName = course.name;
                 courseItem.dataset.credit = course.credit;
+                courseItem.dataset.groupNm = group.groupNm || '';
                 courseItem.draggable = true;
                 courseItem.addEventListener('dragstart', handleDragStart);
                 groupContent.appendChild(courseItem);
@@ -974,6 +1012,7 @@ document.addEventListener('DOMContentLoaded', function () {
             courseItem.dataset.courseCode = course.code;
             courseItem.dataset.courseName = course.name;
             courseItem.dataset.credit = course.credit;
+            courseItem.dataset.groupNm = course.groupNm || '';
             courseItem.draggable = true;
             courseItem.addEventListener('dragstart', handleDragStart);
             searchResult.appendChild(courseItem);
@@ -1465,6 +1504,30 @@ function updateChart(options = { save: true }) {
         overallGpaElement.textContent = 'N/A';
     }
 
+    // 전공 평점 계산 및 표시
+    let majorGradePoints = 0;
+    let majorGradedCredits = 0;
+
+    takenCourses.forEach(courseEl => {
+        const credit = parseInt(courseEl.dataset.credit) || 0;
+        const grade = courseEl.dataset.grade;
+        const isMajor = courseEl.dataset.isMajor === 'true';
+
+        // 전공 과목이고 평점이 입력된 경우만 계산
+        if (isMajor && grade && gradeSystem[grade] !== undefined) {
+            majorGradePoints += gradeSystem[grade] * credit;
+            majorGradedCredits += credit;
+        }
+    });
+
+    const majorGpaElement = document.getElementById('major-gpa');
+    if (majorGradedCredits > 0) {
+        const majorGpa = (majorGradePoints / majorGradedCredits).toFixed(2);
+        majorGpaElement.textContent = majorGpa;
+    } else {
+        majorGpaElement.textContent = 'N/A';
+    }
+
     const multipleDeptCourses = [];
     takenCourses.forEach(course => {
         const groups = [];
@@ -1579,11 +1642,14 @@ function updateYearStats() {
         let totalCredits = 0;
         let totalGradePoints = 0;
         let gradedCourseCount = 0;
+        let majorGradePoints = 0;
+        let majorGradedCredits = 0;
 
         // 해당 학년의 모든 semester-cell에서 과목들을 가져와서 계산
         yearColumn.querySelectorAll('.semester-cell .taken-course').forEach(courseEl => {
             const credit = parseInt(courseEl.dataset.credit) || 0;
             const grade = courseEl.dataset.grade;
+            const isMajor = courseEl.dataset.isMajor === 'true';
 
             // F학점이면 학점 인정 안함, 그 외에는 학점 인정
             if (grade !== 'F') {
@@ -1594,17 +1660,30 @@ function updateYearStats() {
             if (grade && gradeSystem[grade] !== undefined) {
                 totalGradePoints += gradeSystem[grade] * credit;
                 gradedCourseCount += credit;
+
+                // 전공 평점 계산
+                if (isMajor) {
+                    majorGradePoints += gradeSystem[grade] * credit;
+                    majorGradedCredits += credit;
+                }
             }
         });
 
-        // 평점 평균 계산
+        // 전체 평점 평균 계산
         let gpaText = 'N/A';
         if (gradedCourseCount > 0) {
             const gpa = (totalGradePoints / gradedCourseCount).toFixed(2);
             gpaText = gpa;
         }
 
-        // 학점과 평점 업데이트
-        yearStatsElement.textContent = `학점: ${totalCredits}, 평점: ${gpaText}`;
+        // 전공 평점 평균 계산
+        let majorGpaText = 'N/A';
+        if (majorGradedCredits > 0) {
+            const majorGpa = (majorGradePoints / majorGradedCredits).toFixed(2);
+            majorGpaText = majorGpa;
+        }
+
+        // 학점, 평점, 전공평점 업데이트
+        yearStatsElement.textContent = `학점: ${totalCredits}, 평점: ${gpaText}, 전공: ${majorGpaText}`;
     });
 }
