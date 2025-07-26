@@ -298,7 +298,7 @@ body {
 
 .deck-copy-paste-btn {
     background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid #ccc;
+    border: 1px solid #21f636;
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 0.8em;
@@ -552,7 +552,7 @@ body {
 
 .deck-reset-btn {
     background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid #ccc;
+    border: 1px solid #ff5858;
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 0.8em;
