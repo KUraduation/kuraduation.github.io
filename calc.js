@@ -204,7 +204,7 @@ function pasteDeck(targetDeckId) {
     const deckname = decks[targetDeckId].name;
 
     decks[targetDeckId] = JSON.parse(JSON.stringify(copiedDeckData));
-    
+
     decks[targetDeckId].name = deckname; // 덱 이름 유지
 
     if (currentDeck === targetDeckId) {
@@ -277,34 +277,15 @@ function saveCurrentDeck() {
 
 // 히스토리에 현재 상태 저장
 function saveToHistory() {
-    const yearsData = {};
-    document.querySelectorAll('.year-column').forEach(yearColumn => {
-        const year = yearColumn.dataset.year;
-        const yearData = {};
-        yearColumn.querySelectorAll('.semester-cell').forEach(cell => {
-            const semester = cell.dataset.semester;
-            const courses = [];
-            cell.querySelectorAll('.taken-course').forEach(course => {
-                courses.push({
-                    code: course.dataset.courseCode,
-                    name: course.dataset.courseName,
-                    credit: course.dataset.credit,
-                    grade: course.dataset.grade || '',
-                });
-            });
-            // 빈 학기도 저장하여 구조를 유지
-            yearData[semester] = courses;
-        });
-        // 빈 학년도 저장하여 구조를 유지
-        yearsData[year] = yearData;
-    });
+    const decksData = JSON.parse(JSON.stringify(decks));
 
     const currentState = {
-        years: yearsData,
+        decks: decksData,
         timestamp: Date.now()
     };
 
     historyStack = historyStack.slice(0, currentHistoryIndex + 1);
+    console.log('현재 상태 저장:', currentHistoryIndex);
     historyStack.push(currentState);
     currentHistoryIndex++;
 
@@ -320,24 +301,10 @@ function restoreFromHistory(historyIndex) {
     if (historyIndex < 0 || historyIndex >= historyStack.length) return;
 
     const state = historyStack[historyIndex];
-    document.querySelectorAll('.taken-course').forEach(course => course.remove());
 
-    if (state.years) { // 새로운 데이터 구조
-        Object.keys(state.years).forEach(year => {
-            const yearData = state.years[year];
-            Object.keys(yearData).forEach(semester => {
-                const courses = yearData[semester];
-                const targetCell = document.querySelector(
-                    `.semester-cell[data-year="${year}"][data-semester="${semester}"]`
-                );
-                if (targetCell) {
-                    courses.forEach(courseData => {
-                        const newCourse = createTakenCourseElement(courseData);
-                        targetCell.appendChild(newCourse);
-                    });
-                }
-            });
-        });
+    if (state.decks) { // 새로운 데이터 구조
+        decks = JSON.parse(JSON.stringify(state.decks));
+        loadDeck(currentDeck);
     }
 
     currentHistoryIndex = historyIndex;
@@ -524,9 +491,9 @@ function showCoursePopup(courseElement, event) {
         const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
         courseElement.title = `${courseName} (${credit}학점)${gradeText}`;
 
-        saveToHistory();
         updateChart();
         closeCoursePopup();
+        saveToHistory();
     });
     buttons.appendChild(saveBtn);
 
@@ -537,9 +504,9 @@ function showCoursePopup(courseElement, event) {
     deleteBtn.addEventListener('click', () => {
         if (confirm(`"${courseName}" 과목을 삭제하시겠습니까?`)) {
             courseElement.remove();
-            saveToHistory();
             updateChart();
             closeCoursePopup();
+            saveToHistory();
         }
     });
     buttons.appendChild(deleteBtn);
@@ -713,8 +680,8 @@ function handleDrop(e) {
         targetCell.appendChild(newTakenCourse);
     }
 
-    saveToHistory();
     updateChart();
+    saveToHistory();
 }
 
 function handleDragEnd(e) {
@@ -722,11 +689,11 @@ function handleDragEnd(e) {
     if (e.target.classList.contains('taken-course')) {
         if (e.dataTransfer.dropEffect === 'none') {
             e.target.remove();
+            updateChart();
             saveToHistory();
         }
     }
     draggedCourse = null;
-    updateChart();
 }
 
 const semesterNames = ["1학기", "여름", "2학기", "겨울"];
@@ -749,6 +716,7 @@ function createYearColumn(year) {
             yearColumn.remove();
             delete decks[currentDeck].years[year];
             updateChart();
+            saveToHistory();
         });
         header.appendChild(removeBtn);
     }
@@ -779,6 +747,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('coursesLoaded', () => {
         loadStateFromLocalStorage();
         updateDeptDatalist();
+        saveToHistory(); // 초기 상태 저장
     });
 
     const majorDivSelect = document.getElementById('majorDiv-select');
@@ -1180,6 +1149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             semesterGridContainer.insertBefore(newYearColumn, columns[insertionIndex]);
         }
+        saveToHistory();
     }
 
     addYearBtn.addEventListener('click', addYearColumn);
