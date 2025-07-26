@@ -40,6 +40,42 @@ body {
     max-width: 400px;
 }
 
+/* 과목 아이템 툴팁 스타일 */
+.course-item {
+    position: relative;
+    cursor: pointer;
+}
+
+.course-item:hover::after {
+    content: "드래그하거나 클릭 후 원하는 학기를 클릭하세요";
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* 선택된 과목 스타일 */
+.course-item.selected {
+    background-color: #a0203a;
+    color: white;
+    border: 2px solid #8a1c32;
+}
+
+/* 클릭 모드일 때 셀 호버 효과 */
+.click-mode .semester-cell:hover {
+    background-color: rgba(160, 32, 58, 0.1);
+    border: 2px dashed #a0203a;
+    cursor: pointer;
+}
+
 .course-popup-title {
     font-size: 1.2em;
     font-weight: bold;

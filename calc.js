@@ -47,6 +47,10 @@ let historyStack = [];
 let currentHistoryIndex = -1;
 const maxHistorySize = 50; // 최대 히스토리 개수
 
+// 클릭 이동 시스템 변수
+let selectedCourse = null;
+let isClickMoveMode = false;
+
 // 덱 데이터 구조
 let decks = {
     deck1: {
@@ -625,6 +629,7 @@ function addCustomCourse(name, code, credit) {
     courseItem.dataset.credit = credit;
     courseItem.draggable = true;
     courseItem.addEventListener('dragstart', handleDragStart);
+    courseItem.addEventListener('click', handleCourseClick);
 
     content.appendChild(courseItem);
     searchResult.appendChild(content);
@@ -650,6 +655,122 @@ function handleDragStart(e) {
     setTimeout(() => {
         draggedCourse.classList.add('dragging');
     }, 0);
+}
+
+// 과목 클릭 핸들러
+function handleCourseClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // 팝업 닫기
+    if (currentPopup) {
+        closeCoursePopup();
+    }
+    
+    const courseItem = e.target;
+    
+    // 이미 선택된 과목을 다시 클릭하면 선택 해제
+    if (selectedCourse === courseItem) {
+        clearCourseSelection();
+        return;
+    }
+    
+    // 이전 선택 해제
+    clearCourseSelection();
+    
+    // 새로운 과목 선택
+    selectedCourse = courseItem;
+    courseItem.classList.add('selected');
+    isClickMoveMode = true;
+    
+    // 컨테이너에 클릭 모드 클래스 추가
+    document.body.classList.add('click-mode');
+    
+    console.log(`과목 선택됨: ${courseItem.dataset.courseName}`);
+}
+
+// 과목 선택 해제
+function clearCourseSelection() {
+    if (selectedCourse) {
+        selectedCourse.classList.remove('selected');
+        selectedCourse = null;
+    }
+    isClickMoveMode = false;
+    document.body.classList.remove('click-mode');
+}
+
+// 셀 클릭 핸들러 (클릭 이동 모드)
+function handleCellClick(e) {
+    // 클릭 모드가 아니거나 선택된 과목이 없으면 무시
+    if (!isClickMoveMode || !selectedCourse) {
+        return;
+    }
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const targetCell = e.target.closest('.semester-cell');
+    if (!targetCell) return;
+    
+    // 선택된 과목의 데이터 가져오기
+    const courseData = {
+        code: selectedCourse.dataset.courseCode,
+        name: selectedCourse.dataset.courseName,
+        credit: selectedCourse.dataset.credit,
+        groupNm: selectedCourse.dataset.groupNm || '',
+        isTakenCourse: selectedCourse.classList.contains('taken-course')
+    };
+    
+    // 이미 수강한 과목인지 확인
+    const existingCourse = document.querySelector(
+        `.taken-course[data-course-code="${courseData.code}"]`
+    );
+    
+    if (existingCourse && !courseData.isTakenCourse) {
+        alert('이미 수강한 과목입니다.');
+        clearCourseSelection();
+        return;
+    }
+    
+    // 과목 이동 또는 추가
+    if (courseData.isTakenCourse) {
+        // 기존 과목을 다른 셀로 이동
+        const originalCell = selectedCourse.closest('.semester-cell');
+        if (originalCell !== targetCell) {
+            // 히스토리 저장
+            saveToHistory();
+            
+            // 과목을 새 셀로 이동
+            targetCell.appendChild(selectedCourse);
+            
+            // 학점 업데이트
+            updateCellCredit(originalCell);
+            updateCellCredit(targetCell);
+            updateChart();
+            updateYearStats();
+            saveCurrentDeck();
+        }
+    } else {
+        // 새 과목 추가
+        saveToHistory();
+        
+        const takenCourse = createTakenCourseElement(courseData);
+        targetCell.appendChild(takenCourse);
+        
+        // 검색 결과에서 해당 과목 표시 업데이트
+        selectedCourse.classList.add('taken-in-search');
+        
+        // 학점 업데이트
+        updateCellCredit(targetCell);
+        updateChart();
+        updateYearStats();
+        saveCurrentDeck();
+    }
+    
+    // 선택 해제
+    clearCourseSelection();
+    
+    console.log(`과목이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기로 이동됨`);
 }
 
 function createTakenCourseElement(courseData) {
@@ -687,6 +808,23 @@ function createTakenCourseElement(courseData) {
 
         e.preventDefault();
         e.stopPropagation();
+        
+        // 클릭 이동 모드가 활성화되어 있으면 과목 선택 처리
+        if (isClickMoveMode && selectedCourse !== takenCourse) {
+            // 이전 선택 해제
+            clearCourseSelection();
+            
+            // taken-course 선택
+            selectedCourse = takenCourse;
+            takenCourse.classList.add('selected');
+            isClickMoveMode = true;
+            document.body.classList.add('click-mode');
+            
+            console.log(`수강 중인 과목 선택됨: ${takenCourse.dataset.courseName}`);
+            return;
+        }
+        
+        // 일반 클릭이면 팝업 표시
         showCoursePopup(takenCourse, e);
     });
 
@@ -771,6 +909,7 @@ function createYearColumn(year) {
         cell.dataset.semester = index + 1;
         cell.addEventListener('dragover', handleDragOver);
         cell.addEventListener('drop', handleDrop);
+        cell.addEventListener('click', handleCellClick);
 
         const creditTotalElement = document.createElement('div');
         creditTotalElement.className = 'semester-credit-total';
@@ -961,6 +1100,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 courseItem.dataset.groupNm = group.groupNm || '';
                 courseItem.draggable = true;
                 courseItem.addEventListener('dragstart', handleDragStart);
+                courseItem.addEventListener('click', handleCourseClick);
                 groupContent.appendChild(courseItem);
             });
 
@@ -1018,6 +1158,7 @@ document.addEventListener('DOMContentLoaded', function () {
             courseItem.dataset.groupNm = course.groupNm || '';
             courseItem.draggable = true;
             courseItem.addEventListener('dragstart', handleDragStart);
+            courseItem.addEventListener('click', handleCourseClick);
             searchResult.appendChild(courseItem);
         });
     }
@@ -1249,6 +1390,12 @@ document.addEventListener('DOMContentLoaded', function () {
         else if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && (e.key === 'Z' || e.key === 'z'))) {
             e.preventDefault();
             redo();
+        }
+        else if (e.key === 'Escape') {
+            // ESC 키로 과목 선택 해제
+            if (isClickMoveMode) {
+                clearCourseSelection();
+            }
         }
     });
 });
