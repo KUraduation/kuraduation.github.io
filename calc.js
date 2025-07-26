@@ -732,16 +732,21 @@ function handleCellClick(e) {
         return;
     }
     
+    // 선택 해제를 먼저 수행 (이동 과정에서 문제가 생기지 않도록)
+    const selectedCourseElement = selectedCourse;
+    const selectedCourseName = selectedCourse.dataset.courseName;
+    clearCourseSelection();
+    
     // 과목 이동 또는 추가
     if (courseData.isTakenCourse) {
         // 기존 과목을 다른 셀로 이동
-        const originalCell = selectedCourse.closest('.semester-cell');
+        const originalCell = selectedCourseElement.closest('.semester-cell');
         if (originalCell !== targetCell) {
             // 히스토리 저장
             saveToHistory();
             
             // 과목을 새 셀로 이동
-            targetCell.appendChild(selectedCourse);
+            targetCell.appendChild(selectedCourseElement);
             
             // 학점 업데이트
             updateCellCredit(originalCell);
@@ -749,6 +754,10 @@ function handleCellClick(e) {
             updateChart();
             updateYearStats();
             saveCurrentDeck();
+            
+            console.log(`과목이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기로 이동됨`);
+        } else {
+            console.log('같은 셀로는 이동할 수 없습니다.');
         }
     } else {
         // 새 과목 추가
@@ -758,19 +767,16 @@ function handleCellClick(e) {
         targetCell.appendChild(takenCourse);
         
         // 검색 결과에서 해당 과목 표시 업데이트
-        selectedCourse.classList.add('taken-in-search');
+        selectedCourseElement.classList.add('taken-in-search');
         
         // 학점 업데이트
         updateCellCredit(targetCell);
         updateChart();
         updateYearStats();
         saveCurrentDeck();
+        
+        console.log(`새 과목 ${selectedCourseName}이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기에 추가됨`);
     }
-    
-    // 선택 해제
-    clearCourseSelection();
-    
-    console.log(`과목이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기로 이동됨`);
 }
 
 function createTakenCourseElement(courseData) {
