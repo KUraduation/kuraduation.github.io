@@ -298,7 +298,7 @@ body {
 
 .deck-copy-paste-btn {
     background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid #ccc;
+    border: 1px solid #21f636;
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 0.8em;
@@ -473,33 +473,18 @@ body {
     color: white; /* 텍스트 색상을 하얀색으로 변경 */
     margin-bottom: 2px;
     display: flex;
-    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
     user-select: none;
-    gap: 8px;
-    text-align: center;
-    flex-wrap: wrap;
-}
-
-.year-title {
-    font-size: 1.0em;
-    font-weight: bold;
-}
-
-.year-stats {
-    font-size: 0.8em;
-    font-weight: normal;
-    white-space: nowrap;
 }
 
 .remove-year-btn {
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 1.2em;
-    color: #666;
-    padding: 0 4px;
+    font-size: .8em;
+    color: #ffffff;
+    /*padding: 0 4px;*/
 }
 
 .remove-year-btn:hover {
@@ -567,7 +552,7 @@ body {
 
 .deck-reset-btn {
     background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid #ccc;
+    border: 1px solid #ff5858;
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 0.8em;
