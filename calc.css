@@ -430,9 +430,8 @@ body {
 }
 
 .row-header {
-    font-family: 'paperlogy-6SemiBold' !important;
-    font-weight: bold;
-    font-size: 0.8em;
+    font-family: 'Paperlogy-6SemiBold' !important;
+    font-size: 0.9em;
     display: flex;
     align-items: center;
     justify-content: center;
