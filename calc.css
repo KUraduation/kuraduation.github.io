@@ -76,6 +76,27 @@ body {
     cursor: pointer;
 }
 
+/* 졸업요건 확인 버튼 툴팁 */
+#major-add-btn {
+    position: relative;
+}
+
+#major-add-btn:hover::after {
+    content: "졸업요건 확인";
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+}
+
 .course-popup-title {
     font-size: 1.2em;
     font-weight: bold;
