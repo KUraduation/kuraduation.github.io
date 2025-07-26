@@ -1412,7 +1412,7 @@ function initGroups(selectContainer) {
 
     groupListDiv.innerHTML = '';
     const selectedDeptCd = selectContainer.querySelector('.dept-select').value;
-    const dept = deptList.find(d => d.deptCd === selectedDeptCd);
+            const dept = deptList.find(d => d.deptCd === selectedDeptCd);
     if (dept) {
         dept.groups.forEach((group, idx) => {
             const groupContainer = document.createElement('div');
@@ -1564,7 +1564,7 @@ function updateChart(options = { save: true }) {
 
     multipleDeptCourses.forEach(({ course, groups }) => {
         // 진행률 100% 아닌 첫 그룹 선택
-        const targetGroup = groups.find(g => parseInt(g.dataset.currentCredit) < parseInt(g.dataset.minCredit)) || groups[0];
+                    const targetGroup = groups.find(g => parseInt(g.dataset.currentCredit) < parseInt(g.dataset.minCredit)) || groups[0];
 
         if (targetGroup) {
             addCourese(targetGroup, course);
