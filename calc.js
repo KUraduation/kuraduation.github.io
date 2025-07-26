@@ -204,7 +204,6 @@ function pasteDeck(targetDeckId) {
     const deckname = decks[targetDeckId].name;
 
     decks[targetDeckId] = JSON.parse(JSON.stringify(copiedDeckData));
-
     decks[targetDeckId].name = deckname; // 덱 이름 유지
 
     if (currentDeck === targetDeckId) {
@@ -301,7 +300,6 @@ function restoreFromHistory(historyIndex) {
     if (historyIndex < 0 || historyIndex >= historyStack.length) return;
 
     const state = historyStack[historyIndex];
-
     if (state.decks) { // 새로운 데이터 구조
         decks = JSON.parse(JSON.stringify(state.decks));
         loadDeck(currentDeck);
@@ -490,7 +488,6 @@ function showCoursePopup(courseElement, event) {
         // 제목 업데이트
         const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
         courseElement.title = `${courseName} (${credit}학점)${gradeText}`;
-
         updateChart();
         closeCoursePopup();
         saveToHistory();
@@ -679,7 +676,6 @@ function handleDrop(e) {
         const newTakenCourse = createTakenCourseElement(data);
         targetCell.appendChild(newTakenCourse);
     }
-
     updateChart();
     saveToHistory();
 }
