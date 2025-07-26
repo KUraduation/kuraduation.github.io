@@ -54,7 +54,7 @@ let decks = {
         years: { '1': {}, '2': {}, '3': {}, '4': {} }
     },
     deck2: {
-        name: "덱2",
+        name: "덱2", 
         years: { '1': {}, '2': {}, '3': {}, '4': {} }
     },
     deck3: {
@@ -207,7 +207,7 @@ function resetDeck(deckId) {
 // 덱 붙여넣기 함수
 function pasteDeck(targetDeckId) {
     if (!copiedDeckData || !decks[targetDeckId]) return;
-
+    
     const deckname = decks[targetDeckId].name;
 
     decks[targetDeckId] = JSON.parse(JSON.stringify(copiedDeckData));
@@ -263,9 +263,9 @@ function saveCurrentDeck() {
 
             cell.querySelectorAll('.taken-course').forEach(course => {
                 const courseData = {
-                    code: course.dataset.courseCode,
-                    name: course.dataset.courseName,
-                    credit: course.dataset.credit,
+        code: course.dataset.courseCode,
+        name: course.dataset.courseName,
+        credit: course.dataset.credit,
                     grade: course.dataset.grade || '',
                     isMajor: course.dataset.isMajor === 'true', // 전공 여부 저장
                 };
@@ -291,12 +291,12 @@ function saveToHistory() {
         decks: decksData,
         timestamp: Date.now()
     };
-
+    
     historyStack = historyStack.slice(0, currentHistoryIndex + 1);
     console.log('현재 상태 저장:', currentHistoryIndex);
     historyStack.push(currentState);
     currentHistoryIndex++;
-
+    
     if (historyStack.length > maxHistorySize) {
         historyStack.shift();
         currentHistoryIndex--;
@@ -307,13 +307,13 @@ function saveToHistory() {
 // 히스토리에서 상태 복원
 function restoreFromHistory(historyIndex) {
     if (historyIndex < 0 || historyIndex >= historyStack.length) return;
-
+    
     const state = historyStack[historyIndex];
     if (state.decks) { // 새로운 데이터 구조
         decks = JSON.parse(JSON.stringify(state.decks));
         loadDeck(currentDeck);
     }
-
+    
     currentHistoryIndex = historyIndex;
     updateHistoryButtons();
     updateChart();
@@ -351,15 +351,15 @@ function loadDeck(deckId) {
         const yearData = decks[deckId].years[year];
         Object.keys(yearData).forEach(semester => {
             const semesterData = yearData[semester];
-            const targetCell = document.querySelector(
+        const targetCell = document.querySelector(
                 `.semester-cell[data-year="${year}"][data-semester="${semester}"]`
-            );
-            if (targetCell) {
+        );
+        if (targetCell) {
                 semesterData.forEach(courseData => {
-                    const newCourse = createTakenCourseElement(courseData);
-                    targetCell.appendChild(newCourse);
+            const newCourse = createTakenCourseElement(courseData);
+            targetCell.appendChild(newCourse);
                 });
-            }
+        }
         });
     });
 }
@@ -377,35 +377,35 @@ function updateDeckTabs() {
 // 새 덱 추가
 function addNewDeck() {
     if (deckCount >= maxDeckCount) return;
-
+    
     deckCount++;
     const newDeckId = `deck${deckCount}`;
-
+    
     decks[newDeckId] = { name: `덱${deckCount}`, years: { '1': {}, '2': {}, '3': {}, '4': {} } };
 
     const deckTabs = document.querySelector('.deck-tabs');
-    const newTab = document.createElement('button');
-    newTab.className = 'deck-tab';
-    newTab.dataset.deck = newDeckId;
-    newTab.textContent = `덱${deckCount}`;
-    newTab.addEventListener('click', () => switchDeck(newDeckId));
-
-    const addBtn = document.getElementById('add-deck-btn');
-    deckTabs.insertBefore(newTab, addBtn);
-
+        const newTab = document.createElement('button');
+        newTab.className = 'deck-tab';
+        newTab.dataset.deck = newDeckId;
+        newTab.textContent = `덱${deckCount}`;
+        newTab.addEventListener('click', () => switchDeck(newDeckId));
+        
+        const addBtn = document.getElementById('add-deck-btn');
+            deckTabs.insertBefore(newTab, addBtn);
+    
     if (deckCount >= maxDeckCount) {
         if (addBtn) addBtn.style.display = 'none';
-    }
+        }
     switchDeck(newDeckId);
 }
 
 Promise.all(years.map(year =>
     fetch(`${year}.json`)
-        .then(response => {
+    .then(response => {
             if (!response.ok) throw new Error(`네트워크 오류: ${year}.json`);
-            return response.json();
-        })
-        .then(data => {
+        return response.json();
+    })
+    .then(data => {
             courses[year] = data;
         })
 )).then(() => {
@@ -888,14 +888,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         }
-
+        
         suggestions.forEach(suggestion => {
             const option = document.createElement('option');
             option.value = suggestion;
             courseDatalist.appendChild(option);
         });
     }
-
+    
     majorDivSelect.addEventListener('change', () => {
         deptSearchInput.value = '';
         updateDeptDatalist();
@@ -904,7 +904,7 @@ document.addEventListener('DOMContentLoaded', function () {
         deptSearchInput.value = '';
         updateDeptDatalist();
     });
-
+    
     window.addEventListener('coursesLoaded', updateDeptDatalist);
 
     deptSearchInput.addEventListener('input', function () {
@@ -981,7 +981,7 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResult.textContent = '학과 이름을 입력하세요.';
             return;
         }
-
+        
         const deptList = courses[selectedYear][selectedMajorDiv];
         const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
 
@@ -1153,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const semesterHeader = document.createElement('div');
     semesterHeader.innerHTML = `<span>ㅤ</span>`;
-    semesterRowHeaders.appendChild(semesterHeader);
+    semesterRowHeaders.appendChild(semesterHeader); 
     semesterNames.forEach(name => {
         const header = document.createElement('div');
         header.className = 'row-header';
@@ -1164,7 +1164,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function getNextYearNumber() {
         const existingYears = Object.keys(decks[currentDeck].years)
             .map(year => parseInt(year, 10))
-            .sort((a, b) => a - b);
+                                   .sort((a, b) => a - b);
         let nextYear = 1;
         for (const year of existingYears) {
             if (year === nextYear) {
@@ -1183,10 +1183,10 @@ document.addEventListener('DOMContentLoaded', function () {
         decks[currentDeck].years[nextYear] = {};
 
         const newYearColumn = createYearColumn(nextYear);
-
+        
         const columns = Array.from(semesterGridContainer.querySelectorAll('.year-column'));
         const insertionIndex = columns.findIndex(col => parseInt(col.dataset.year, 10) > nextYear);
-
+        
         if (insertionIndex === -1) {
             semesterGridContainer.appendChild(newYearColumn);
         } else {
@@ -1238,8 +1238,8 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('custom-course-credit').value = '';
     });
 
-    updateCopyPasteButton();
-    updateHistoryButtons();
+        updateCopyPasteButton();
+        updateHistoryButtons();
 
     document.addEventListener('keydown', function (e) {
         if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
@@ -1353,12 +1353,12 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
         const deptList = courses[year] ? courses[year][majorDiv] : [];
         select.innerHTML = ''; // Clear existing options
         if (deptList) {
-            deptList.forEach(dept => {
-                const option = document.createElement('option');
-                option.value = dept.deptCd;
-                option.textContent = dept.deptNm;
-                select.appendChild(option);
-            });
+    deptList.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.deptCd;
+        option.textContent = dept.deptNm;
+        select.appendChild(option);
+    });
         }
         if (deptToSelect) {
             select.value = deptToSelect;
@@ -1399,7 +1399,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     document.getElementById('selectContainer').appendChild(container);
 
     if (!selectedYear) {
-        updateChart();
+    updateChart();
     }
 }
 
@@ -1452,12 +1452,12 @@ function updateGroupProgress(groupContainer) {
 
     const progress = (minCredit > 0) ? (currentCredit / minCredit * 100).toFixed(0) : 0;
     const groupProgress = groupContainer.querySelector('.group-progress');
-
+    
     groupProgress.textContent = `${currentCredit}/${minCredit} (${progress}%)`;
-
+    
     const progressPercent = Math.min(100, parseFloat(progress));
     groupProgress.style.background = `linear-gradient(to right, #ff69b4 ${progressPercent}%, transparent ${progressPercent}%)`;
-
+    
     if (progressPercent >= 100) {
         groupProgress.style.color = 'white';
     } else {
