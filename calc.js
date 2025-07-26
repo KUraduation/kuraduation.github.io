@@ -201,7 +201,11 @@ function resetDeck(deckId) {
 function pasteDeck(targetDeckId) {
     if (!copiedDeckData || !decks[targetDeckId]) return;
 
+    const deckname = decks[targetDeckId].name;
+
     decks[targetDeckId] = JSON.parse(JSON.stringify(copiedDeckData));
+    
+    decks[targetDeckId].name = deckname; // 덱 이름 유지
 
     if (currentDeck === targetDeckId) {
         loadDeck(targetDeckId);
