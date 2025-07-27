@@ -47,7 +47,7 @@ body {
 }
 
 .course-item:hover::after {
-    content: "드래그하거나 클릭 후 원하는 학기를 클릭하세요";
+    content: "학기로 드래그 또는 과목 클릭 후 학기 클릭";
     position: absolute;
     top: -35px;
     left: 50%;
@@ -66,23 +66,28 @@ body {
 .course-item.selected {
     background-color: #a0203a;
     color: white;
-    border: 2px solid #8a1c32;
+    border: 1px solid #8a1c32;
+}
+.course-item.selected:hover {
+    background-color: rgb(138, 42, 61);
+    color: white;
+    border: 1px solid #8a1c32;
 }
 
 /* 클릭 모드일 때 셀 호버 효과 */
 .click-mode .semester-cell:hover {
-    background-color: rgba(160, 32, 58, 0.1);
+    background-color: rgba(255, 255, 255, 0.5);
     border: 2px dashed #a0203a;
     cursor: pointer;
 }
 
-/* 졸업요건 확인 버튼 툴팁 */
+/* 전공 추가 버튼 툴팁 */
 #major-add-btn {
     position: relative;
 }
 
 #major-add-btn:hover::after {
-    content: "졸업요건 확인";
+    content: "전공 추가";
     position: absolute;
     top: -35px;
     left: 50%;
@@ -204,7 +209,7 @@ body {
 .container-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     font-weight: bold;
     user-select: none;
     padding-bottom: 4px;
@@ -368,6 +373,7 @@ body {
 
 .deck-copy-paste-btn {
     background-color: rgba(255, 255, 255, 0.8);
+    width: 4.5em;
     border: 1px solid #21f636;
     border-radius: 4px;
     padding: 4px 8px;
@@ -383,8 +389,8 @@ body {
 }
 
 .deck-copy-paste-btn:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-    border-color: #999;
+    background-color: #eefff0;
+    color:#21f636
 }
 
 .deck-copy-paste-btn.paste-mode {
