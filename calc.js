@@ -1729,12 +1729,24 @@ function updateGroupProgress(groupContainer) {
     groupProgress.textContent = `${currentCredit}/${minCredit} (${progress}%)`;
     
     const progressPercent = Math.min(100, parseFloat(progress));
-    groupProgress.style.background = `linear-gradient(to right, #ff69b4 ${progressPercent}%, transparent ${progressPercent}%)`;
+    
+    // 둥근 모서리를 위한 배경 설정
+    if (progressPercent > 0) {
+        groupProgress.style.background = `linear-gradient(to right, #ff69b4 ${progressPercent}%, rgba(255, 105, 180, 0.1) ${progressPercent}%)`;
+        groupProgress.style.border = '1px solid rgba(255, 105, 180, 0.3)';
+    } else {
+        groupProgress.style.background = 'rgba(255, 105, 180, 0.1)';
+        groupProgress.style.border = '1px solid rgba(255, 105, 180, 0.2)';
+    }
     
     if (progressPercent >= 100) {
         groupProgress.style.color = 'white';
+        groupProgress.style.background = 'linear-gradient(135deg, #ff69b4, #e91e63)';
+        groupProgress.style.border = '1px solid #e91e63';
+        groupProgress.style.boxShadow = '0 2px 4px rgba(255, 105, 180, 0.3)';
     } else {
-        groupProgress.style.color = 'inherit';
+        groupProgress.style.color = '#333';
+        groupProgress.style.boxShadow = 'none';
     }
 }
 
@@ -1783,6 +1795,21 @@ function updateCellCredit(cell) {
     creditTotalElement.textContent = displayText;
 }
 
+// 과목 매핑 시스템 (2023년 이전과 2024년 이후 과목명 대응)
+const courseMapping = {
+    '자유정의진리I': '학문세계의탐구I',
+    '자유정의진리II': '학문세계의탐구II',
+    '학문세계의탐구I': '자유정의진리I',
+    '학문세계의탐구II': '자유정의진리II'
+};
+
+const reverseCourseMapping = {
+    '학문세계의탐구I': '자유정의진리I',
+    '학문세계의탐구II': '자유정의진리II',
+    '자유정의진리I': '학문세계의탐구I',
+    '자유정의진리II': '학문세계의탐구II'
+};
+
 // 과목명 매핑 함수
 function getMappedCourseName(courseName, year) {
     // 과목 매핑이 필요한 경우 처리
@@ -1793,6 +1820,12 @@ function getMappedCourseName(courseName, year) {
         return reverseCourseMapping[courseName];
     }
     return courseName;
+}
+
+// 이미 수강한 과목인지 확인하는 함수
+function isCourseAlreadyTaken(courseCode) {
+    const takenCourses = getTakenCourses();
+    return takenCourses.some(course => course.dataset.courseCode === courseCode);
 }
 
 // UI 업데이트만 담당 (저장 로직 제외)
