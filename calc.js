@@ -202,7 +202,7 @@ function resetDeck(deckId) {
 
     if (currentDeck === deckId) {
         loadDeck(deckId);
-        updateChart(); // updateChart가 내부적으로 saveStateToLocalStorage 호출
+        updateAndSave(); // UI 업데이트와 저장을 한 번에
     } else {
         saveStateToLocalStorage();
     }
@@ -219,7 +219,7 @@ function pasteDeck(targetDeckId) {
 
     if (currentDeck === targetDeckId) {
         loadDeck(targetDeckId);
-        updateChart();
+        updateAndSave(); // UI 업데이트와 저장을 한 번에
     } else {
         saveStateToLocalStorage();
     }
@@ -247,7 +247,7 @@ function switchDeck(deckId) {
     currentDeck = deckId;
     updateDeckTabs();
     loadDeck(deckId);
-    updateChart(); // 여기서 saveStateToCookie가 호출됨
+    updateAndSave(); // UI 업데이트와 저장을 한 번에
 }
 
 // 현재 덱 저장
@@ -320,7 +320,7 @@ function restoreFromHistory(historyIndex) {
     
     currentHistoryIndex = historyIndex;
     updateHistoryButtons();
-    updateChart();
+    updateChart({ save: false }); // 히스토리 복원 시에는 저장하지 않음
 }
 
 function undo() {
@@ -545,7 +545,7 @@ function showCoursePopup(courseElement, event) {
         // 제목 업데이트
         const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
         courseElement.title = `${courseName} (${credit}학점)${gradeText}`;
-        updateChart();
+        updateAndSave(); // UI 업데이트와 저장을 한 번에
         closeCoursePopup();
         saveToHistory();
     });
@@ -558,7 +558,7 @@ function showCoursePopup(courseElement, event) {
     deleteBtn.addEventListener('click', () => {
         if (confirm(`"${courseName}" 과목을 삭제하시겠습니까?`)) {
             courseElement.remove();
-            updateChart();
+            updateAndSave(); // UI 업데이트와 저장을 한 번에
             closeCoursePopup();
             saveToHistory();
         }
@@ -766,9 +766,7 @@ function handleCellClick(e) {
             // 학점 업데이트
             updateCellCredit(originalCell);
             updateCellCredit(targetCell);
-            updateChart();
-            updateYearStats();
-            saveCurrentDeck();
+            updateAndSave(); // UI 업데이트와 저장을 한 번에
             
             console.log(`과목이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기로 이동됨`);
         } else {
@@ -786,9 +784,7 @@ function handleCellClick(e) {
         
         // 학점 업데이트
         updateCellCredit(targetCell);
-        updateChart();
-        updateYearStats();
-        saveCurrentDeck();
+        updateAndSave(); // UI 업데이트와 저장을 한 번에
         
         console.log(`새 과목 ${selectedCourseName}이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기에 추가됨`);
     }
@@ -875,7 +871,7 @@ function handleDrop(e) {
         const newTakenCourse = createTakenCourseElement(data);
         targetCell.appendChild(newTakenCourse);
     }
-    updateChart();
+    updateAndSave(); // UI 업데이트와 저장을 한 번에
     saveToHistory();
 }
 
@@ -884,7 +880,7 @@ function handleDragEnd(e) {
     if (e.target.classList.contains('taken-course')) {
         if (e.dataTransfer.dropEffect === 'none') {
             e.target.remove();
-            updateChart();
+            updateAndSave(); // UI 업데이트와 저장을 한 번에
             saveToHistory();
         }
     }
@@ -937,7 +933,7 @@ function createYearColumn(year) {
             if (decks[currentDeck].customYearNames && decks[currentDeck].customYearNames[year]) {
                 delete decks[currentDeck].customYearNames[year];
             }
-            updateChart();
+            updateAndSave(); // UI 업데이트와 저장을 한 번에
             saveToHistory();
         });
         header.appendChild(removeBtn);
@@ -1579,7 +1575,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     closeBtn.setAttribute('aria-label', '닫기');
     closeBtn.onclick = () => {
         container.remove();
-        updateChart();
+        updateAndSave(); // UI 업데이트와 저장을 한 번에
     };
     closeBtn.addEventListener('mouseenter', () => {
         closeBtn.style.color = '#000';
@@ -1618,7 +1614,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
 
     yearSelect.addEventListener('change', () => {
         populateDeptSelect(yearSelect.value, null);
-        updateChart();
+        updateAndSave(); // UI 업데이트와 저장을 한 번에
     });
 
     const groupToggleArea = document.createElement('div');
@@ -1644,11 +1640,11 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     });
 
     container.appendChild(document.createElement('hr'));
-    select.addEventListener('change', () => updateChart());
+    select.addEventListener('change', () => updateAndSave()); // UI 업데이트와 저장을 한 번에
     document.getElementById('selectContainer').appendChild(container);
 
     if (!selectedYear) {
-    updateChart();
+        updateChart({ save: false }); // 초기 로드 시에는 저장하지 않음
     }
 }
 
@@ -1661,7 +1657,7 @@ function initGroups(selectContainer) {
 
     groupListDiv.innerHTML = '';
     const selectedDeptCd = selectContainer.querySelector('.dept-select').value;
-            const dept = deptList.find(d => d.deptCd === selectedDeptCd);
+    const dept = deptList.find(d => d.deptCd === selectedDeptCd);
     if (dept) {
         dept.groups.forEach((group, idx) => {
             const groupContainer = document.createElement('div');
@@ -1720,6 +1716,58 @@ function addCourese(groupContainer, course) {
     updateGroupProgress(groupContainer);
 }
 
+// 셀의 학점 업데이트
+function updateCellCredit(cell) {
+    const creditTotalElement = cell.querySelector('.semester-credit-total');
+    if (!creditTotalElement) return;
+    
+    let totalCredit = 0;
+    let totalGradePoints = 0;
+    let gradedCourseCount = 0;
+    
+    cell.querySelectorAll('.taken-course').forEach(courseEl => {
+        const credit = parseInt(courseEl.dataset.credit) || 0;
+        const grade = courseEl.dataset.grade;
+        
+        // F학점이면 학점 인정 안함
+        if (grade !== 'F') {
+            totalCredit += credit;
+        }
+        
+        // 평점 계산
+        if (grade && gradeSystem[grade] !== undefined) {
+            totalGradePoints += gradeSystem[grade] * credit;
+            gradedCourseCount += credit;
+        }
+    });
+    
+    // 셀의 학점 표시 업데이트
+    let displayText = `${totalCredit}학점`;
+    
+    // 평균 평점 계산 및 표시
+    if (gradedCourseCount > 0) {
+        const gpa = (totalGradePoints / gradedCourseCount).toFixed(2);
+        displayText += ` (평균: ${gpa})`;
+    } else if (cell.querySelectorAll('.taken-course').length > 0) {
+        displayText += ` (평균: N/A)`;
+    }
+    
+    creditTotalElement.textContent = displayText;
+}
+
+// 과목명 매핑 함수
+function getMappedCourseName(courseName, year) {
+    // 과목 매핑이 필요한 경우 처리
+    if (courseMapping && courseMapping[courseName]) {
+        return courseMapping[courseName];
+    }
+    if (reverseCourseMapping && reverseCourseMapping[courseName]) {
+        return reverseCourseMapping[courseName];
+    }
+    return courseName;
+}
+
+// UI 업데이트만 담당 (저장 로직 제외)
 function updateChart(options = { save: true }) {
     const myMajors = document.querySelectorAll('.dept-select-container');
     myMajors.forEach(initGroups);
@@ -1745,9 +1793,10 @@ function updateChart(options = { save: true }) {
         }
     });
 
+    // 전체 학점 업데이트
     document.getElementById('current-credit').textContent = currentCredit;
 
-    // 전체 평점 계산 및 표시
+    // 전체 평점 업데이트
     const overallGpaElement = document.getElementById('overall-gpa');
     if (totalGradedCredits > 0) {
         const overallGpa = (totalGradePoints / totalGradedCredits).toFixed(2);
@@ -1756,22 +1805,21 @@ function updateChart(options = { save: true }) {
         overallGpaElement.textContent = 'N/A';
     }
 
-    // 전공 평점 계산 및 표시
+    // 전공 평점 계산
     let majorGradePoints = 0;
     let majorGradedCredits = 0;
-
+    
     takenCourses.forEach(courseEl => {
         const credit = parseInt(courseEl.dataset.credit) || 0;
         const grade = courseEl.dataset.grade;
         const isMajor = courseEl.dataset.isMajor === 'true';
-
-        // 전공 과목이고 평점이 입력된 경우만 계산
+        
         if (isMajor && grade && gradeSystem[grade] !== undefined) {
             majorGradePoints += gradeSystem[grade] * credit;
             majorGradedCredits += credit;
         }
     });
-
+    
     const majorGpaElement = document.getElementById('major-gpa');
     if (majorGradedCredits > 0) {
         const majorGpa = (majorGradePoints / majorGradedCredits).toFixed(2);
@@ -1780,107 +1828,60 @@ function updateChart(options = { save: true }) {
         majorGpaElement.textContent = 'N/A';
     }
 
-    const multipleDeptCourses = [];
-    takenCourses.forEach(course => {
-        const groups = [];
-        myMajors.forEach(selectContainer => {
-            const majorDiv = selectContainer.dataset.majorDiv;
-            const year = selectContainer.querySelector('.year-select').value;
-            const deptCd = selectContainer.querySelector('.dept-select').value;
-            if (!courses[year] || !courses[year][majorDiv]) return;
+    // 각 전공별 그룹 업데이트
+    myMajors.forEach(myMajor => {
+        const year = myMajor.querySelector('.year-select').value;
+        const majorDiv = myMajor.dataset.majorDiv;
+        const selectedDeptCd = myMajor.querySelector('.dept-select').value;
+        const deptList = courses[year] ? courses[year][majorDiv] : [];
+        const dept = deptList ? deptList.find(d => d.deptCd === selectedDeptCd) : null;
+        
+        if (!dept) return;
 
-            selectContainer.querySelectorAll('.group-container0, .group-container1').forEach(groupContainer => {
-                const groupCd = groupContainer.dataset.groupCd;
-                const dept = courses[year][majorDiv].find(d => d.deptCd === deptCd);
-                if (!dept) return;
+        const groupContainers = myMajor.querySelectorAll('.group-container0, .group-container1');
+        groupContainers.forEach(groupContainer => {
+            groupContainer._takenCourses = [];
+            groupContainer.dataset.currentCredit = 0;
+        });
 
-                const group = dept.groups.find(g => g.groupCd === groupCd);
-                if (!group) return;
+        takenCourses.forEach(takenCourse => {
+            const mappedCourseName = getMappedCourseName(takenCourse.dataset.courseName, year);
+            const foundGroup = dept.groups.find(group =>
+                group.courses.some(course => course.name === mappedCourseName)
+            );
 
-                const searchRes = group.courses.find(c => c.code === course.dataset.courseCode);
-                if (searchRes) {
-                    groups.push(groupContainer);
+            if (foundGroup) {
+                const groupContainer = Array.from(groupContainers).find(gc =>
+                    gc.querySelector('.group-label').textContent === foundGroup.groupNm
+                );
+                if (groupContainer) {
+                    addCourese(groupContainer, takenCourse);
                 }
-            });
+            }
         });
-
-        if (groups.length === 1) {
-            addCourese(groups[0], course);
-        } else if (groups.length > 1) {
-            multipleDeptCourses.push({ course, groups });
-        }
     });
 
-    multipleDeptCourses.forEach(({ course, groups }) => {
-        // 진행률 100% 아닌 첫 그룹 선택
-                    const targetGroup = groups.find(g => parseInt(g.dataset.currentCredit) < parseInt(g.dataset.minCredit)) || groups[0];
-
-        if (targetGroup) {
-            addCourese(targetGroup, course);
-        }
-    });
-
+    // 각 셀의 학점 업데이트
     document.querySelectorAll('.semester-cell').forEach(cell => {
-        let totalCredits = 0;
-        let totalGradePoints = 0;
-        let gradedCourseCount = 0;
-
-        cell.querySelectorAll('.taken-course').forEach(courseEl => {
-            const credit = parseInt(courseEl.dataset.credit) || 0;
-            const grade = courseEl.dataset.grade;
-
-            // F학점이면 학점 인정 안함, 그 외에는 학점 인정
-            if (grade !== 'F') {
-                totalCredits += credit;
-            }
-
-            // 평점 계산 (평점이 입력된 과목만)
-            if (grade && gradeSystem[grade] !== undefined) {
-                totalGradePoints += gradeSystem[grade] * credit;
-                gradedCourseCount += credit;
-            }
-        });
-
-        const creditTotalElement = cell.querySelector('.semester-credit-total');
-        if (creditTotalElement) {
-            let displayText = `${totalCredits}학점`;
-
-            // 평점 평균 계산 및 표시
-            if (gradedCourseCount > 0) {
-                const gpa = (totalGradePoints / gradedCourseCount).toFixed(2);
-                displayText += ` (평균: ${gpa})`;
-            } else if (cell.querySelectorAll('.taken-course').length > 0) {
-                displayText += ` (평균: N/A)`;
-            }
-
-            creditTotalElement.textContent = displayText;
-        }
+        updateCellCredit(cell);
     });
 
-    const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
-    const deptSearchInput = document.getElementById('dept-search-input');
-    const courseSearchInput = document.getElementById('course-search-input');
-
-    let currentSearchType = null;
-    searchTypeRadios.forEach(radio => {
-        if (radio.checked) currentSearchType = radio.value;
-    });
-
-    if (currentSearchType === 'byDept' && deptSearchInput.value.trim() !== '') {
-        document.getElementById('dept-search-btn').click();
-    } else if (currentSearchType === 'byCourseName' && courseSearchInput.value.trim() !== '') {
-        document.getElementById('course-search-btn').click();
-    }
-
-    // 학년별 학점과 평점 업데이트
+    // 학년별 통계 업데이트
     updateYearStats();
 
+    // 저장 옵션이 true인 경우에만 저장
     if (options.save) {
-        // 차트 업데이트 시마다 현재 덱 저장
         saveCurrentDeck();
-
         saveStateToLocalStorage();
     }
+}
+
+// UI 업데이트와 저장을 함께 수행
+function updateAndSave() {
+    updateChart({ save: false }); // 중복 저장 방지
+    updateYearStats();
+    saveCurrentDeck();
+    saveStateToLocalStorage();
 }
 
 // 학년별 학점과 평점을 계산하고 업데이트하는 함수
