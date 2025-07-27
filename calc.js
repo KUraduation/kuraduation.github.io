@@ -356,6 +356,14 @@ function loadDeck(deckId) {
     years.forEach(year => {
         const newYearColumn = createYearColumn(year);
         semesterGridContainer.appendChild(newYearColumn);
+        
+        // 커스텀 학년명이 있으면 복원
+        if (decks[deckId].customYearNames && decks[deckId].customYearNames[year]) {
+            const yearTitle = newYearColumn.querySelector('.year-title');
+            if (yearTitle) {
+                yearTitle.textContent = decks[deckId].customYearNames[year];
+            }
+        }
     });
 
     Object.keys(decks[deckId].years).forEach(year => {
@@ -892,12 +900,30 @@ function createYearColumn(year) {
 
     const header = document.createElement('div');
     header.className = 'semester-header';
-    header.innerHTML = `
-        <div class="year-info">
-            <span class="year-title">${year}학년</span>
-            <span class="year-stats">학점: 0, 평점: N/A, 전공: N/A</span>
-        </div>
-    `;
+    const yearInfo = document.createElement('div');
+    yearInfo.className = 'year-info';
+    
+    const yearTitle = document.createElement('span');
+    yearTitle.className = 'year-title';
+    yearTitle.textContent = `${year}학년`;
+    
+    // 추가 학년(5학년 이상)인 경우 클릭 편집 가능하도록 설정
+    if (year > 4) {
+        yearTitle.style.cursor = 'pointer';
+        yearTitle.title = '클릭하여 학년명 편집';
+        yearTitle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            editYearTitle(yearTitle, year);
+        });
+    }
+    
+    const yearStats = document.createElement('span');
+    yearStats.className = 'year-stats';
+    yearStats.textContent = '학점: 0, 평점: N/A, 전공: N/A';
+    
+    yearInfo.appendChild(yearTitle);
+    yearInfo.appendChild(yearStats);
+    header.appendChild(yearInfo);
 
     if (year > 4) {
         const removeBtn = document.createElement('button');
@@ -907,6 +933,10 @@ function createYearColumn(year) {
         removeBtn.addEventListener('click', () => {
             yearColumn.remove();
             delete decks[currentDeck].years[year];
+            // 커스텀 학년명도 함께 삭제
+            if (decks[currentDeck].customYearNames && decks[currentDeck].customYearNames[year]) {
+                delete decks[currentDeck].customYearNames[year];
+            }
             updateChart();
             saveToHistory();
         });
@@ -933,6 +963,65 @@ function createYearColumn(year) {
     });
 
     return yearColumn;
+}
+
+// 학년명 편집 함수
+function editYearTitle(yearTitleElement, year) {
+    const currentText = yearTitleElement.textContent;
+    
+    // 입력 필드 생성
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentText;
+    input.className = 'year-title-input';
+    input.style.background = 'transparent';
+    input.style.border = '1px solid rgba(255, 255, 255, 0.5)';
+    input.style.borderRadius = '2px';
+    input.style.color = 'white';
+    input.style.fontSize = '1.0em';
+    input.style.fontWeight = 'bold';
+    input.style.fontFamily = 'inherit';
+    input.style.padding = '2px 4px';
+    input.style.width = '80px';
+    input.style.textAlign = 'center';
+    
+    // 기존 텍스트를 입력 필드로 교체
+    yearTitleElement.style.display = 'none';
+    yearTitleElement.parentNode.insertBefore(input, yearTitleElement);
+    
+    // 입력 필드에 포커스하고 텍스트 선택
+    input.focus();
+    input.select();
+    
+    // 편집 완료 함수
+    function finishEdit() {
+        const newText = input.value.trim() || `${year}학년`; // 빈 값이면 기본값으로 복원
+        yearTitleElement.textContent = newText;
+        yearTitleElement.style.display = '';
+        input.remove();
+        
+        // 변경된 학년명을 localStorage에 저장
+        if (!decks[currentDeck].customYearNames) {
+            decks[currentDeck].customYearNames = {};
+        }
+        decks[currentDeck].customYearNames[year] = newText;
+        saveCurrentDeck();
+    }
+    
+    // Enter 키로 편집 완료
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            finishEdit();
+        } else if (e.key === 'Escape') {
+            // ESC 키로 편집 취소
+            yearTitleElement.style.display = '';
+            input.remove();
+        }
+    });
+    
+    // 포커스를 잃으면 편집 완료
+    input.addEventListener('blur', finishEdit);
 }
 
 document.addEventListener('DOMContentLoaded', function () {

@@ -567,6 +567,13 @@ body {
     font-size: 1.0em;
 }
 
+.year-title[style*="cursor: pointer"]:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
+
 .year-stats {
     font-size: 0.8em;
     font-weight: normal;
