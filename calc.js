@@ -345,6 +345,13 @@ function loadDeck(deckId) {
 
     if (!decks[deckId] || !decks[deckId].years) return;
 
+    // 1~4학년이 없는 경우 기본 생성
+    for (let year = 1; year <= 4; year++) {
+        if (!decks[deckId].years[year]) {
+            decks[deckId].years[year] = {};
+        }
+    }
+
     const years = Object.keys(decks[deckId].years).sort((a, b) => a - b);
     years.forEach(year => {
         const newYearColumn = createYearColumn(year);
@@ -888,7 +895,7 @@ function createYearColumn(year) {
     header.innerHTML = `
         <div class="year-info">
             <span class="year-title">${year}학년</span>
-            <span class="year-stats">학점: 0, 평점: N/A</span>
+            <span class="year-stats">학점: 0, 평점: N/A, 전공: N/A</span>
         </div>
     `;
 
@@ -1839,7 +1846,7 @@ function updateYearStats() {
             majorGpaText = majorGpa;
         }
 
-        // 학점, 평점, 전공평점 업데이트
+        // 학점, 평점, 전공평점 업데이트 (한 줄로 표시)
         yearStatsElement.textContent = `학점: ${totalCredits}, 평점: ${gpaText}, 전공: ${majorGpaText}`;
     });
 }
