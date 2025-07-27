@@ -373,6 +373,7 @@ body {
 
 .deck-copy-paste-btn {
     background-color: rgba(255, 255, 255, 0.8);
+    width: 4.5em;
     border: 1px solid #21f636;
     border-radius: 4px;
     padding: 4px 8px;
@@ -388,8 +389,8 @@ body {
 }
 
 .deck-copy-paste-btn:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-    border-color: #999;
+    background-color: #eefff0;
+    color:#21f636
 }
 
 .deck-copy-paste-btn.paste-mode {
