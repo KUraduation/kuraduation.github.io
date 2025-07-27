@@ -48,7 +48,7 @@ let currentHistoryIndex = -1;
 const maxHistorySize = 50; // 최대 히스토리 개수
 
 // 클릭 이동 시스템 변수
-let selectedCourse = null;
+let selectedCourses = new Set(); // 여러 과목 선택을 위한 Set
 let isClickMoveMode = false;
 
 // 덱 데이터 구조
@@ -684,40 +684,48 @@ function handleCourseClick(e) {
     
     const courseItem = e.target;
     
-    // 이미 선택된 과목을 다시 클릭하면 선택 해제
-    if (selectedCourse === courseItem) {
-        clearCourseSelection();
-        return;
-    }
-    
-    // 이전 선택 해제
-    clearCourseSelection();
-    
-    // 새로운 과목 선택
-    selectedCourse = courseItem;
-    courseItem.classList.add('selected');
-    isClickMoveMode = true;
-    
-    // 컨테이너에 클릭 모드 클래스 추가
-    document.body.classList.add('click-mode');
-    
-    console.log(`과목 선택됨: ${courseItem.dataset.courseName}`);
+    // 과목 선택/해제 토글
+    toggleCourseSelection(courseItem);
 }
 
 // 과목 선택 해제
 function clearCourseSelection() {
-    if (selectedCourse) {
-        selectedCourse.classList.remove('selected');
-        selectedCourse = null;
-    }
+    selectedCourses.forEach(course => {
+        course.classList.remove('selected');
+    });
+    selectedCourses.clear();
     isClickMoveMode = false;
     document.body.classList.remove('click-mode');
+}
+
+// 특정 과목 선택 토글
+function toggleCourseSelection(courseElement) {
+    if (selectedCourses.has(courseElement)) {
+        // 이미 선택된 과목이면 선택 해제
+        courseElement.classList.remove('selected');
+        selectedCourses.delete(courseElement);
+        console.log(`과목 선택 해제: ${courseElement.dataset.courseName}`);
+    } else {
+        // 새로운 과목 선택
+        courseElement.classList.add('selected');
+        selectedCourses.add(courseElement);
+        console.log(`과목 선택: ${courseElement.dataset.courseName}`);
+    }
+    
+    // 선택된 과목이 있으면 클릭 모드 활성화, 없으면 비활성화
+    if (selectedCourses.size > 0) {
+        isClickMoveMode = true;
+        document.body.classList.add('click-mode');
+    } else {
+        isClickMoveMode = false;
+        document.body.classList.remove('click-mode');
+    }
 }
 
 // 셀 클릭 핸들러 (클릭 이동 모드)
 function handleCellClick(e) {
     // 클릭 모드가 아니거나 선택된 과목이 없으면 무시
-    if (!isClickMoveMode || !selectedCourse) {
+    if (!isClickMoveMode || selectedCourses.size === 0) {
         return;
     }
     
@@ -727,66 +735,94 @@ function handleCellClick(e) {
     const targetCell = e.target.closest('.semester-cell');
     if (!targetCell) return;
     
-    // 선택된 과목의 데이터 가져오기
-    const courseData = {
-        code: selectedCourse.dataset.courseCode,
-        name: selectedCourse.dataset.courseName,
-        credit: selectedCourse.dataset.credit,
-        groupNm: selectedCourse.dataset.groupNm || '',
-        isTakenCourse: selectedCourse.classList.contains('taken-course')
-    };
+    // 히스토리 저장 (여러 과목 이동이므로 한 번만)
+    saveToHistory();
     
-    // 이미 수강한 과목인지 확인
-    const existingCourse = document.querySelector(
-        `.taken-course[data-course-code="${courseData.code}"]`
-    );
+    const processedCourses = [];
+    let hasError = false;
     
-    if (existingCourse && !courseData.isTakenCourse) {
-        alert('이미 수강한 과목입니다.');
-        clearCourseSelection();
-        return;
-    }
+    // 선택된 모든 과목을 처리
+    selectedCourses.forEach(selectedCourse => {
+        // 선택된 과목의 데이터 가져오기
+        const courseData = {
+            code: selectedCourse.dataset.courseCode,
+            name: selectedCourse.dataset.courseName,
+            credit: selectedCourse.dataset.credit,
+            groupNm: selectedCourse.dataset.groupNm || '',
+            isTakenCourse: selectedCourse.classList.contains('taken-course')
+        };
+        
+        // 이미 수강한 과목인지 확인 (새로 추가하는 경우만)
+        if (!courseData.isTakenCourse) {
+            const existingCourse = document.querySelector(
+                `.taken-course[data-course-code="${courseData.code}"]`
+            );
+            if (existingCourse) {
+                console.log(`이미 수강한 과목입니다: ${courseData.name}`);
+                hasError = true;
+                return; // 이 과목은 건너뛰고 다음 과목 처리
+            }
+        }
+        
+        // 과목 이동 또는 추가
+        if (courseData.isTakenCourse) {
+            // 기존 과목을 다른 셀로 이동
+            const originalCell = selectedCourse.closest('.semester-cell');
+            if (originalCell !== targetCell) {
+                // 과목을 새 셀로 이동
+                targetCell.appendChild(selectedCourse);
+                processedCourses.push({
+                    element: selectedCourse,
+                    originalCell: originalCell,
+                    action: 'moved',
+                    name: courseData.name
+                });
+                console.log(`과목이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기로 이동됨: ${courseData.name}`);
+            } else {
+                console.log(`같은 셀로는 이동할 수 없습니다: ${courseData.name}`);
+            }
+        } else {
+            // 새 과목 추가
+            const takenCourse = createTakenCourseElement(courseData);
+            targetCell.appendChild(takenCourse);
+            
+            // 검색 결과에서 해당 과목 표시 업데이트
+            selectedCourse.classList.add('taken-in-search');
+            
+            processedCourses.push({
+                element: takenCourse,
+                originalCell: null,
+                action: 'added',
+                name: courseData.name
+            });
+            console.log(`새 과목 ${courseData.name}이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기에 추가됨`);
+        }
+    });
     
-    // 선택 해제를 먼저 수행 (이동 과정에서 문제가 생기지 않도록)
-    const selectedCourseElement = selectedCourse;
-    const selectedCourseName = selectedCourse.dataset.courseName;
+    // 선택 해제
     clearCourseSelection();
     
-    // 과목 이동 또는 추가
-    if (courseData.isTakenCourse) {
-        // 기존 과목을 다른 셀로 이동
-        const originalCell = selectedCourseElement.closest('.semester-cell');
-        if (originalCell !== targetCell) {
-            // 히스토리 저장
-            saveToHistory();
-            
-            // 과목을 새 셀로 이동
-            targetCell.appendChild(selectedCourseElement);
-            
-            // 학점 업데이트
-            updateCellCredit(originalCell);
-            updateCellCredit(targetCell);
-            updateAndSave(); // UI 업데이트와 저장을 한 번에
-            
-            console.log(`과목이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기로 이동됨`);
-        } else {
-            console.log('같은 셀로는 이동할 수 없습니다.');
-        }
-    } else {
-        // 새 과목 추가
-        saveToHistory();
+    // 처리된 과목이 있으면 UI 업데이트
+    if (processedCourses.length > 0) {
+        // 영향받은 모든 셀의 학점 업데이트
+        const cellsToUpdate = new Set([targetCell]);
+        processedCourses.forEach(processed => {
+            if (processed.originalCell) {
+                cellsToUpdate.add(processed.originalCell);
+            }
+        });
         
-        const takenCourse = createTakenCourseElement(courseData);
-        targetCell.appendChild(takenCourse);
-        
-        // 검색 결과에서 해당 과목 표시 업데이트
-        selectedCourseElement.classList.add('taken-in-search');
-        
-        // 학점 업데이트
-        updateCellCredit(targetCell);
+        cellsToUpdate.forEach(cell => updateCellCredit(cell));
         updateAndSave(); // UI 업데이트와 저장을 한 번에
         
-        console.log(`새 과목 ${selectedCourseName}이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기에 추가됨`);
+        console.log(`총 ${processedCourses.length}개 과목이 처리되었습니다.`);
+    }
+    
+    // 에러가 있었다면 알림
+    if (hasError && processedCourses.length === 0) {
+        alert('선택한 과목들이 모두 이미 수강한 과목입니다.');
+    } else if (hasError) {
+        alert('일부 과목은 이미 수강한 과목이어서 제외되었습니다.');
     }
 }
 
@@ -827,17 +863,9 @@ function createTakenCourseElement(courseData) {
         e.stopPropagation();
         
         // 클릭 이동 모드가 활성화되어 있으면 과목 선택 처리
-        if (isClickMoveMode && selectedCourse !== takenCourse) {
-            // 이전 선택 해제
-            clearCourseSelection();
-            
-            // taken-course 선택
-            selectedCourse = takenCourse;
-            takenCourse.classList.add('selected');
-            isClickMoveMode = true;
-            document.body.classList.add('click-mode');
-            
-            console.log(`수강 중인 과목 선택됨: ${takenCourse.dataset.courseName}`);
+        if (isClickMoveMode) {
+            // taken-course 선택/해제 토글
+            toggleCourseSelection(takenCourse);
             return;
         }
         

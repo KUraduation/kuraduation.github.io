@@ -47,7 +47,7 @@ body {
 }
 
 .course-item:hover::after {
-    content: "학기로 드래그 또는 과목 클릭 후 학기 클릭";
+    content: "드래그 또는 클릭(다중선택 가능) 후 학기 클릭";
     position: absolute;
     top: -35px;
     left: 50%;
@@ -66,12 +66,23 @@ body {
 .course-item.selected {
     background-color: #a0203a;
     color: white;
-    border: 1px solid #8a1c32;
+    border: 2px solid #8a1c32;
+    box-shadow: 0 0 8px rgba(160, 32, 58, 0.5);
+    transform: scale(1.02);
 }
 .course-item.selected:hover {
     background-color: rgb(138, 42, 61);
     color: white;
-    border: 1px solid #8a1c32;
+    border: 2px solid #8a1c32;
+}
+
+/* taken-course가 선택되었을 때도 동일한 스타일 적용 */
+.taken-course.selected {
+    background-color: #a0203a;
+    color: white;
+    border: 2px solid #8a1c32;
+    box-shadow: 0 0 8px rgba(160, 32, 58, 0.5);
+    transform: scale(1.02);
 }
 
 /* 클릭 모드일 때 셀 호버 효과 */
