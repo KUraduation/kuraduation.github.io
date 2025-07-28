@@ -1815,26 +1815,27 @@ function updateCellCredit(cell) {
 // 과목 매핑 시스템 (2023년 이전과 2024년 이후 과목명 대응)
 const courseMapping = {
     '자유정의진리I': '학문세계의탐구I',
-    '자유정의진리II': '학문세계의탐구II',
-    '학문세계의탐구I': '자유정의진리I',
-    '학문세계의탐구II': '자유정의진리II'
+    '자유정의진리II': '학문세계의탐구II'
 };
 
 const reverseCourseMapping = {
     '학문세계의탐구I': '자유정의진리I',
-    '학문세계의탐구II': '자유정의진리II',
+    '학문세계의탐구II': '자유정의진리II'
+};
+
+// 양방향 매핑을 위한 통합 매핑 객체
+const unifiedCourseMapping = {
     '자유정의진리I': '학문세계의탐구I',
-    '자유정의진리II': '학문세계의탐구II'
+    '자유정의진리II': '학문세계의탐구II',
+    '학문세계의탐구I': '학문세계의탐구I',
+    '학문세계의탐구II': '학문세계의탐구II'
 };
 
 // 과목명 매핑 함수
 function getMappedCourseName(courseName, year) {
-    // 과목 매핑이 필요한 경우 처리
-    if (courseMapping && courseMapping[courseName]) {
-        return courseMapping[courseName];
-    }
-    if (reverseCourseMapping && reverseCourseMapping[courseName]) {
-        return reverseCourseMapping[courseName];
+    // 통합 매핑을 사용하여 양방향 매핑 처리
+    if (unifiedCourseMapping && unifiedCourseMapping[courseName]) {
+        return unifiedCourseMapping[courseName];
     }
     return courseName;
 }
@@ -1988,9 +1989,18 @@ function updateChart(options = { save: true }) {
 
         takenCourses.forEach(takenCourse => {
             const mappedCourseName = getMappedCourseName(takenCourse.dataset.courseName, year);
-            const foundGroup = dept.groups.find(group =>
-                group.courses.some(course => course.name === mappedCourseName)
-            );
+            const courseCode = takenCourse.dataset.courseCode;
+            
+            const foundGroup = dept.groups.find(group => {
+                // 과목명으로 매칭
+                const nameMatch = group.courses.some(course => course.name === mappedCourseName);
+                
+                // GELI 과목을 자유정의진리/학문세계의탐구 졸업요건에 포함
+                const isGELIGroup = group.groupNm && (group.groupNm.includes('자유정의진리') || group.groupNm.includes('학문세계의탐구'));
+                const isGELICourse = courseCode && courseCode.startsWith('GELI');
+                
+                return nameMatch || (isGELIGroup && isGELICourse);
+            });
 
             if (foundGroup) {
                 const groupContainer = Array.from(groupContainers).find(gc =>
