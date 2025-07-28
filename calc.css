@@ -1377,8 +1377,8 @@ body {
 }
 
 .taken-course[data-grade="A"] {
-    background: linear-gradient(135deg, #8BC34A, #9CCC65);
-    border: 1px solid #689F38;
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    border: 1px solid #388E3C;
     color: white;
 }
 
