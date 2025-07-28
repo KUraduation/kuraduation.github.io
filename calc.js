@@ -1513,11 +1513,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function getTakenCourses() {
     const takenCourses = [];
-    const codeSet = new Set();
-    document.getElementById('semester-grid-container').querySelectorAll('.taken-course').forEach(course => {
+    const allCourses = document.getElementById('semester-grid-container').querySelectorAll('.taken-course');
+    allCourses.forEach(course => {
         const courseCode = course.dataset.courseCode;
-        if (!codeSet.has(courseCode)) {
-            codeSet.add(courseCode);
+        const isAlreadyAdded = takenCourses.some(addedCourse => isEqualCourse(addedCourse.dataset.courseCode, courseCode));
+        if (!isAlreadyAdded) {
             takenCourses.push(course);
         }
     });
@@ -1786,6 +1786,7 @@ const courseMapping = [
     ['GELI002', 'GELI004', 'GELI006', 'GELI008'], // 학세탐2
     ['IFLS011', 'IFLS800'], // 아잉1
     ['IFLS012', 'IFLS801'], // 아잉2
+    ['GEWR001', 'GEWR002'], // 글쓰기
 ];
 // 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
 function isEqualCourse(courseCode1, courseCode2) {
