@@ -223,6 +223,7 @@ function pasteDeck(targetDeckId) {
     if (currentDeck === targetDeckId) {
         loadDeck(targetDeckId);
         updateAndSave(); // UI 업데이트와 저장을 한 번에
+        saveToHistory(); // 히스토리에 저장
     } else {
         saveStateToLocalStorage();
     }
