@@ -1749,21 +1749,21 @@ function updateGroupProgress(groupContainer) {
     
     // 둥근 모서리를 위한 배경 설정
     if (progressPercent > 0) {
-        groupProgress.style.background = `linear-gradient(to right, #ff69b4 ${progressPercent}%, rgba(255, 105, 180, 0.1) ${progressPercent}%)`;
-        groupProgress.style.border = '1px solid rgba(255, 105, 180, 0.3)';
+        groupProgress.style.background = `linear-gradient(to right, #dc143c ${progressPercent}%, rgba(220, 20, 60, 0.15) ${progressPercent}%)`;
+        groupProgress.style.border = '1px solid rgba(220, 20, 60, 0.3)';
     } else {
-        groupProgress.style.background = 'rgba(255, 105, 180, 0.1)';
-        groupProgress.style.border = '1px solid rgba(255, 105, 180, 0.2)';
+        groupProgress.style.background = 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)';
+        groupProgress.style.border = '1px solid #dee2e6';
     }
     
     if (progressPercent >= 100) {
         groupProgress.style.color = 'white';
-        groupProgress.style.background = 'linear-gradient(135deg, #ff69b4, #e91e63)';
-        groupProgress.style.border = '1px solid #e91e63';
-        groupProgress.style.boxShadow = '0 2px 4px rgba(255, 105, 180, 0.3)';
+        groupProgress.style.background = 'linear-gradient(135deg, #dc143c, #b22222)';
+        groupProgress.style.border = '1px solid #b22222';
+        groupProgress.style.boxShadow = '0 2px 6px rgba(220, 20, 60, 0.4)';
     } else {
         groupProgress.style.color = '#333';
-        groupProgress.style.boxShadow = 'none';
+        groupProgress.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
     }
 }
 
