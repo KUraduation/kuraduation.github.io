@@ -1266,17 +1266,71 @@ body {
     color: white;
 }
 
-/* P/NP 과목 스타일 */
+/* 평점별 과목 스타일 - 모던한 플랫 톤 */
+.taken-course[data-grade="A+"] {
+    background: linear-gradient(135deg, #033500, #044400);
+    border: 1px solid #022200;
+    color: white;
+}
+
+.taken-course[data-grade="A"] {
+    background: linear-gradient(135deg, #8BC34A, #9CCC65);
+    border: 1px solid #689F38;
+    color: white;
+}
+
+.taken-course[data-grade="B+"] {
+    background: linear-gradient(135deg, #CDDC39, #D4E157);
+    border: 1px solid #AFB42B;
+    color: #424242;
+}
+
+.taken-course[data-grade="B"] {
+    background: linear-gradient(135deg, #FFEB3B, #FFEE58);
+    border: 1px solid #FBC02D;
+    color: #424242;
+}
+
+.taken-course[data-grade="C+"] {
+    background: linear-gradient(135deg, #FF9800, #FFB74D);
+    border: 1px solid #F57C00;
+    color: white;
+}
+
+.taken-course[data-grade="C"] {
+    background: linear-gradient(135deg, #FF5722, #FF8A65);
+    border: 1px solid #E64A19;
+    color: white;
+}
+
+.taken-course[data-grade="D+"] {
+    background: linear-gradient(135deg, #B71C1C, #C62828);
+    border: 1px solid #A00000;
+    color: white;
+}
+
+.taken-course[data-grade="D"] {
+    background: linear-gradient(135deg, #660000, #800000);
+    border: 1px solid #4A0000;
+    color: white;
+}
+
+.taken-course[data-grade="F"] {
+    background: linear-gradient(135deg, #000000, #1A0000);
+    border: 1px solid #000000;
+    color: white;
+}
+
 .taken-course[data-grade="P"] {
-    background: linear-gradient(135deg, #d4edda, #c3e6cb);
-    border: 1px solid #28a745;
-    color: #155724;
+    background: linear-gradient(135deg, #9E9E9E, #BDBDBD);
+    border: 1px solid #757575;
+    color: white;
 }
 
 .taken-course[data-grade="NP"] {
-    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-    border: 1px solid #dc3545;
-    color: #721c24;
+    background: linear-gradient(135deg, #616161, #757575);
+    border: 1px solid #424242;
+    color: white;
 }
 
 .course-item.taken-in-search {
