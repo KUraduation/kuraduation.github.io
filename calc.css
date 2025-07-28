@@ -537,9 +537,13 @@ body {
     box-shadow: 0 4px 12px rgba(220, 20, 60, 0.2);
 }
 
+.toggle-btn .toggle-icon {
+    transform: rotate(180deg);
+}
+
 .toggle-btn:hover .toggle-icon {
     border-left-color: #b22222;
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(180deg);
 }
 
 .toggle-btn.collapsed .toggle-icon {
