@@ -567,8 +567,8 @@ body {
     /* 레이아웃 */
     display: flex;
     position: relative;
-    padding: 20px;
-    gap: 20px;
+    padding: 10px;
+    gap: 10px;
     min-width: 0;
     margin-right: 12px;
     
@@ -592,38 +592,43 @@ body {
 
 #semester-row-headers {
     display: grid;
-    grid-template-rows: auto 4fr 1.5fr 4fr 1.5fr;
-    gap: 12px;
+    grid-template-rows: 65px 1.9fr 0.75fr 1.9fr 0.75fr;
+    gap: 4px;
     text-align: center;
-    margin-left: -10px; /* 왼쪽으로 이동 */
-    margin-top: 15px; /* 아래로 이동 */
+    margin-left: 0px; /* 원래 위치로 복원 */
+    margin-top: 12px; /* 아래로 이동 */
 }
 
 .row-header {
-    font-family: 'Paperlogy-6SemiBold' !important;
+    font-family: 'Cafe24OhsquareAir-v2.0' !important;
     font-size: 0.9em;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
     user-select: none;
-    /*writing-mode: vertical-rl; /* 텍스트 세로쓰기 */
-    /*transform: rotate(180deg); /* 글자 바로 세우기 */
-    background-color: rgba(255, 255, 255, 0.6);
-    border-radius: 8px;
-    padding: 4px;
+    background: linear-gradient(135deg, rgba(220, 20, 60, 0.08), rgba(178, 34, 34, 0.05));
+    border: 1px solid rgba(220, 20, 60, 0.12);
+    border-radius: 12px;
+    padding: 8px;
+    color: #333;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(220, 20, 60, 0.1);
+    min-height: 40px; /* semester cell과 비슷한 높이 */
 }
 
 #semester-grid-container {
     height: 100%;
-    display: flex; /* 학년 컬럼들을 가로로 나란히 배치 */
+    display: flex;
     flex-direction: row;
-    gap: 16px; /* 학년 컬럼 사이의 간격 */
+    gap: 16px;
+    margin-left: 0px;
 }
 
 .year-column {
     display: grid;
     grid-template-rows: auto 5fr 1.5fr 5fr 1.5fr;
-    gap: 12px;
+    gap: 8px;
     width: 280px;
     flex-shrink: 0;
     
@@ -657,11 +662,11 @@ body {
     border-radius: 12px;
     
     /* 레이아웃 */
-    padding: 12px;
+    padding: 10px;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 4px;
     align-content: flex-start;
     position: relative;
     
