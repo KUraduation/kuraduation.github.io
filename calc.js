@@ -53,6 +53,9 @@ const maxHistorySize = 50; // 최대 히스토리 개수
 let selectedCourses = new Set(); // 여러 과목 선택을 위한 Set
 let isClickMoveMode = false;
 
+// 도움말 팝업 변수
+let currentHelpPopup = null;
+
 // 덱 데이터 구조
 let decks = {
     deck1: {
@@ -60,7 +63,7 @@ let decks = {
         years: { '1': {}, '2': {}, '3': {}, '4': {} }
     },
     deck2: {
-        name: "덱2",
+        name: "덱2", 
         years: { '1': {}, '2': {}, '3': {}, '4': {} }
     },
     deck3: {
@@ -216,7 +219,7 @@ function resetDeck(deckId) {
 // 덱 붙여넣기 함수
 function pasteDeck(targetDeckId) {
     if (!copiedDeckData || !decks[targetDeckId]) return;
-
+    
     const deckname = decks[targetDeckId].name;
 
     decks[targetDeckId] = JSON.parse(JSON.stringify(copiedDeckData));
@@ -273,9 +276,9 @@ function saveCurrentDeck() {
 
             cell.querySelectorAll('.taken-course').forEach(course => {
                 const courseData = {
-                    code: course.dataset.courseCode,
-                    name: course.dataset.courseName,
-                    credit: course.dataset.credit,
+        code: course.dataset.courseCode,
+        name: course.dataset.courseName,
+        credit: course.dataset.credit,
                     grade: course.dataset.grade || '',
                     isMajor: course.dataset.isMajor === 'true', // 전공 여부 저장
                 };
@@ -301,12 +304,12 @@ function saveToHistory() {
         decks: decksData,
         timestamp: Date.now()
     };
-
+    
     historyStack = historyStack.slice(0, currentHistoryIndex + 1);
     console.log('현재 상태 저장:', currentHistoryIndex);
     historyStack.push(currentState);
     currentHistoryIndex++;
-
+    
     if (historyStack.length > maxHistorySize) {
         historyStack.shift();
         currentHistoryIndex--;
@@ -317,13 +320,13 @@ function saveToHistory() {
 // 히스토리에서 상태 복원
 function restoreFromHistory(historyIndex) {
     if (historyIndex < 0 || historyIndex >= historyStack.length) return;
-
+    
     const state = historyStack[historyIndex];
     if (state.decks) { // 새로운 데이터 구조
         decks = JSON.parse(JSON.stringify(state.decks));
         loadDeck(currentDeck);
     }
-
+    
     currentHistoryIndex = historyIndex;
     updateHistoryButtons();
     updateChart({ save: false }); // 히스토리 복원 시에는 저장하지 않음
@@ -378,16 +381,16 @@ function loadDeck(deckId) {
         const yearData = decks[deckId].years[year];
         Object.keys(yearData).forEach(semester => {
             const semesterData = yearData[semester];
-            const targetCell = document.querySelector(
+        const targetCell = document.querySelector(
                 `.semester-cell[data-year="${year}"][data-semester="${semester}"]`
-            );
-            if (targetCell) {
+        );
+        if (targetCell) {
                 semesterData.forEach(courseData => {
-                    const newCourse = createTakenCourseElement(courseData);
-                    targetCell.appendChild(newCourse);
+            const newCourse = createTakenCourseElement(courseData);
+            targetCell.appendChild(newCourse);
                 });
-            }
-        });
+        }
+    });
     });
 
     refreshSearchResults(); // 덱 로드 후 검색 결과 초기화
@@ -406,35 +409,35 @@ function updateDeckTabs() {
 // 새 덱 추가
 function addNewDeck() {
     if (deckCount >= maxDeckCount) return;
-
+    
     deckCount++;
     const newDeckId = `deck${deckCount}`;
-
+    
     decks[newDeckId] = { name: `덱${deckCount}`, years: { '1': {}, '2': {}, '3': {}, '4': {} } };
 
     const deckTabs = document.querySelector('.deck-tabs');
-    const newTab = document.createElement('button');
-    newTab.className = 'deck-tab';
-    newTab.dataset.deck = newDeckId;
-    newTab.textContent = `덱${deckCount}`;
-    newTab.addEventListener('click', () => switchDeck(newDeckId));
-
-    const addBtn = document.getElementById('add-deck-btn');
-    deckTabs.insertBefore(newTab, addBtn);
-
+        const newTab = document.createElement('button');
+        newTab.className = 'deck-tab';
+        newTab.dataset.deck = newDeckId;
+        newTab.textContent = `덱${deckCount}`;
+        newTab.addEventListener('click', () => switchDeck(newDeckId));
+        
+        const addBtn = document.getElementById('add-deck-btn');
+            deckTabs.insertBefore(newTab, addBtn);
+    
     if (deckCount >= maxDeckCount) {
         if (addBtn) addBtn.style.display = 'none';
-    }
+        }
     switchDeck(newDeckId);
 }
 
 Promise.all(years.map(year =>
     fetch(`${year}.json`)
-        .then(response => {
+    .then(response => {
             if (!response.ok) throw new Error(`네트워크 오류: ${year}.json`);
-            return response.json();
-        })
-        .then(data => {
+        return response.json();
+    })
+    .then(data => {
             courses[year] = data;
         })
 )).then(() => {
@@ -629,6 +632,9 @@ function handleOutsideClick(event) {
     if (currentPopup && !currentPopup.contains(event.target)) {
         closeCoursePopup();
     }
+    if (currentHelpPopup && !currentHelpPopup.contains(event.target)) {
+        closeHelpPopup();
+    }
 }
 
 // 과목 삭제 함수
@@ -639,6 +645,75 @@ function deleteCourse(courseElement) {
     saveToHistory();
 
     refreshSearchResults();
+}
+
+// 도움말 팝업 표시 함수
+function showHelpPopup() {
+    // 기존 팝업이 있으면 제거
+    if (currentHelpPopup) {
+        currentHelpPopup.remove();
+        currentHelpPopup = null;
+    }
+
+    // 팝업 생성
+    const popup = document.createElement('div');
+    popup.className = 'help-popup';
+
+    // 제목
+    const title = document.createElement('div');
+    title.className = 'help-popup-title';
+    title.textContent = '📚 사용법 안내';
+    popup.appendChild(title);
+
+    // 내용
+    const content = document.createElement('div');
+    content.className = 'help-popup-content';
+    content.innerHTML = `
+        <p>• PC나 태블릿 등 가로화면 기기 사용을 권장합니다.</p>
+        <p>• 모든 기록은 브라우저에 저장되며, 브라우저 기록을 삭제하지 않는 한 그대로 유지됩니다.</p>
+        <p>• 원하는 과목을 드래그하거나, 과목 클릭 후 셀을 클릭해 배치하세요.</p>
+        <p>• 2021~2025년의 고려대 교육정보시스템 기준을 따릅니다.<br>
+           시스템 정보 오류로 문제가 생기면 아래 오픈채팅으로 문의해주세요.</p>
+        <p>• 일부 교양과목의 경우 '직접 추가' 기능을 이용하세요.</p>
+        <p>• 여러 전공에 해당되는 강의는 위쪽 전공부터 순차 적용됩니다.</p>
+        <p>• 동일 강의코드는 재수강으로 간주되며 한 번만 인정됩니다.</p>
+        <p><strong>• 심화전공 이수자는 졸업요건에서 제1전공을 고르지 말고 반드시 심화전공만 선택하세요!</strong></p>
+        <p>• 문의사항은 여기로 —> <a href="https://open.kakao.com/o/syPR4rJh" target="_blank">https://open.kakao.com/o/syPR4rJh</a></p>
+    `;
+    popup.appendChild(content);
+
+    // 닫기 버튼
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'help-popup-close-btn';
+    closeBtn.textContent = '닫기';
+    closeBtn.addEventListener('click', closeHelpPopup);
+    popup.appendChild(closeBtn);
+
+    // 팝업 위치 설정 (화면 중앙)
+    document.body.appendChild(popup);
+    
+    const rect = popup.getBoundingClientRect();
+    const x = (window.innerWidth - rect.width) / 2;
+    const y = (window.innerHeight - rect.height) / 2;
+    
+    popup.style.left = x + 'px';
+    popup.style.top = y + 'px';
+
+    currentHelpPopup = popup;
+
+    // 외부 클릭 시 팝업 닫기
+    setTimeout(() => {
+        document.addEventListener('click', handleOutsideClick);
+    }, 0);
+}
+
+// 도움말 팝업 닫기 함수
+function closeHelpPopup() {
+    if (currentHelpPopup) {
+        currentHelpPopup.remove();
+        currentHelpPopup = null;
+        document.removeEventListener('click', handleOutsideClick);
+    }
 }
 
 // 교양과목을 검색 결과에 추가하는 함수
@@ -1136,14 +1211,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         }
-
+        
         suggestions.forEach(suggestion => {
             const option = document.createElement('option');
             option.value = suggestion;
             courseDatalist.appendChild(option);
         });
     }
-
+    
     majorDivSelect.addEventListener('change', () => {
         deptSearchInput.value = '';
         updateDeptDatalist();
@@ -1152,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', function () {
         deptSearchInput.value = '';
         updateDeptDatalist();
     });
-
+    
     window.addEventListener('coursesLoaded', updateDeptDatalist);
 
     deptSearchInput.addEventListener('input', function () {
@@ -1233,7 +1308,7 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResult.textContent = '학과 이름을 입력하세요.';
             return;
         }
-
+        
         const deptList = courses[selectedYear][selectedMajorDiv];
         const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
 
@@ -1415,7 +1490,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const semesterHeader = document.createElement('div');
     semesterHeader.innerHTML = `<span>ㅤ</span>`;
-    semesterRowHeaders.appendChild(semesterHeader);
+    semesterRowHeaders.appendChild(semesterHeader); 
     semesterNames.forEach(name => {
         const header = document.createElement('div');
         header.className = 'row-header';
@@ -1426,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function getNextYearNumber() {
         const existingYears = Object.keys(decks[currentDeck].years)
             .map(year => parseInt(year, 10))
-            .sort((a, b) => a - b);
+                                   .sort((a, b) => a - b);
         let nextYear = 1;
         for (const year of existingYears) {
             if (year === nextYear) {
@@ -1445,10 +1520,10 @@ document.addEventListener('DOMContentLoaded', function () {
         decks[currentDeck].years[nextYear] = {};
 
         const newYearColumn = createYearColumn(nextYear);
-
+        
         const columns = Array.from(semesterGridContainer.querySelectorAll('.year-column'));
         const insertionIndex = columns.findIndex(col => parseInt(col.dataset.year, 10) > nextYear);
-
+        
         if (insertionIndex === -1) {
             semesterGridContainer.appendChild(newYearColumn);
         } else {
@@ -1473,6 +1548,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('add-deck-btn').addEventListener('click', addNewDeck);
     document.getElementById('undo-btn').addEventListener('click', undo);
     document.getElementById('redo-btn').addEventListener('click', redo);
+    document.getElementById('help-btn').addEventListener('click', showHelpPopup);
 
     // 교양과목 추가 버튼 이벤트
     document.getElementById('custom-course-add-btn').addEventListener('click', () => {
@@ -1500,8 +1576,8 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('custom-course-credit').value = '';
     });
 
-    updateCopyPasteButton();
-    updateHistoryButtons();
+        updateCopyPasteButton();
+        updateHistoryButtons();
 
     document.addEventListener('keydown', function (e) {
         if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
@@ -1621,12 +1697,12 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
         const deptList = courses[year] ? courses[year][majorDiv] : [];
         select.innerHTML = ''; // Clear existing options
         if (deptList) {
-            deptList.forEach(dept => {
-                const option = document.createElement('option');
-                option.value = dept.deptCd;
-                option.textContent = dept.deptNm;
-                select.appendChild(option);
-            });
+    deptList.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.deptCd;
+        option.textContent = dept.deptNm;
+        select.appendChild(option);
+    });
         }
         if (deptToSelect) {
             select.value = deptToSelect;
@@ -1720,9 +1796,9 @@ function updateGroupProgress(groupContainer) {
 
     const progress = (minCredit > 0) ? (currentCredit / minCredit * 100).toFixed(0) : 0;
     const groupProgress = groupContainer.querySelector('.group-progress');
-
+    
     groupProgress.textContent = `${currentCredit}/${minCredit} (${progress}%)`;
-
+    
     const progressPercent = Math.min(100, parseFloat(progress));
 
     // 둥근 모서리를 위한 배경 설정
