@@ -1780,38 +1780,28 @@ function updateCellCredit(cell) {
     creditTotalElement.textContent = displayText;
 }
 
-// 과목 매핑 시스템 (2023년 이전과 2024년 이후 과목명 대응)
-const courseMapping = {
-    '자유정의진리I': '학문세계의탐구I',
-    '자유정의진리II': '학문세계의탐구II'
-};
-
-const reverseCourseMapping = {
-    '학문세계의탐구I': '자유정의진리I',
-    '학문세계의탐구II': '자유정의진리II'
-};
-
-// 양방향 매핑을 위한 통합 매핑 객체
-const unifiedCourseMapping = {
-    '자유정의진리I': '학문세계의탐구I',
-    '자유정의진리II': '학문세계의탐구II',
-    '학문세계의탐구I': '학문세계의탐구I',
-    '학문세계의탐구II': '학문세계의탐구II'
-};
-
-// 과목명 매핑 함수
-function getMappedCourseName(courseName, year) {
-    // 통합 매핑을 사용하여 양방향 매핑 처리
-    if (unifiedCourseMapping && unifiedCourseMapping[courseName]) {
-        return unifiedCourseMapping[courseName];
+// 강의(과목) 매핑 시스템(개편된 과목은 여기 추가)
+const courseMapping = [
+    ['GELI001', 'GELI003', 'GELI005', 'GELI007'], // 학세탐1
+    ['GELI002', 'GELI004', 'GELI006', 'GELI008'], // 학세탐2
+    ['IFLS011', 'IFLS800'], // 아잉1
+    ['IFLS012', 'IFLS801'], // 아잉2
+];
+// 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
+function isEqualCourse(courseCode1, courseCode2) {
+    if (courseCode1 === courseCode2) return true;
+    for (const group of courseMapping) {
+        if (group.includes(courseCode1) && group.includes(courseCode2)) {
+            return true;
+        }
     }
-    return courseName;
+    return false;
 }
 
 // 이미 수강한 과목인지 확인하는 함수
 function isCourseAlreadyTaken(courseCode) {
     const takenCourses = getTakenCourses();
-    return takenCourses.some(course => course.dataset.courseCode === courseCode);
+    return takenCourses.some(course => isEqualCourse(course.dataset.courseCode, courseCode));
 }
 
 // 검색 결과를 다시 렌더링하는 함수
@@ -1956,23 +1946,17 @@ function updateChart(options = { save: true }) {
         });
 
         takenCourses.forEach(takenCourse => {
-            const mappedCourseName = getMappedCourseName(takenCourse.dataset.courseName, year);
             const courseCode = takenCourse.dataset.courseCode;
 
             const foundGroup = dept.groups.find(group => {
-                // 과목명으로 매칭
-                const nameMatch = group.courses.some(course => course.name === mappedCourseName);
-
-                // GELI 과목을 자유정의진리/학문세계의탐구 졸업요건에 포함
-                const isGELIGroup = group.groupNm && (group.groupNm.includes('자유정의진리') || group.groupNm.includes('학문세계의탐구'));
-                const isGELICourse = courseCode && courseCode.startsWith('GELI');
-
-                return nameMatch || (isGELIGroup && isGELICourse);
+                // 과목코드로 매칭
+                return group.courses.some(course => isEqualCourse(course.code, courseCode));
             });
 
             if (foundGroup) {
+                // 그룹 코드 일치하는 곳에 추가
                 const groupContainer = Array.from(groupContainers).find(gc =>
-                    gc.querySelector('.group-label').textContent === foundGroup.groupNm
+                    gc.dataset.groupCd === foundGroup.groupCd
                 );
                 if (groupContainer) {
                     addCourese(groupContainer, takenCourse);
