@@ -30,9 +30,11 @@ const gradeSystem = {
     'D+': 1.5,
     'D': 1.0,
     'F': 0.0
+    // P/NP는 평점 계산에서 제외
 };
 
 const gradeOptions = Object.keys(gradeSystem);
+const pnpOptions = ['P', 'NP']; // P/NP 옵션 추가
 
 // 덱 시스템 변수들
 let currentDeck = 'deck1';
@@ -496,6 +498,14 @@ function showCoursePopup(courseElement, event) {
         const option = document.createElement('option');
         option.value = grade;
         option.textContent = `${grade} (${gradeSystem[grade]})`;
+        gradeSelect.appendChild(option);
+    });
+
+    // P/NP 옵션들 추가
+    pnpOptions.forEach(pnp => {
+        const option = document.createElement('option');
+        option.value = pnp;
+        option.textContent = pnp;
         gradeSelect.appendChild(option);
     });
 
@@ -1754,12 +1764,12 @@ function updateCellCredit(cell) {
         const credit = parseInt(courseEl.dataset.credit) || 0;
         const grade = courseEl.dataset.grade;
 
-        // F학점이면 학점 인정 안함
-        if (grade !== 'F') {
+        // F학점이거나 NP이면 학점 인정 안함
+        if (grade !== 'F' && grade !== 'NP') {
             totalCredit += credit;
         }
 
-        // 평점 계산
+        // 평점 계산 (P/NP 제외)
         if (grade && gradeSystem[grade] !== undefined) {
             totalGradePoints += gradeSystem[grade] * credit;
             gradedCourseCount += credit;
@@ -1883,12 +1893,12 @@ function updateChart(options = { save: true }) {
         const credit = parseInt(course.dataset.credit) || 0;
         const grade = course.dataset.grade;
 
-        // F학점이면 학점 인정 안함
-        if (grade !== 'F') {
+        // F학점이거나 NP이면 학점 인정 안함
+        if (grade !== 'F' && grade !== 'NP') {
             currentCredit += credit;
         }
 
-        // 평점 계산 (평점이 입력된 과목만)
+        // 평점 계산 (평점이 입력된 과목만, P/NP 제외)
         if (grade && gradeSystem[grade] !== undefined) {
             totalGradePoints += gradeSystem[grade] * credit;
             totalGradedCredits += credit;
@@ -2009,12 +2019,12 @@ function updateYearStats() {
             const grade = courseEl.dataset.grade;
             const isMajor = courseEl.dataset.isMajor === 'true';
 
-            // F학점이면 학점 인정 안함, 그 외에는 학점 인정
-            if (grade !== 'F') {
+            // F학점이거나 NP이면 학점 인정 안함, 그 외에는 학점 인정
+            if (grade !== 'F' && grade !== 'NP') {
                 totalCredits += credit;
             }
 
-            // 평점 계산 (평점이 입력된 과목만)
+            // 평점 계산 (평점이 입력된 과목만, P/NP 제외)
             if (grade && gradeSystem[grade] !== undefined) {
                 totalGradePoints += gradeSystem[grade] * credit;
                 gradedCourseCount += credit;

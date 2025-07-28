@@ -50,6 +50,17 @@ body {
     max-width: 400px;
 }
 
+/* P/NP 평점 스타일 */
+.grade-select option[value="P"] {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.grade-select option[value="NP"] {
+    color: #dc3545;
+    font-weight: bold;
+}
+
 /* 과목 아이템 툴팁 스타일 */
 .course-item {
     position: relative;
@@ -1253,6 +1264,19 @@ body {
 .taken-course.highlight {
     background-color: #555; /* 진한 회색 */
     color: white;
+}
+
+/* P/NP 과목 스타일 */
+.taken-course[data-grade="P"] {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border: 1px solid #28a745;
+    color: #155724;
+}
+
+.taken-course[data-grade="NP"] {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    border: 1px solid #dc3545;
+    color: #721c24;
 }
 
 .course-item.taken-in-search {
