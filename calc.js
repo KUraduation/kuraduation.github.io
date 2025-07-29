@@ -791,16 +791,8 @@ function addCustomCourse(name, code, credit) {
     const content = document.createElement('div');
     content.className = 'result-group-content';
 
-    // 과목 아이템 생성
-    const courseItem = document.createElement('div');
-    courseItem.className = 'course-item';
-    courseItem.textContent = `[${code}] ${name} (${credit}학점)`;
-    courseItem.dataset.courseCode = code;
-    courseItem.dataset.courseName = name;
-    courseItem.dataset.credit = credit;
-    courseItem.draggable = true;
-    courseItem.addEventListener('dragstart', handleDragStart);
-    courseItem.addEventListener('click', handleCourseClick);
+    // 과목 아이템 생성 todo
+    const courseItem = createSearchResultCourse(code, name, credit);
 
     content.appendChild(courseItem);
     searchResult.appendChild(content);
@@ -893,7 +885,6 @@ function addSelectedCoursesToCell(targetCell) {
             code: selectedCourse.dataset.courseCode,
             name: selectedCourse.dataset.courseName,
             credit: selectedCourse.dataset.credit,
-            groupNm: selectedCourse.dataset.groupNm || '',
             isTakenCourse: selectedCourse.classList.contains('taken-course')
         };
         // 새 과목 추가
@@ -984,13 +975,6 @@ function createTakenCourseElement(courseData) {
 
         e.preventDefault();
         e.stopPropagation();
-
-        // 클릭 이동 모드가 활성화되어 있으면 과목 선택 처리
-        if (isClickMoveMode) {
-            // taken-course 선택/해제 토글
-            toggleCourseSelection(takenCourse);
-            return;
-        }
 
         // 일반 클릭이면 팝업 표시
         showCoursePopup(takenCourse, e);
@@ -1329,24 +1313,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const groupContent = document.createElement('div');
             groupContent.className = 'result-group-content';
 
-            group.courses.forEach(course => {
-                const courseItem = document.createElement('div');
-                courseItem.className = 'course-item';
-                if (isCourseAlreadyTaken(course.code)) {
-                    courseItem.classList.add('taken-in-search');
-                }
-                courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
-                courseItem.dataset.courseCode = course.code;
-                courseItem.dataset.courseName = course.name;
-                courseItem.dataset.credit = course.credit;
-                courseItem.dataset.groupNm = group.groupNm || '';
-                courseItem.draggable = true;
-                courseItem.addEventListener('dragstart', handleDragStart);
-                courseItem.addEventListener('click', handleCourseClick);
+            group.courses.forEach(course => { // todo
+                const courseItem = createSearchResultCourse(course.code, course.name, course.credit);
                 groupContent.appendChild(courseItem);
             });
-
-
 
             groupContainer.appendChild(groupHeader);
             groupContainer.appendChild(groupContent);
@@ -1394,21 +1364,8 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResult.textContent = '해당 강의를 찾을 수 없습니다.';
             return;
         }
-        foundCourses.forEach(course => {
-            const courseItem = document.createElement('div');
-            courseItem.className = 'course-item';
-
-            if (isCourseAlreadyTaken(course.code)) {
-                courseItem.classList.add('taken-in-search');
-            }
-            courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
-            courseItem.dataset.courseCode = course.code;
-            courseItem.dataset.courseName = course.name;
-            courseItem.dataset.credit = course.credit;
-            courseItem.dataset.groupNm = course.groupNm || '';
-            courseItem.draggable = true;
-            courseItem.addEventListener('dragstart', handleDragStart);
-            courseItem.addEventListener('click', handleCourseClick);
+        foundCourses.forEach(course => { // todo
+            const courseItem = createSearchResultCourse(course.code, course.name, course.credit);
             searchResult.appendChild(courseItem);
         });
     }
@@ -1954,12 +1911,33 @@ function isCourseAlreadyTaken(courseCode) {
     return takenCourses.some(course => isEqualCourse(course.dataset.courseCode, courseCode));
 }
 
+// 검색된 강의 셀을 생성하는 함수
+function createSearchResultCourse(code, name, credit) {
+    const courseItem = document.createElement('div');
+    courseItem.className = 'course-item';
+    if (isCourseAlreadyTaken(code)) {
+        courseItem.classList.add('taken-in-search');
+    }
+    courseItem.textContent = `[${code}] ${name} (${credit}학점)`;
+    courseItem.dataset.courseCode = code;
+    courseItem.dataset.courseName = name;
+    courseItem.dataset.credit = credit;
+    courseItem.draggable = true;
+    courseItem.addEventListener('dragstart', handleDragStart);
+    courseItem.addEventListener('click', handleCourseClick);
+
+    return courseItem;
+}
+
 // 검색 결과를 다시 렌더링하는 함수
 function refreshSearchResults() {
     const searchResult = document.getElementById('search-result');
     const deptSearchInput = document.getElementById('dept-search-input');
     const courseSearchInput = document.getElementById('course-search-input');
     const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
+    const nameInput = document.getElementById('custom-course-name');
+    const codeInput = document.getElementById('custom-course-code');
+    const creditInput = document.getElementById('custom-course-credit');
 
     // 현재 활성화된 검색 타입 확인
     let currentSearchType = null;
@@ -2011,6 +1989,13 @@ function refreshSearchResults() {
                     }
                 }
                 window.renderCourseSearchResult(foundCourses);
+            }
+        } else if (currentSearchType === 'customCourse') {
+            const name = nameInput.value.trim();
+            const code = codeInput.value.trim();
+            const credit = creditInput.value.trim();
+            if (name && code && credit) {
+                addCustomCourse(name, code, parseInt(credit));
             }
         }
     }
