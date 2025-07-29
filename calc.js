@@ -329,6 +329,17 @@ function saveCurrentDeck() {
     });
 
     decks[currentDeck].years = newYearsData;
+    
+    // 현재 덱의 졸업요건 정보도 저장
+    const majorSelections = [];
+    document.querySelectorAll('.dept-select-container').forEach(container => {
+        majorSelections.push({
+            majorDiv: container.dataset.majorDiv,
+            year: container.querySelector('.year-select').value,
+            deptCd: container.querySelector('.dept-select').value
+        });
+    });
+    decks[currentDeck].majorSelections = majorSelections;
 }
 
 // 히스토리에 현재 상태 저장
