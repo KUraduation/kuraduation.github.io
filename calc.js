@@ -63,7 +63,7 @@ let decks = {
         years: { '1': {}, '2': {}, '3': {}, '4': {} }
     },
     deck2: {
-        name: "덱2", 
+        name: "덱2",
         years: { '1': {}, '2': {}, '3': {}, '4': {} }
     },
     deck3: {
@@ -158,7 +158,7 @@ function loadStateFromLocalStorage() {
             // 전공 선택 영역 복원 (덱별 졸업요건 지원)
             const selectContainer = document.getElementById('selectContainer');
             selectContainer.innerHTML = ''; // 기존 영역 초기화
-            
+
             // 기존 버전 호환성 지원
             if (savedState.majorSelections) {
                 // 이전 버전: 전역 졸업요건 설정
@@ -234,7 +234,7 @@ function resetDeck(deckId) {
 // 덱 붙여넣기 함수
 function pasteDeck(targetDeckId) {
     if (!copiedDeckData || !decks[targetDeckId]) return;
-    
+
     const deckname = decks[targetDeckId].name;
 
     decks[targetDeckId] = JSON.parse(JSON.stringify(copiedDeckData));
@@ -268,17 +268,17 @@ function updateCopyPasteButton() {
 // 덱 전환 함수
 function switchDeck(deckId) {
     if (!decks[deckId]) return;
-    
+
     // 현재 덱의 졸업요건 정보 저장
     saveCurrentDeck();
-    
+
     currentDeck = deckId;
     updateDeckTabs();
     loadDeck(deckId);
-    
+
     // 새 덱의 졸업요건 로드
     loadDeckGraduationRequirements(deckId);
-    
+
     updateAndSave(); // UI 업데이트와 저장을 한 번에
 }
 
@@ -286,7 +286,7 @@ function switchDeck(deckId) {
 function loadDeckGraduationRequirements(deckId) {
     const selectContainer = document.getElementById('selectContainer');
     selectContainer.innerHTML = ''; // 기존 졸업요건 영역 초기화
-    
+
     if (decks[deckId] && decks[deckId].majorSelections) {
         decks[deckId].majorSelections.forEach(selection => {
             createDeptDropdown(selection.majorDiv, selection.year, selection.deptCd);
@@ -311,9 +311,9 @@ function saveCurrentDeck() {
 
             cell.querySelectorAll('.taken-course').forEach(course => {
                 const courseData = {
-        code: course.dataset.courseCode,
-        name: course.dataset.courseName,
-        credit: course.dataset.credit,
+                    code: course.dataset.courseCode,
+                    name: course.dataset.courseName,
+                    credit: course.dataset.credit,
                     grade: course.dataset.grade || '',
                     isMajor: course.dataset.isMajor === 'true', // 전공 여부 저장
                 };
@@ -329,7 +329,7 @@ function saveCurrentDeck() {
     });
 
     decks[currentDeck].years = newYearsData;
-    
+
     // 현재 덱의 졸업요건 정보도 저장
     const majorSelections = [];
     document.querySelectorAll('.dept-select-container').forEach(container => {
@@ -350,12 +350,12 @@ function saveToHistory() {
         decks: decksData,
         timestamp: Date.now()
     };
-    
+
     historyStack = historyStack.slice(0, currentHistoryIndex + 1);
     console.log('현재 상태 저장:', currentHistoryIndex);
     historyStack.push(currentState);
     currentHistoryIndex++;
-    
+
     if (historyStack.length > maxHistorySize) {
         historyStack.shift();
         currentHistoryIndex--;
@@ -366,13 +366,13 @@ function saveToHistory() {
 // 히스토리에서 상태 복원
 function restoreFromHistory(historyIndex) {
     if (historyIndex < 0 || historyIndex >= historyStack.length) return;
-    
+
     const state = historyStack[historyIndex];
     if (state.decks) { // 새로운 데이터 구조
         decks = JSON.parse(JSON.stringify(state.decks));
         loadDeck(currentDeck);
     }
-    
+
     currentHistoryIndex = historyIndex;
     updateHistoryButtons();
     updateChart({ save: false }); // 히스토리 복원 시에는 저장하지 않음
@@ -427,21 +427,21 @@ function loadDeck(deckId) {
         const yearData = decks[deckId].years[year];
         Object.keys(yearData).forEach(semester => {
             const semesterData = yearData[semester];
-        const targetCell = document.querySelector(
+            const targetCell = document.querySelector(
                 `.semester-cell[data-year="${year}"][data-semester="${semester}"]`
-        );
-        if (targetCell) {
+            );
+            if (targetCell) {
                 semesterData.forEach(courseData => {
-            const newCourse = createTakenCourseElement(courseData);
-            targetCell.appendChild(newCourse);
+                    const newCourse = createTakenCourseElement(courseData);
+                    targetCell.appendChild(newCourse);
                 });
-        }
-    });
+            }
+        });
     });
 
     // 덱의 졸업요건도 함께 로드
     loadDeckGraduationRequirements(deckId);
-    
+
     refreshSearchResults(); // 덱 로드 후 검색 결과 초기화
 }
 
@@ -458,39 +458,39 @@ function updateDeckTabs() {
 // 새 덱 추가
 function addNewDeck() {
     if (deckCount >= maxDeckCount) return;
-    
+
     deckCount++;
     const newDeckId = `deck${deckCount}`;
-    
-    decks[newDeckId] = { 
-        name: `덱${deckCount}`, 
+
+    decks[newDeckId] = {
+        name: `덱${deckCount}`,
         years: { '1': {}, '2': {}, '3': {}, '4': {} },
         majorSelections: [] // 빈 졸업요건 설정으로 초기화
     };
 
     const deckTabs = document.querySelector('.deck-tabs');
-        const newTab = document.createElement('button');
-        newTab.className = 'deck-tab';
-        newTab.dataset.deck = newDeckId;
-        newTab.textContent = `덱${deckCount}`;
-        newTab.addEventListener('click', () => switchDeck(newDeckId));
-        
-        const addBtn = document.getElementById('add-deck-btn');
-            deckTabs.insertBefore(newTab, addBtn);
-    
+    const newTab = document.createElement('button');
+    newTab.className = 'deck-tab';
+    newTab.dataset.deck = newDeckId;
+    newTab.textContent = `덱${deckCount}`;
+    newTab.addEventListener('click', () => switchDeck(newDeckId));
+
+    const addBtn = document.getElementById('add-deck-btn');
+    deckTabs.insertBefore(newTab, addBtn);
+
     if (deckCount >= maxDeckCount) {
         if (addBtn) addBtn.style.display = 'none';
-        }
+    }
     switchDeck(newDeckId);
 }
 
 Promise.all(years.map(year =>
     fetch(`${year}.json`)
-    .then(response => {
+        .then(response => {
             if (!response.ok) throw new Error(`네트워크 오류: ${year}.json`);
-        return response.json();
-    })
-    .then(data => {
+            return response.json();
+        })
+        .then(data => {
             courses[year] = data;
         })
 )).then(() => {
@@ -747,11 +747,11 @@ function showHelpPopup() {
 
     // 팝업 위치 설정 (화면 중앙)
     document.body.appendChild(popup);
-    
+
     const rect = popup.getBoundingClientRect();
     const x = (window.innerWidth - rect.width) / 2;
     const y = (window.innerHeight - rect.height) / 2;
-    
+
     popup.style.left = x + 'px';
     popup.style.top = y + 'px';
 
@@ -776,6 +776,8 @@ function closeHelpPopup() {
 function addCustomCourse(name, code, credit) {
     const searchResult = document.getElementById('search-result');
 
+    clearCourseSelection();
+
     // 검색 결과 영역 초기화
     searchResult.innerHTML = '';
 
@@ -789,16 +791,8 @@ function addCustomCourse(name, code, credit) {
     const content = document.createElement('div');
     content.className = 'result-group-content';
 
-    // 과목 아이템 생성
-    const courseItem = document.createElement('div');
-    courseItem.className = 'course-item';
-    courseItem.textContent = `[${code}] ${name} (${credit}학점)`;
-    courseItem.dataset.courseCode = code;
-    courseItem.dataset.courseName = name;
-    courseItem.dataset.credit = credit;
-    courseItem.draggable = true;
-    courseItem.addEventListener('dragstart', handleDragStart);
-    courseItem.addEventListener('click', handleCourseClick);
+    // 과목 아이템 생성 todo
+    const courseItem = createSearchResultCourse(code, name, credit);
 
     content.appendChild(courseItem);
     searchResult.appendChild(content);
@@ -891,15 +885,11 @@ function addSelectedCoursesToCell(targetCell) {
             code: selectedCourse.dataset.courseCode,
             name: selectedCourse.dataset.courseName,
             credit: selectedCourse.dataset.credit,
-            groupNm: selectedCourse.dataset.groupNm || '',
             isTakenCourse: selectedCourse.classList.contains('taken-course')
         };
         // 새 과목 추가
         const takenCourse = createTakenCourseElement(courseData);
         targetCell.appendChild(takenCourse);
-
-        // 검색 결과에서 해당 과목 표시 업데이트
-        refreshSearchResults();
 
         processedCourses.push({
             element: takenCourse,
@@ -911,8 +901,8 @@ function addSelectedCoursesToCell(targetCell) {
 
     });
 
-    // 선택 해제
-    clearCourseSelection();
+    // 검색 결과에서 해당 과목 표시 업데이트
+    refreshSearchResults();
 
     // 처리된 과목이 있으면 UI 업데이트
     if (processedCourses.length > 0) {
@@ -985,13 +975,6 @@ function createTakenCourseElement(courseData) {
 
         e.preventDefault();
         e.stopPropagation();
-
-        // 클릭 이동 모드가 활성화되어 있으면 과목 선택 처리
-        if (isClickMoveMode) {
-            // taken-course 선택/해제 토글
-            toggleCourseSelection(takenCourse);
-            return;
-        }
 
         // 일반 클릭이면 팝업 표시
         showCoursePopup(takenCourse, e);
@@ -1211,6 +1194,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 customCourseContainer.style.display = 'flex';
             }
             searchResult.innerHTML = '';
+            clearCourseSelection();
         });
     });
 
@@ -1267,14 +1251,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         }
-        
+
         suggestions.forEach(suggestion => {
             const option = document.createElement('option');
             option.value = suggestion;
             courseDatalist.appendChild(option);
         });
     }
-    
+
     majorDivSelect.addEventListener('change', () => {
         deptSearchInput.value = '';
         updateDeptDatalist();
@@ -1283,7 +1267,7 @@ document.addEventListener('DOMContentLoaded', function () {
         deptSearchInput.value = '';
         updateDeptDatalist();
     });
-    
+
     window.addEventListener('coursesLoaded', updateDeptDatalist);
 
     deptSearchInput.addEventListener('input', function () {
@@ -1311,7 +1295,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const deptSearchBtn = document.getElementById('dept-search-btn');
 
-    function renderDeptSearchResult(dept, takenCourseCodes) {
+    function renderDeptSearchResult(dept) {
+        clearCourseSelection();
+
         searchResult.innerHTML = '';
         if (!dept) {
             searchResult.textContent = '해당 학과를 찾을 수 없습니다.';
@@ -1327,24 +1313,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const groupContent = document.createElement('div');
             groupContent.className = 'result-group-content';
 
-            group.courses.forEach(course => {
-                const courseItem = document.createElement('div');
-                courseItem.className = 'course-item';
-                if (isCourseAlreadyTaken(course.code)) {
-                    courseItem.classList.add('taken-in-search');
-                }
-                courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
-                courseItem.dataset.courseCode = course.code;
-                courseItem.dataset.courseName = course.name;
-                courseItem.dataset.credit = course.credit;
-                courseItem.dataset.groupNm = group.groupNm || '';
-                courseItem.draggable = true;
-                courseItem.addEventListener('dragstart', handleDragStart);
-                courseItem.addEventListener('click', handleCourseClick);
+            group.courses.forEach(course => { // todo
+                const courseItem = createSearchResultCourse(course.code, course.name, course.credit);
                 groupContent.appendChild(courseItem);
             });
-
-
 
             groupContainer.appendChild(groupHeader);
             groupContainer.appendChild(groupContent);
@@ -1364,12 +1336,11 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResult.textContent = '학과 이름을 입력하세요.';
             return;
         }
-        
+
         const deptList = courses[selectedYear][selectedMajorDiv];
         const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
 
-        const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
-        renderDeptSearchResult(foundDept, takenCourseCodes);
+        renderDeptSearchResult(foundDept);
     }
 
     // 전역 함수로 등록
@@ -1386,26 +1357,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const courseSearchBtn = document.getElementById('course-search-btn');
 
     function renderCourseSearchResult(foundCourses) {
+        clearCourseSelection();
+
         searchResult.innerHTML = '';
         if (foundCourses.length === 0) {
             searchResult.textContent = '해당 강의를 찾을 수 없습니다.';
             return;
         }
-        foundCourses.forEach(course => {
-            const courseItem = document.createElement('div');
-            courseItem.className = 'course-item';
-
-            if (isCourseAlreadyTaken(course.code)) {
-                courseItem.classList.add('taken-in-search');
-            }
-            courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
-            courseItem.dataset.courseCode = course.code;
-            courseItem.dataset.courseName = course.name;
-            courseItem.dataset.credit = course.credit;
-            courseItem.dataset.groupNm = course.groupNm || '';
-            courseItem.draggable = true;
-            courseItem.addEventListener('dragstart', handleDragStart);
-            courseItem.addEventListener('click', handleCourseClick);
+        foundCourses.forEach(course => { // todo
+            const courseItem = createSearchResultCourse(course.code, course.name, course.credit);
             searchResult.appendChild(courseItem);
         });
     }
@@ -1450,8 +1410,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         }
-        const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
-        renderCourseSearchResult(foundCourses, takenCourseCodes);
+        renderCourseSearchResult(foundCourses);
     }
 
     // 전역 함수로 등록
@@ -1547,7 +1506,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const semesterHeader = document.createElement('div');
     semesterHeader.innerHTML = `<span>ㅤ</span>`;
-    semesterRowHeaders.appendChild(semesterHeader); 
+    semesterRowHeaders.appendChild(semesterHeader);
     semesterNames.forEach(name => {
         const header = document.createElement('div');
         header.className = 'row-header';
@@ -1558,7 +1517,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function getNextYearNumber() {
         const existingYears = Object.keys(decks[currentDeck].years)
             .map(year => parseInt(year, 10))
-                                   .sort((a, b) => a - b);
+            .sort((a, b) => a - b);
         let nextYear = 1;
         for (const year of existingYears) {
             if (year === nextYear) {
@@ -1577,10 +1536,10 @@ document.addEventListener('DOMContentLoaded', function () {
         decks[currentDeck].years[nextYear] = {};
 
         const newYearColumn = createYearColumn(nextYear);
-        
+
         const columns = Array.from(semesterGridContainer.querySelectorAll('.year-column'));
         const insertionIndex = columns.findIndex(col => parseInt(col.dataset.year, 10) > nextYear);
-        
+
         if (insertionIndex === -1) {
             semesterGridContainer.appendChild(newYearColumn);
         } else {
@@ -1626,15 +1585,16 @@ document.addEventListener('DOMContentLoaded', function () {
         addCustomCourse(name, code, parseInt(credit));
     });
 
-    // 교양과목 초기화 버튼 이벤트
+    // 교양과목 버튼 이벤트
     document.getElementById('custom-course-clear-btn').addEventListener('click', () => {
         document.getElementById('custom-course-name').value = '';
         document.getElementById('custom-course-code').value = '';
         document.getElementById('custom-course-credit').value = '';
+        clearCourseSelection();
     });
 
-        updateCopyPasteButton();
-        updateHistoryButtons();
+    updateCopyPasteButton();
+    updateHistoryButtons();
 
     document.addEventListener('keydown', function (e) {
         if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
@@ -1754,12 +1714,12 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
         const deptList = courses[year] ? courses[year][majorDiv] : [];
         select.innerHTML = ''; // Clear existing options
         if (deptList) {
-    deptList.forEach(dept => {
-        const option = document.createElement('option');
-        option.value = dept.deptCd;
-        option.textContent = dept.deptNm;
-        select.appendChild(option);
-    });
+            deptList.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept.deptCd;
+                option.textContent = dept.deptNm;
+                select.appendChild(option);
+            });
         }
         if (deptToSelect) {
             select.value = deptToSelect;
@@ -1853,9 +1813,9 @@ function updateGroupProgress(groupContainer) {
 
     const progress = (minCredit > 0) ? (currentCredit / minCredit * 100).toFixed(0) : 0;
     const groupProgress = groupContainer.querySelector('.group-progress');
-    
+
     groupProgress.textContent = `${currentCredit}/${minCredit} (${progress}%)`;
-    
+
     const progressPercent = Math.min(100, parseFloat(progress));
 
     // 둥근 모서리를 위한 배경 설정
@@ -1951,12 +1911,33 @@ function isCourseAlreadyTaken(courseCode) {
     return takenCourses.some(course => isEqualCourse(course.dataset.courseCode, courseCode));
 }
 
+// 검색된 강의 셀을 생성하는 함수
+function createSearchResultCourse(code, name, credit) {
+    const courseItem = document.createElement('div');
+    courseItem.className = 'course-item';
+    if (isCourseAlreadyTaken(code)) {
+        courseItem.classList.add('taken-in-search');
+    }
+    courseItem.textContent = `[${code}] ${name} (${credit}학점)`;
+    courseItem.dataset.courseCode = code;
+    courseItem.dataset.courseName = name;
+    courseItem.dataset.credit = credit;
+    courseItem.draggable = true;
+    courseItem.addEventListener('dragstart', handleDragStart);
+    courseItem.addEventListener('click', handleCourseClick);
+
+    return courseItem;
+}
+
 // 검색 결과를 다시 렌더링하는 함수
 function refreshSearchResults() {
     const searchResult = document.getElementById('search-result');
     const deptSearchInput = document.getElementById('dept-search-input');
     const courseSearchInput = document.getElementById('course-search-input');
     const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
+    const nameInput = document.getElementById('custom-course-name');
+    const codeInput = document.getElementById('custom-course-code');
+    const creditInput = document.getElementById('custom-course-credit');
 
     // 현재 활성화된 검색 타입 확인
     let currentSearchType = null;
@@ -1975,8 +1956,7 @@ function refreshSearchResults() {
             if (keyword && courses[selectedYear]) {
                 const deptList = courses[selectedYear][selectedMajorDiv];
                 const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
-                const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
-                window.renderDeptSearchResult(foundDept, takenCourseCodes);
+                window.renderDeptSearchResult(foundDept);
             }
         } else if (currentSearchType === 'byCourseName' && courseSearchInput.value.trim() !== '') {
             // 직접 검색 함수 호출
@@ -2008,11 +1988,18 @@ function refreshSearchResults() {
                         }
                     }
                 }
-                const takenCourseCodes = new Set(getTakenCourses().map(course => course.dataset.courseCode));
-                window.renderCourseSearchResult(foundCourses, takenCourseCodes);
+                window.renderCourseSearchResult(foundCourses);
+            }
+        } else if (currentSearchType === 'customCourse') {
+            const name = nameInput.value.trim();
+            const code = codeInput.value.trim();
+            const credit = creditInput.value.trim();
+            if (name && code && credit) {
+                addCustomCourse(name, code, parseInt(credit));
             }
         }
     }
+    else clearCourseSelection();
 }
 
 // UI 업데이트만 담당 (저장 로직 제외)
