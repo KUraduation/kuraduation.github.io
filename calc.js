@@ -102,6 +102,7 @@ function removeFromLocalStorage(key) {
 
 // --- 상태 저장 및 복원 (localStorage 사용) ---
 function saveStateToLocalStorage() {
+    // 현재 덱의 졸업요건 선택 정보 저장
     const majorSelections = [];
     document.querySelectorAll('.dept-select-container').forEach(container => {
         majorSelections.push({
@@ -111,13 +112,17 @@ function saveStateToLocalStorage() {
         });
     });
 
+    // 현재 덱에 졸업요건 정보 저장
+    if (decks[currentDeck]) {
+        decks[currentDeck].majorSelections = majorSelections;
+    }
+
     // 모든 데이터를 하나의 객체로 통합하여 저장
     const appState = {
         deckCount,
         currentDeck,
-        majorSelections,
         decks,
-        version: '2.0' // 향후 호환성을 위한 버전 정보
+        version: '2.1' // 덱별 졸업요건 지원 버전
     };
 
     saveToLocalStorage('graduationCalculatorData', appState);
@@ -144,17 +149,25 @@ function loadStateFromLocalStorage() {
             } else {
                 // 기본 덱 구조로 초기화
                 decks = {
-                    deck1: { name: "덱1", years: { '1': {}, '2': {}, '3': {}, '4': {} } },
-                    deck2: { name: "덱2", years: { '1': {}, '2': {}, '3': {}, '4': {} } },
-                    deck3: { name: "덱3", years: { '1': {}, '2': {}, '3': {}, '4': {} } }
+                    deck1: { name: "덱1", years: { '1': {}, '2': {}, '3': {}, '4': {} }, majorSelections: [] },
+                    deck2: { name: "덱2", years: { '1': {}, '2': {}, '3': {}, '4': {} }, majorSelections: [] },
+                    deck3: { name: "덱3", years: { '1': {}, '2': {}, '3': {}, '4': {} }, majorSelections: [] }
                 };
             }
 
-            // 전공 선택 영역 복원
+            // 전공 선택 영역 복원 (덱별 졸업요건 지원)
             const selectContainer = document.getElementById('selectContainer');
             selectContainer.innerHTML = ''; // 기존 영역 초기화
+            
+            // 기존 버전 호환성 지원
             if (savedState.majorSelections) {
+                // 이전 버전: 전역 졸업요건 설정
                 savedState.majorSelections.forEach(selection => {
+                    createDeptDropdown(selection.majorDiv, selection.year, selection.deptCd);
+                });
+            } else if (savedState.decks && savedState.decks[currentDeck] && savedState.decks[currentDeck].majorSelections) {
+                // 새 버전: 덱별 졸업요건 설정
+                savedState.decks[currentDeck].majorSelections.forEach(selection => {
                     createDeptDropdown(selection.majorDiv, selection.year, selection.deptCd);
                 });
             }
@@ -204,9 +217,11 @@ function resetDeck(deckId) {
     if (!decks[deckId] || !confirm(`"${decks[deckId].name}"의 모든 과목을 초기화하시겠습니까?`)) return;
 
     decks[deckId].years = { '1': {}, '2': {}, '3': {}, '4': {} };
+    decks[deckId].majorSelections = []; // 졸업요건 설정도 초기화
 
     if (currentDeck === deckId) {
         loadDeck(deckId);
+        loadDeckGraduationRequirements(deckId); // 졸업요건도 초기화
         updateAndSave(); // UI 업데이트와 저장을 한 번에
         refreshSearchResults(); // 검색 결과도 초기화
     } else {
@@ -253,10 +268,30 @@ function updateCopyPasteButton() {
 // 덱 전환 함수
 function switchDeck(deckId) {
     if (!decks[deckId]) return;
+    
+    // 현재 덱의 졸업요건 정보 저장
+    saveCurrentDeck();
+    
     currentDeck = deckId;
     updateDeckTabs();
     loadDeck(deckId);
+    
+    // 새 덱의 졸업요건 로드
+    loadDeckGraduationRequirements(deckId);
+    
     updateAndSave(); // UI 업데이트와 저장을 한 번에
+}
+
+// 덱별 졸업요건 로드 함수
+function loadDeckGraduationRequirements(deckId) {
+    const selectContainer = document.getElementById('selectContainer');
+    selectContainer.innerHTML = ''; // 기존 졸업요건 영역 초기화
+    
+    if (decks[deckId] && decks[deckId].majorSelections) {
+        decks[deckId].majorSelections.forEach(selection => {
+            createDeptDropdown(selection.majorDiv, selection.year, selection.deptCd);
+        });
+    }
 }
 
 // 현재 덱 저장
@@ -393,6 +428,9 @@ function loadDeck(deckId) {
     });
     });
 
+    // 덱의 졸업요건도 함께 로드
+    loadDeckGraduationRequirements(deckId);
+    
     refreshSearchResults(); // 덱 로드 후 검색 결과 초기화
 }
 
@@ -413,7 +451,11 @@ function addNewDeck() {
     deckCount++;
     const newDeckId = `deck${deckCount}`;
     
-    decks[newDeckId] = { name: `덱${deckCount}`, years: { '1': {}, '2': {}, '3': {}, '4': {} } };
+    decks[newDeckId] = { 
+        name: `덱${deckCount}`, 
+        years: { '1': {}, '2': {}, '3': {}, '4': {} },
+        majorSelections: [] // 빈 졸업요건 설정으로 초기화
+    };
 
     const deckTabs = document.querySelector('.deck-tabs');
         const newTab = document.createElement('button');
