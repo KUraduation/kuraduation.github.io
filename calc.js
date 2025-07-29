@@ -1319,7 +1319,7 @@ document.addEventListener('DOMContentLoaded', function () {
             group.courses.forEach(course => {
                 const courseItem = document.createElement('div');
                 courseItem.className = 'course-item';
-                if (takenCourseCodes.has(course.code)) {
+                if (isCourseAlreadyTaken(course.code)) {
                     courseItem.classList.add('taken-in-search');
                 }
                 courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
@@ -1374,7 +1374,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const courseSearchBtn = document.getElementById('course-search-btn');
 
-    function renderCourseSearchResult(foundCourses, takenCourseCodes) {
+    function renderCourseSearchResult(foundCourses) {
         searchResult.innerHTML = '';
         if (foundCourses.length === 0) {
             searchResult.textContent = '해당 강의를 찾을 수 없습니다.';
@@ -1383,7 +1383,8 @@ document.addEventListener('DOMContentLoaded', function () {
         foundCourses.forEach(course => {
             const courseItem = document.createElement('div');
             courseItem.className = 'course-item';
-            if (takenCourseCodes.has(course.code)) {
+
+            if (isCourseAlreadyTaken(course.code)) {
                 courseItem.classList.add('taken-in-search');
             }
             courseItem.textContent = `[${course.code}] ${course.name} (${course.credit}학점)`;
@@ -1915,8 +1916,8 @@ function updateCellCredit(cell) {
 const courseMapping = [
     ['GELI001', 'GELI003', 'GELI005', 'GELI007', 'SPGE210', 'GSCE024'], // 학세탐1
     ['GELI002', 'GELI004', 'GELI006', 'GELI008', 'GSCE025'], // 학세탐2
-    ['IFLS011', 'IFLS800'], // 아잉1
-    ['IFLS012', 'IFLS801'], // 아잉2
+    ['IFLS011', 'IFLS013', 'IFLS800'], // 아잉1
+    ['IFLS012', 'IFLS014', 'IFLS801'], // 아잉2
     ['GEWR001', 'GEWR002'], // 글쓰기
     ['GEKS005', 'GEKS007'], // 1학년세미나1
     ['GEKS006', 'GEKS008'], // 1학년세미나2
