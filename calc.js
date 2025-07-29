@@ -676,11 +676,12 @@ function showHelpPopup() {
             졸업요건에 이상이 있을 시 메일로 문의해주세요.</p>
         <p>• 일반교양과목(ex. 과어탈, 종영 등)의 경우 '직접 추가' 기능을 이용해 추가하세요.</p>
         <p>• 졸업요건의 '기준 년도'는 복수전공의 경우 진입년도로 설정해야 하며, 제1전공, 이중전공 등 나머지는 자신의 입학년도로 설정해야 합니다.</p>
+        <p>• 심화전공을 이수하시는 경우, 졸업요건에서 제1전공을 고르지 말고 반드시 심화전공만 고르세요!
         <p>• 여러 전공에 해당되는 강의는 위쪽 전공부터 순차 적용됩니다.</p>
         <p>• 동일 강의코드는 재수강으로 간주되며 전체학점 계산에서 한 번만 반영됩니다.</p>
         <p>• 문의사항은 여기로 —> <a href="mailto:lemonplugin@gmail.com" target="_blank">lemonplugin@gmail.com</a></p>
     `;
-    popup.appendChild(content);
+    popup.appendChild(content);도
 
     // 닫기 버튼
     const closeBtn = document.createElement('button');
