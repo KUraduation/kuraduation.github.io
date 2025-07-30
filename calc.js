@@ -352,7 +352,6 @@ function saveToHistory() {
     };
 
     historyStack = historyStack.slice(0, currentHistoryIndex + 1);
-    console.log('현재 상태 저장:', currentHistoryIndex);
     historyStack.push(currentState);
     currentHistoryIndex++;
 
@@ -797,8 +796,6 @@ function addCustomCourse(name, code, credit) {
 
     content.appendChild(courseItem);
     searchResult.appendChild(content);
-
-    console.log(`교양과목 추가됨: ${name} (${code}, ${credit}학점)`);
 }
 
 function handleDragStart(e) {
@@ -853,12 +850,10 @@ function toggleCourseSelection(courseElement) {
         // 이미 선택된 과목이면 선택 해제
         courseElement.classList.remove('selected');
         selectedCourses.delete(courseElement);
-        console.log(`과목 선택 해제: ${courseElement.dataset.courseName}`);
     } else {
         // 새로운 과목 선택
         courseElement.classList.add('selected');
         selectedCourses.add(courseElement);
-        console.log(`과목 선택: ${courseElement.dataset.courseName}`);
     }
 
     // 선택된 과목이 있으면 클릭 모드 활성화, 없으면 비활성화
@@ -872,7 +867,7 @@ function toggleCourseSelection(courseElement) {
 }
 
 // 클릭 또는 드래그 드롭으로 선택된 과목들을 특정 학기 셀에 추가/이동하는 통합 함수
-function addSelectedCoursesToCell(targetCell) {
+function addSelectedCoursesToCell(targetCell, saveToHist = true) {
     if (selectedCourses.size === 0) {
         return;
     }
@@ -898,7 +893,6 @@ function addSelectedCoursesToCell(targetCell) {
             action: 'added',
             name: courseData.name
         });
-        console.log(`새 과목 ${courseData.name}이 ${targetCell.dataset.year}학년 ${targetCell.dataset.semester}학기에 추가됨`);
 
     });
 
@@ -917,12 +911,10 @@ function addSelectedCoursesToCell(targetCell) {
 
         cellsToUpdate.forEach(cell => updateCellCredit(cell));
         updateAndSave(); // UI 업데이트와 저장을 한 번에
-
-        console.log(`총 ${processedCourses.length}개 과목이 처리되었습니다.`);
     }
 
     // 히스토리 저장 (여러 과목 이동이므로 한 번만)
-    saveToHistory();
+    if (saveToHist) saveToHistory();
 }
 
 // 셀 클릭 핸들러 (클릭 이동 모드)
@@ -998,17 +990,16 @@ function handleDrop(e) {
     clearCourseSelection();
     toggleCourseSelection(draggedCourse);
 
-    // 통합된 추가/이동 로직 호출
-    addSelectedCoursesToCell(targetCell);
+    // 통합된 추가/이동 로직 호출. 옮김의 경우 handleDragEnd에서 처리, 추가의 경우 저장해야함
+    addSelectedCoursesToCell(targetCell, draggedCourse.parentElement.className !== 'semester-cell');
 }
 
 function handleDragEnd(e) {
     e.target.classList.remove('dragging');
+
     if (e.target.classList.contains('taken-course')) {
-        if (e.dataTransfer.dropEffect === 'none') {
-            deleteCourse(e.target); // 빈공간에 드롭되면 과목 삭제
-        }
-        else e.target.remove(); // 드래그가 완료되면 원본 과목 삭제
+        // 드롭되면 과목 삭제
+        deleteCourse(e.target);
     }
     draggedCourse = null;
 }
