@@ -1811,10 +1811,13 @@ function updateGroupProgress(groupContainer) {
     let currentCredit = parseInt(groupContainer.dataset.currentCredit);
     currentCredit = maxCredit > 0 ? Math.min(maxCredit, currentCredit) : currentCredit;
 
-    const progress = (minCredit > 0) ? (currentCredit / minCredit * 100).toFixed(0) : 0;
+    // 최소학점이 양수가 아니면 최대학점 기준으로 진행률 체크
+    const stdCredit = minCredit > 0 ? minCredit : maxCredit > 0 ? maxCredit : 0;
+
+    const progress = (stdCredit > 0) ? (currentCredit / stdCredit * 100).toFixed(0) : 0;
     const groupProgress = groupContainer.querySelector('.group-progress');
 
-    groupProgress.textContent = `${currentCredit}/${minCredit} (${progress}%)`;
+    groupProgress.textContent = `${currentCredit}/${stdCredit} (${progress}%)`;
 
     const progressPercent = Math.min(100, parseFloat(progress));
 
