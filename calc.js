@@ -1893,6 +1893,10 @@ const courseMapping = [
     ['GEKS005', 'GEKS007'], // 1학년세미나1
     ['GEKS006', 'GEKS008'], // 1학년세미나2
     ['GECT001', 'GSKS004', 'SPGS284'], // 정보적사고
+
+    ['HISE131', 'HISE141'], // 한국역사와문화입문
+    ['HISE132', 'HISE142'], // 중국역사와문화입문
+    ['HISE133', 'HISE143'], // 일본역사와문화입문
 ];
 // 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
 function isEqualCourse(courseCode1, courseCode2) {
