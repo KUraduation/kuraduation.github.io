@@ -186,6 +186,16 @@ body {
     cursor: pointer;
     transform: translateY(-1px);
 }
+.semester-cell.dragover {
+    background: rgba(220, 20, 60, 0.05);
+    border: 2px dashed #dc143c;
+    border-radius: 12px;
+    box-shadow: 
+        0 4px 16px rgba(220, 20, 60, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    transform: translateY(-1px);
+}
 
 /* 전공 추가 버튼 툴팁 */
 #major-add-btn {

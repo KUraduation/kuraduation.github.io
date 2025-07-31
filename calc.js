@@ -867,7 +867,7 @@ function toggleCourseSelection(courseElement) {
 }
 
 // 클릭 또는 드래그 드롭으로 선택된 과목들을 특정 학기 셀에 추가/이동하는 통합 함수
-function addSelectedCoursesToCell(targetCell, saveToHist = true) {
+function addSelectedCoursesToCell(targetCell) {
     if (selectedCourses.size === 0) {
         return;
     }
@@ -876,22 +876,29 @@ function addSelectedCoursesToCell(targetCell, saveToHist = true) {
 
     // 선택된 모든 과목을 처리
     selectedCourses.forEach(selectedCourse => {
-        // 선택된 과목의 데이터 가져오기
-        const courseData = {
-            code: selectedCourse.dataset.courseCode,
-            name: selectedCourse.dataset.courseName,
-            credit: selectedCourse.dataset.credit,
-            isTakenCourse: selectedCourse.classList.contains('taken-course')
-        };
+        let takenCourse;
+
+        // 블록 옮기기라면
+        if (selectedCourse.classList.contains('taken-course'))
+            takenCourse = selectedCourse;
+        // 새로 추가라면
+        else {
+            // 선택된 과목의 데이터 가져오기
+            const courseData = {
+                code: selectedCourse.dataset.courseCode,
+                name: selectedCourse.dataset.courseName,
+                credit: selectedCourse.dataset.credit,
+                isTakenCourse: false
+            };
+            takenCourse = createTakenCourseElement(courseData);
+        }
+
         // 새 과목 추가
-        const takenCourse = createTakenCourseElement(courseData);
         targetCell.appendChild(takenCourse);
 
         processedCourses.push({
             element: takenCourse,
-            originalCell: null,
-            action: 'added',
-            name: courseData.name
+            originalCell: null, // todo
         });
 
     });
@@ -914,7 +921,7 @@ function addSelectedCoursesToCell(targetCell, saveToHist = true) {
     }
 
     // 히스토리 저장 (여러 과목 이동이므로 한 번만)
-    if (saveToHist) saveToHistory();
+    saveToHistory();
 }
 
 // 셀 클릭 핸들러 (클릭 이동 모드)
@@ -979,6 +986,12 @@ function createTakenCourseElement(courseData) {
 function handleDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    e.currentTarget.classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('dragover');
 }
 
 function handleDrop(e) {
@@ -990,17 +1003,18 @@ function handleDrop(e) {
     clearCourseSelection();
     toggleCourseSelection(draggedCourse);
 
-    // 통합된 추가/이동 로직 호출. 옮김의 경우 handleDragEnd에서 처리, 추가의 경우 저장해야함
-    addSelectedCoursesToCell(targetCell, draggedCourse.parentElement.className !== 'semester-cell');
+    // 통합된 추가/이동 로직 호출
+    addSelectedCoursesToCell(targetCell);
 }
 
 function handleDragEnd(e) {
     e.target.classList.remove('dragging');
-
-    if (e.target.classList.contains('taken-course')) {
-        // 드롭되면 과목 삭제
-        deleteCourse(e.target);
-    }
+    const dragOverCell = document.querySelector('.semester-cell.dragover');
+    // 외부에 드롭했다면 강의 삭제
+    if (!dragOverCell)
+        deleteCourse(draggedCourse);
+    // 아니면 드래그오버 태그 제거
+    else dragOverCell.classList.remove('dragover');
     draggedCourse = null;
 }
 
@@ -1064,6 +1078,7 @@ function createYearColumn(year) {
         cell.dataset.year = year;
         cell.dataset.semester = index + 1;
         cell.addEventListener('dragover', handleDragOver);
+        cell.addEventListener('dragleave', handleDragLeave);
         cell.addEventListener('drop', handleDrop);
         cell.addEventListener('click', handleCellClick);
 
