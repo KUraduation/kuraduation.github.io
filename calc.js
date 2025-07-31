@@ -1005,16 +1005,13 @@ function handleDrop(e) {
 
     // 통합된 추가/이동 로직 호출
     addSelectedCoursesToCell(targetCell);
+
+    // 드래그오버 태그 제거
+    targetCell.classList.remove('dragover');
 }
 
 function handleDragEnd(e) {
     e.target.classList.remove('dragging');
-    const dragOverCell = document.querySelector('.semester-cell.dragover');
-    // 외부에 드롭했다면 강의 삭제
-    if (!dragOverCell)
-        deleteCourse(draggedCourse);
-    // 아니면 드래그오버 태그 제거
-    else dragOverCell.classList.remove('dragover');
     draggedCourse = null;
 }
 
