@@ -791,7 +791,7 @@ function addCustomCourse(name, code, credit) {
     const content = document.createElement('div');
     content.className = 'result-group-content';
 
-    // 과목 아이템 생성 todo
+    // 과목 아이템 생성
     const courseItem = createSearchResultCourse(code, name, credit);
 
     content.appendChild(courseItem);
@@ -898,7 +898,7 @@ function addSelectedCoursesToCell(targetCell) {
 
         processedCourses.push({
             element: takenCourse,
-            originalCell: null, // todo
+            originalCell: null,
         });
 
     });
@@ -1317,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const groupContent = document.createElement('div');
             groupContent.className = 'result-group-content';
 
-            group.courses.forEach(course => { // todo
+            group.courses.forEach(course => {
                 const courseItem = createSearchResultCourse(course.code, course.name, course.credit);
                 groupContent.appendChild(courseItem);
             });
@@ -1368,7 +1368,7 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResult.textContent = '해당 강의를 찾을 수 없습니다.';
             return;
         }
-        foundCourses.forEach(course => { // todo
+        foundCourses.forEach(course => {
             const courseItem = createSearchResultCourse(course.code, course.name, course.credit);
             searchResult.appendChild(courseItem);
         });
@@ -1926,6 +1926,8 @@ function isCourseAlreadyTaken(courseCode) {
 function createSearchResultCourse(code, name, credit) {
     const courseItem = document.createElement('div');
     courseItem.className = 'course-item';
+    // 강의 툴팁 추가
+    courseItem.title = "드래그 또는 클릭(다중선택 가능) 후 학기 클릭";
     if (isCourseAlreadyTaken(code)) {
         courseItem.classList.add('taken-in-search');
     }

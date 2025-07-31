@@ -131,11 +131,11 @@ body {
 }
 
 /* 과목 아이템 툴팁 스타일 */
+/*
 .course-item {
     position: relative;
     cursor: pointer;
 }
-
 .course-item:hover::after {
     content: "드래그 또는 클릭(다중선택 가능) 후 학기 클릭";
     position: absolute;
@@ -151,6 +151,7 @@ body {
     z-index: 1000;
     pointer-events: none;
 }
+*/
 
 /* 선택된 과목 스타일 */
 .course-item.selected {
