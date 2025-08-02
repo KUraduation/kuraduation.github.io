@@ -3,7 +3,17 @@
 <!-- 
     졸업학점계산기
 -->
+
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TMGHBQHTGH"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-TMGHBQHTGH');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="N6YiN-rH88f_e_8SrHFSt4T4bAg6HH9JtR5uZ-5axI8" /> <!-- 구글 사이트 인증 -->
@@ -44,8 +54,8 @@
                     </div>
 
                     <div id="course-search-container">
-                        <input type="text" id="course-search-input" placeholder="강의명 또는 학수번호 입력" list="course-suggestions"
-                            autocomplete="off">
+                        <input type="text" id="course-search-input" placeholder="강의명 또는 학수번호 입력"
+                            list="course-suggestions" autocomplete="off">
                         <datalist id="course-suggestions"></datalist>
                         <button id="course-search-btn">검색</button>
                     </div>
@@ -73,8 +83,8 @@
 
         <div id="container-divider">
             <button id="container-toggle-btn" class="toggle-btn">
-    <div class="toggle-icon"></div>
-</button>
+                <div class="toggle-icon"></div>
+            </button>
         </div>
 
         <div class="semester-container">
@@ -91,29 +101,29 @@
             </div>
         </div>
 
-                    <div class="chart-container">
-                <div class="deck-management">
-                    <div class="deck-tabs-row">
-                        <div class="deck-tabs">
-                            <button class="deck-tab active" data-deck="deck1">덱1</button>
-                            <button class="deck-tab" data-deck="deck2">덱2</button>
-                            <button class="deck-tab" data-deck="deck3">덱3</button>
-                            <button class="add-deck-btn" id="add-deck-btn">+</button>
-                        </div>
+        <div class="chart-container">
+            <div class="deck-management">
+                <div class="deck-tabs-row">
+                    <div class="deck-tabs">
+                        <button class="deck-tab active" data-deck="deck1">덱1</button>
+                        <button class="deck-tab" data-deck="deck2">덱2</button>
+                        <button class="deck-tab" data-deck="deck3">덱3</button>
+                        <button class="add-deck-btn" id="add-deck-btn">+</button>
                     </div>
-                    <div class="deck-controls-row">
-                        <div class="deck-controls">
-                            <button class="deck-copy-paste-btn" id="deck-copy-paste-btn" title="현재 덱 복사">복사</button>
-                            <button class="deck-reset-btn" id="deck-reset-btn" title="현재 덱 초기화">덱 초기화</button>
-                            <button class="history-btn" id="undo-btn" title="실행 취소" disabled>↶</button>
-                            <button class="history-btn" id="redo-btn" title="다시 실행" disabled>↷</button>
-                        </div>
+                </div>
+                <div class="deck-controls-row">
+                    <div class="deck-controls">
+                        <button class="deck-copy-paste-btn" id="deck-copy-paste-btn" title="현재 덱 복사">복사</button>
+                        <button class="deck-reset-btn" id="deck-reset-btn" title="현재 덱 초기화">덱 초기화</button>
+                        <button class="history-btn" id="undo-btn" title="실행 취소" disabled>↶</button>
+                        <button class="history-btn" id="redo-btn" title="다시 실행" disabled>↷</button>
                     </div>
-                    <button class="help-btn" id="help-btn" title="도움말">❓</button>
+                </div>
+                <button class="help-btn" id="help-btn" title="도움말">❓</button>
                 <div class="total-credit-section">
-            <div class="total-credit-row">
-                <span>총이수학점: </span>
-                <span id="current-credit">0</span>
+                    <div class="total-credit-row">
+                        <span>총이수학점: </span>
+                        <span id="current-credit">0</span>
                     </div>
                     <div class="gpa-row">
                         <span>평점: </span>
