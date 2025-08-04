@@ -36,17 +36,22 @@
                     </div>
 
                     <div id="dept-search-container">
-                        <select id="majorDiv-select"></select>
-                        <input type="text" id="dept-search-input" placeholder="학과 이름 입력" list="dept-suggestions"
-                            autocomplete="off">
-                        <datalist id="dept-suggestions"></datalist>
+                        <div class="floating-dropdown">
+                            <select id="majorDiv-select"></select>
+                        </div>
+                        <div class="floating-dropdown">
+                            <input type="text" id="dept-search-input" placeholder=" " list="dept-suggestions" autocomplete="off">
+                            <datalist id="dept-suggestions"></datalist>
+                        </div>
                         <button id="dept-search-btn">검색</button>
                     </div>
 
                     <div id="course-search-container">
-                        <input type="text" id="course-search-input" placeholder="강의명 또는 학수번호 입력" list="course-suggestions"
-                            autocomplete="off">
-                        <datalist id="course-suggestions"></datalist>
+                        <div class="floating-dropdown">
+                            <input type="text" id="course-search-input" placeholder=" " list="course-suggestions" autocomplete="off">
+                            <label for="course-search-input">강의명 또는 학수번호</label>
+                            <datalist id="course-suggestions"></datalist>
+                        </div>
                         <button id="course-search-btn">검색</button>
                     </div>
 
