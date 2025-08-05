@@ -12,13 +12,6 @@ const majorDivs = [
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const courses = {};
 
-// 전공 과목 자동 분류 함수
-function isMajorCourse(groupNm) {
-    if (!groupNm) return false;
-    // 전공필수, 전공선택이 포함된 과목을 전공으로 분류
-    return /전공(필수|선택)/.test(groupNm);
-}
-
 // 평점 시스템
 const gradeSystem = {
     'A+': 4.5,
@@ -578,14 +571,10 @@ function showCoursePopup(courseElement, event) {
     const majorCheckbox = document.createElement('input');
     majorCheckbox.type = 'checkbox';
     majorCheckbox.id = 'major-checkbox';
-    
-    // 전공 여부 판단: 기존 설정이 있으면 사용, 없으면 현재 전공 그룹과 비교
+
+    // 전공 여부 판단
     let isMajor = courseElement.dataset.isMajor === 'true';
-    if (!isMajor && courseElement.dataset.isMajor === 'false') {
-        // 명시적으로 false로 설정된 경우가 아니라면, 현재 전공 그룹과 비교
-        isMajor = isCourseInMajorGroups(courseElement.dataset.courseCode);
-    }
-    
+
     majorCheckbox.checked = isMajor;
     majorCheckbox.style.marginTop = '4px';
     majorCheckbox.style.marginRight = '8px';
@@ -616,21 +605,20 @@ function showCoursePopup(courseElement, event) {
     saveBtn.style.padding = '8px 16px';
     saveBtn.style.borderRadius = '4px';
     saveBtn.style.cursor = 'pointer';
-            saveBtn.addEventListener('click', () => {
-            const selectedGrade = gradeSelect.value;
-            const isMajor = majorCheckbox.checked;
+    saveBtn.addEventListener('click', () => {
+        const selectedGrade = gradeSelect.value;
+        const isMajor = majorCheckbox.checked;
 
-            courseElement.dataset.grade = selectedGrade;
-            courseElement.dataset.isMajor = isMajor;
+        courseElement.dataset.grade = selectedGrade;
+        courseElement.dataset.isMajor = isMajor;
 
-            // 제목 업데이트
-            const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
-            courseElement.title = `${courseName} (${credit}학점)${gradeText}`;
-            updateAndSave(); // UI 업데이트와 저장을 한 번에
-            updateMajorGPADisplay(); // 전공별 평점 업데이트
-            closeCoursePopup();
-            saveToHistory();
-        });
+        // 제목 업데이트
+        const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
+        courseElement.title = `${courseName} (${credit}학점)${gradeText}`;
+        updateAndSave(); // UI 업데이트와 저장을 한 번에
+        closeCoursePopup();
+        saveToHistory();
+    });
     buttons.appendChild(saveBtn);
 
     // 삭제 버튼
@@ -802,13 +790,6 @@ function addCustomCourse(name, code, credit) {
 
     // 과목 아이템 생성 (전공 여부 자동 판단 포함)
     const courseItem = createSearchResultCourse(code, name, credit);
-    
-    // 전공 여부 확인 및 표시
-    const isMajor = isCourseInMajorGroups(code);
-    if (isMajor) {
-        courseItem.classList.add('major-course');
-        courseItem.title += ' (전공과목)';
-    }
 
     content.appendChild(courseItem);
     searchResult.appendChild(content);
@@ -906,10 +887,10 @@ function addSelectedCoursesToCell(targetCell) {
                 credit: selectedCourse.dataset.credit,
                 isTakenCourse: false
             };
-            
+
             // 전공 여부 자동 판단
-            courseData.isMajor = isCourseInMajorGroups(courseData.code);
-            
+            courseData.isMajor = false;
+
             takenCourse = createTakenCourseElement(courseData);
         }
 
@@ -938,7 +919,6 @@ function addSelectedCoursesToCell(targetCell) {
 
         cellsToUpdate.forEach(cell => updateCellCredit(cell));
         updateAndSave(); // UI 업데이트와 저장을 한 번에
-        updateMajorGPADisplay(); // 전공별 평점 업데이트
     }
 
     // 히스토리 저장 (여러 과목 이동이므로 한 번만)
@@ -969,18 +949,13 @@ function createTakenCourseElement(courseData) {
     takenCourse.dataset.courseName = courseData.name;
     takenCourse.dataset.credit = courseData.credit;
     takenCourse.dataset.grade = courseData.grade || ''; // 평점 정보 추가
-    
+
     // 전공 여부 판단 로직 개선
     let isMajor = false;
     if (courseData.isMajor !== undefined) {
         isMajor = courseData.isMajor;
-    } else if (courseData.groupNm) {
-        isMajor = isMajorCourse(courseData.groupNm);
-    } else {
-        // 현재 설정된 전공 그룹들과 비교하여 전공 과목인지 판단
-        isMajor = isCourseInMajorGroups(courseData.code);
     }
-    
+
     takenCourse.dataset.isMajor = isMajor.toString();
 
     // 제목에 평점 정보도 포함
@@ -1656,10 +1631,14 @@ function getTakenCourses() {
     const allCourses = document.getElementById('semester-grid-container').querySelectorAll('.taken-course');
     allCourses.forEach(course => {
         const courseCode = course.dataset.courseCode;
-        const isAlreadyAdded = takenCourses.some(addedCourse => isEqualCourse(addedCourse.dataset.courseCode, courseCode));
-        if (!isAlreadyAdded) {
-            takenCourses.push(course);
-        }
+        takenCourses.some((addedCourse, index) => {
+            const equals = isEqualCourse(addedCourse.dataset.courseCode, courseCode);
+            if (!equals) return false; // 같지 않은 과목이라면 넘기기
+            // 같은 과목이라면 이전 걸 제거하기
+            takenCourses.splice(index, 1);
+            return true;
+        });
+        takenCourses.push(course);
     });
     return takenCourses;
 }
@@ -1768,7 +1747,6 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     yearSelect.addEventListener('change', () => {
         populateDeptSelect(yearSelect.value, null);
         updateAndSave(); // UI 업데이트와 저장을 한 번에
-        updateMajorGPADisplay(); // 전공별 평점 업데이트
     });
 
     const groupToggleArea = document.createElement('div');
@@ -1796,13 +1774,11 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     container.appendChild(document.createElement('hr'));
     select.addEventListener('change', () => {
         updateAndSave(); // UI 업데이트와 저장을 한 번에
-        updateMajorGPADisplay(); // 전공별 평점 업데이트
     });
     document.getElementById('selectContainer').appendChild(container);
 
     if (!selectedYear) {
         updateChart({ save: false }); // 초기 로드 시에는 저장하지 않음
-        updateMajorGPADisplay(); // 전공별 평점 표시
     }
 }
 
@@ -1817,7 +1793,7 @@ function initGroups(selectContainer) {
     const selectedDeptCd = selectContainer.querySelector('.dept-select').value;
     const dept = deptList.find(d => d.deptCd === selectedDeptCd);
     if (dept) {
-        dept.groups.forEach((group, idx) => {
+        dept.groups.forEach(group => {
             const groupContainer = document.createElement('div');
             const groupLabel = document.createElement('span');
             groupLabel.textContent = group.groupNm;
@@ -1827,7 +1803,7 @@ function initGroups(selectContainer) {
             groupProgress.className = 'group-progress';
             groupContainer.appendChild(groupProgress);
 
-            groupContainer.className = 'group-container' + idx % 2;
+            groupContainer.className = 'group-container';
             groupContainer.dataset.groupCd = group.groupCd || '';
             groupContainer.dataset.currentCredit = 0;
             groupContainer.dataset.minCredit = group.minCredit;
@@ -1954,65 +1930,22 @@ function isEqualCourse(courseCode1, courseCode2) {
     return false;
 }
 
-// 과목이 현재 설정된 전공 그룹에 포함되는지 확인하는 함수 (방안 1: groupNm 기반)
-function isCourseInMajorGroups(courseCode) {
-    // 모든 전공 그룹에서 groupNm을 확인
-    const majorContainers = document.querySelectorAll('.dept-select-container');
-    for (const container of majorContainers) {
-        const year = container.querySelector('.year-select').value;
-        const majorDiv = container.dataset.majorDiv;
-        const selectedDeptCd = container.querySelector('.dept-select').value;
-        if (!courses[year] || !courses[year][majorDiv]) continue;
-        const deptList = courses[year][majorDiv];
-        const dept = deptList.find(d => d.deptCd === selectedDeptCd);
-        if (dept && dept.groups) {
-            for (const group of dept.groups) {
-                if (group.courses && isMajorCourse(group.groupNm)) {
-                    for (const course of group.courses) {
-                        if (isEqualCourse(course.code, courseCode)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
-
-// 특정 전공의 평점을 계산하는 함수 (groupNm 기반)
+// 특정 전공의 평점을 계산하는 함수
 function calculateMajorGPA(majorContainer) {
-    const year = majorContainer.querySelector('.year-select').value;
-    const majorDiv = majorContainer.dataset.majorDiv;
-    const selectedDeptCd = majorContainer.querySelector('.dept-select').value;
-    if (!courses[year] || !courses[year][majorDiv]) return { gpa: 'N/A', credit: 0 };
-    const deptList = courses[year][majorDiv];
-    const dept = deptList.find(d => d.deptCd === selectedDeptCd);
-    if (!dept || !dept.groups) return { gpa: 'N/A', credit: 0 };
     let totalGradePoints = 0;
     let totalGradedCredits = 0;
-    // 전공 그룹에서 groupNm이 전공필수/전공선택인 과목만 수집
-    const majorCourseCodes = new Set();
-    dept.groups.forEach(group => {
-        if (group.courses && isMajorCourse(group.groupNm)) {
-            group.courses.forEach(course => {
-                majorCourseCodes.add(course.code);
-            });
-        }
-    });
-    // 수강한 과목들 중에서 해당 전공 과목들만 필터링
-    const takenCourses = getTakenCourses();
-    takenCourses.forEach(course => {
-        const courseCode = course.dataset.courseCode;
-        const grade = course.dataset.grade;
-        const credit = parseInt(course.dataset.credit) || 0;
-        if (majorCourseCodes.has(courseCode)) {
+
+    majorContainer.querySelectorAll('.group-container').forEach(groupContainer => {
+        groupContainer._takenCourses.forEach(course => {
+            const grade = course.dataset.grade;
+            const credit = parseInt(course.dataset.credit) || 0;
             if (grade && gradeSystem[grade] !== undefined) {
                 totalGradePoints += gradeSystem[grade] * credit;
                 totalGradedCredits += credit;
             }
-        }
+        });
     });
+
     if (totalGradedCredits > 0) {
         const gpa = (totalGradePoints / totalGradedCredits).toFixed(2);
         return { gpa, credit: totalGradedCredits };
@@ -2024,17 +1957,17 @@ function calculateMajorGPA(majorContainer) {
 // 전공별 평점 표시를 업데이트하는 함수
 function updateMajorGPADisplay() {
     const majorContainers = document.querySelectorAll('.dept-select-container');
-    
+
     majorContainers.forEach(container => {
         // 기존 평점 표시 요소 제거
         const existingGPAElement = container.querySelector('.major-gpa-display');
         if (existingGPAElement) {
             existingGPAElement.remove();
         }
-        
+
         // 새로운 평점 계산
         const { gpa, credit } = calculateMajorGPA(container);
-        
+
         // 평점 표시 요소 생성
         const gpaElement = document.createElement('div');
         gpaElement.className = 'major-gpa-display';
@@ -2049,7 +1982,7 @@ function updateMajorGPADisplay() {
             border-radius: 4px;
             text-align: center;
         `;
-        
+
         // 드롭다운과 그래프 사이에 삽입
         const deptSelect = container.querySelector('.dept-select');
         if (deptSelect) {
@@ -2234,7 +2167,8 @@ function updateChart(options = { save: true }) {
         majorGpaElement.textContent = 'N/A';
     }
 
-    // 각 전공별 그룹 업데이트
+    // 각 전공별 그룹 업데이트(한 강의는 1개의 전공영역에만 적용)
+    // 여기서 takenCourses를 변경하므로 아래에서 사용 시 주의
     myMajors.forEach(myMajor => {
         const year = myMajor.querySelector('.year-select').value;
         const majorDiv = myMajor.dataset.majorDiv;
@@ -2244,12 +2178,13 @@ function updateChart(options = { save: true }) {
 
         if (!dept) return;
 
-        const groupContainers = myMajor.querySelectorAll('.group-container0, .group-container1');
+        const groupContainers = myMajor.querySelectorAll('.group-container');
         groupContainers.forEach(groupContainer => {
             groupContainer._takenCourses = [];
             groupContainer.dataset.currentCredit = 0;
         });
 
+        const joinedCourses = []; // 중복 추가 방지
         takenCourses.forEach(takenCourse => {
             const courseCode = takenCourse.dataset.courseCode;
 
@@ -2265,8 +2200,19 @@ function updateChart(options = { save: true }) {
                 );
                 if (groupContainer) {
                     addCourese(groupContainer, takenCourse);
+                    joinedCourses.push(takenCourse);
                 }
             }
+        });
+        // 중복 방지를 위해 제거
+        joinedCourses.forEach(courses => {
+            takenCourses.some((takenCourse, index) => {
+                if (courses === takenCourse) {
+                    takenCourses.splice(index, 1);
+                    return true;
+                }
+                return false;
+            });
         });
     });
 
