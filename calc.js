@@ -2106,9 +2106,8 @@ function updateChart(options = { save: true }) {
         const grade = course.dataset.grade;
 
         // F학점이거나 NP이면 학점 인정 안함
-        if (grade !== 'F' && grade !== 'NP') {
+        // if (grade !== 'F' && grade !== 'NP') // 임시 제거
             currentCredit += credit;
-        }
 
         // 평점 계산 (평점이 입력된 과목만, P/NP 제외)
         if (grade && gradeSystem[grade] !== undefined) {
@@ -2120,22 +2119,6 @@ function updateChart(options = { save: true }) {
     // 전체 학점 업데이트
     document.getElementById('current-credit').textContent = currentCredit;
 
-    // 전공 학점 계산
-    let majorCredit = 0;
-    takenCourses.forEach(courseEl => {
-        const credit = parseInt(courseEl.dataset.credit) || 0;
-        const grade = courseEl.dataset.grade;
-        const isMajor = courseEl.dataset.isMajor === 'true';
-
-        // 전공 과목이고 F학점이거나 NP가 아니면 전공 학점에 추가
-        if (isMajor && grade !== 'F' && grade !== 'NP') {
-            majorCredit += credit;
-        }
-    });
-
-    // 전공 학점 업데이트
-    document.getElementById('major-credit').textContent = majorCredit;
-
     // 전체 평점 업데이트
     const overallGpaElement = document.getElementById('overall-gpa');
     if (totalGradedCredits > 0) {
@@ -2145,7 +2128,7 @@ function updateChart(options = { save: true }) {
         overallGpaElement.textContent = 'N/A';
     }
 
-    // 전공 평점 계산
+    // 전공 학점/평점 계산
     let majorGradePoints = 0;
     let majorGradedCredits = 0;
 
@@ -2159,6 +2142,8 @@ function updateChart(options = { save: true }) {
             majorGradedCredits += credit;
         }
     });
+    
+    document.getElementById('major-credit').textContent = majorGradedCredits;
 
     const majorGpaElement = document.getElementById('major-gpa');
     if (majorGradedCredits > 0) {
