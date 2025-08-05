@@ -215,7 +215,7 @@ function resetDeck(deckId) {
     if (currentDeck === deckId) {
         loadDeck(deckId);
         loadDeckGraduationRequirements(deckId); // 졸업요건도 초기화
-        updateAndSave(); // UI 업데이트와 저장을 한 번에
+        updateChart(); // UI 업데이트와 저장을 한 번에
         refreshSearchResults(); // 검색 결과도 초기화
     } else {
         saveStateToLocalStorage();
@@ -235,7 +235,7 @@ function pasteDeck(targetDeckId) {
 
     if (currentDeck === targetDeckId) {
         loadDeck(targetDeckId);
-        updateAndSave(); // UI 업데이트와 저장을 한 번에
+        updateChart(); // UI 업데이트와 저장을 한 번에
         saveToHistory(); // 히스토리에 저장
     } else {
         saveStateToLocalStorage();
@@ -272,7 +272,7 @@ function switchDeck(deckId) {
     // 새 덱의 졸업요건 로드
     loadDeckGraduationRequirements(deckId);
 
-    updateAndSave(); // UI 업데이트와 저장을 한 번에
+    updateChart(); // UI 업데이트와 저장을 한 번에
 }
 
 // 덱별 졸업요건 로드 함수
@@ -615,7 +615,7 @@ function showCoursePopup(courseElement, event) {
         // 제목 업데이트
         const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
         courseElement.title = `${courseName} (${credit}학점)${gradeText}`;
-        updateAndSave(); // UI 업데이트와 저장을 한 번에
+        updateChart(); // UI 업데이트와 저장을 한 번에
         closeCoursePopup();
         saveToHistory();
     });
@@ -689,7 +689,7 @@ function handleOutsideClick(event) {
 // 과목 삭제 함수
 function deleteCourse(courseElement) {
     courseElement.remove();
-    updateAndSave(); // UI 업데이트와 저장을 한 번에
+    updateChart(); // UI 업데이트와 저장을 한 번에
     closeCoursePopup();
     saveToHistory();
 
@@ -918,7 +918,7 @@ function addSelectedCoursesToCell(targetCell) {
         });
 
         cellsToUpdate.forEach(cell => updateCellCredit(cell));
-        updateAndSave(); // UI 업데이트와 저장을 한 번에
+        updateChart(); // UI 업데이트와 저장을 한 번에
     }
 
     // 히스토리 저장 (여러 과목 이동이므로 한 번만)
@@ -1069,7 +1069,7 @@ function createYearColumn(year) {
             if (decks[currentDeck].customYearNames && decks[currentDeck].customYearNames[year]) {
                 delete decks[currentDeck].customYearNames[year];
             }
-            updateAndSave(); // UI 업데이트와 저장을 한 번에
+            updateChart(); // UI 업데이트와 저장을 한 번에
             saveToHistory();
         });
         header.appendChild(removeBtn);
@@ -1707,7 +1707,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     closeBtn.setAttribute('aria-label', '닫기');
     closeBtn.onclick = () => {
         container.remove();
-        updateAndSave(); // UI 업데이트와 저장을 한 번에
+        updateChart(); // UI 업데이트와 저장을 한 번에
     };
     closeBtn.addEventListener('mouseenter', () => {
         closeBtn.style.color = '#000';
@@ -1746,7 +1746,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
 
     yearSelect.addEventListener('change', () => {
         populateDeptSelect(yearSelect.value, null);
-        updateAndSave(); // UI 업데이트와 저장을 한 번에
+        updateChart(); // UI 업데이트와 저장을 한 번에
     });
 
     const groupToggleArea = document.createElement('div');
@@ -1773,7 +1773,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
 
     container.appendChild(document.createElement('hr'));
     select.addEventListener('change', () => {
-        updateAndSave(); // UI 업데이트와 저장을 한 번에
+        updateChart(); // UI 업데이트와 저장을 한 번에
     });
     document.getElementById('selectContainer').appendChild(container);
 
@@ -1861,7 +1861,11 @@ function updateGroupProgress(groupContainer) {
 
 function addCourese(groupContainer, course) {
     groupContainer._takenCourses.push(course);
-    groupContainer.dataset.currentCredit = parseInt(groupContainer.dataset.currentCredit) + parseInt(course.dataset.credit);
+    const grade = course.dataset.grade;
+    // F나 NP면 진행도 포함 x
+    if (grade !== 'F' && grade !== 'NP')
+        groupContainer.dataset.currentCredit
+        = parseInt(groupContainer.dataset.currentCredit) + parseInt(course.dataset.credit);
     updateGroupProgress(groupContainer);
 }
 
@@ -1877,11 +1881,7 @@ function updateCellCredit(cell) {
     cell.querySelectorAll('.taken-course').forEach(courseEl => {
         const credit = parseInt(courseEl.dataset.credit) || 0;
         const grade = courseEl.dataset.grade;
-
-        // F학점이거나 NP이면 학점 인정 안함
-        if (grade !== 'F' && grade !== 'NP') {
-            totalCredit += credit;
-        }
+        totalCredit += credit;
 
         // 평점 계산 (P/NP 제외)
         if (grade && gradeSystem[grade] !== undefined) {
@@ -2235,18 +2235,9 @@ function updateChart(options = { save: true }) {
     }
 }
 
-// UI 업데이트와 저장을 함께 수행
-function updateAndSave() {
-    updateChart({ save: false }); // 중복 저장 방지
-    updateYearStats();
-    saveCurrentDeck();
-    saveStateToLocalStorage();
-}
-
 // 학년별 학점과 평점을 계산하고 업데이트하는 함수
 function updateYearStats() {
     document.querySelectorAll('.year-column').forEach(yearColumn => {
-        const year = parseInt(yearColumn.dataset.year);
         const yearStatsElement = yearColumn.querySelector('.year-stats');
 
         if (!yearStatsElement) return;
