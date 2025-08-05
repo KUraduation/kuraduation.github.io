@@ -1937,6 +1937,7 @@ function calculateMajorGPA(majorContainer) {
 
     majorContainer.querySelectorAll('.group-container').forEach(groupContainer => {
         groupContainer._takenCourses.forEach(course => {
+            if (course.dataset.isMajor !== 'true') return;
             const grade = course.dataset.grade;
             const credit = parseInt(course.dataset.credit) || 0;
             if (grade && gradeSystem[grade] !== undefined) {
