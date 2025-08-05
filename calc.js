@@ -11,8 +11,7 @@ const majorDivs = [
 // 학번별 과목을 업데이트하려면 여기다가 년도 추가하고 파일 업로드하면 됨
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const courses = {};
-let similarCourses = []; // 매우 큰 용량이라 실질적 사용 x
-let courseEquivalenceMap = {}; // 이것을 통해 비교
+let courseEquivalenceMap = {};
 
 // 평점 시스템
 const gradeSystem = {
@@ -490,67 +489,17 @@ const dataPromises = years.map(year =>
 );
 
 dataPromises.push(
-    fetch('similar.json')
+    fetch('similar_map.json')
         .then(response => {
-            if (!response.ok) throw new Error(`네트워크 오류: similar.json`);
+            if (!response.ok) throw new Error(`네트워크 오류: similar_map.json`);
             return response.json();
         })
         .then(data => {
-            similarCourses = data;
+            courseEquivalenceMap = data;
         })
 );
 
-// 유사과목 그래프 형성하여 매핑
 Promise.all(dataPromises).then(() => {
-    const adjList = new Map();
-
-    // 1. Build adjacency list from pairs
-    similarCourses.forEach(group => {
-        if (group.length === 2) {
-            const [course1, course2] = group;
-            if (!adjList.has(course1)) adjList.set(course1, []);
-            if (!adjList.has(course2)) adjList.set(course2, []);
-            adjList.get(course1).push(course2);
-            adjList.get(course2).push(course1);
-        }
-    });
-
-    const visited = new Set();
-    courseEquivalenceMap = {};
-
-    // 2. Find connected components (using BFS) and build the equivalence map
-    for (const courseCode of adjList.keys()) {
-        if (!visited.has(courseCode)) {
-            const component = [];
-            const queue = [courseCode];
-            visited.add(courseCode);
-            let head = 0;
-
-            while(head < queue.length) {
-                const currentCourse = queue[head++];
-                component.push(currentCourse);
-
-                const neighbors = adjList.get(currentCourse) || [];
-                for (const neighbor of neighbors) {
-                    if (!visited.has(neighbor)) {
-                        visited.add(neighbor);
-                        queue.push(neighbor);
-                    }
-                }
-            }
-
-            // 3. Pick a representative and create map entries for the component
-            if (component.length > 0) {
-                // Sort to get a consistent representative
-                component.sort();
-                const representative = component[0];
-                for (const member of component) {
-                    courseEquivalenceMap[member] = representative;
-                }
-            }
-        }
-    }
-
     console.log('모든 강의 데이터와 대체과목 정보 로드 완료');
     window.dispatchEvent(new Event('coursesLoaded'));
 }).catch(error => {
