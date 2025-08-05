@@ -1634,12 +1634,11 @@ function getTakenCourses() {
         takenCourses.some((addedCourse, index) => {
             const equals = isEqualCourse(addedCourse.dataset.courseCode, courseCode);
             if (!equals) return false; // 같지 않은 과목이라면 넘기기
-            // 같은 과목이라면 이전 걸 제거하고 새로운 것 넣기
+            // 같은 과목이라면 이전 걸 제거하기
             takenCourses.splice(index, 1);
-            takenCourses.push(course);
-
             return true;
         });
+        takenCourses.push(course);
     });
     return takenCourses;
 }
@@ -1937,7 +1936,6 @@ function calculateMajorGPA(majorContainer) {
     let totalGradedCredits = 0;
 
     majorContainer.querySelectorAll('.group-container0, .group-container1').forEach(groupContainer => {
-        console.log(groupContainer);
         groupContainer._takenCourses.forEach(course => {
             const grade = course.dataset.grade;
             const credit = parseInt(course.dataset.credit) || 0;
@@ -2169,7 +2167,8 @@ function updateChart(options = { save: true }) {
         majorGpaElement.textContent = 'N/A';
     }
 
-    // 각 전공별 그룹 업데이트(한 강의는 1개의 영역에만 적용)
+    // 각 전공별 그룹 업데이트(한 강의는 1개의 전공영역에만 적용)
+    // 여기서 takenCourses를 변경하므로 아래에서 사용 시 주의
     myMajors.forEach(myMajor => {
         const year = myMajor.querySelector('.year-select').value;
         const majorDiv = myMajor.dataset.majorDiv;
@@ -2185,6 +2184,7 @@ function updateChart(options = { save: true }) {
             groupContainer.dataset.currentCredit = 0;
         });
 
+        const joinedCourses = []; // 중복 추가 방지
         takenCourses.forEach(takenCourse => {
             const courseCode = takenCourse.dataset.courseCode;
 
@@ -2200,8 +2200,19 @@ function updateChart(options = { save: true }) {
                 );
                 if (groupContainer) {
                     addCourese(groupContainer, takenCourse);
+                    joinedCourses.push(takenCourse);
                 }
             }
+        });
+        // 중복 방지를 위해 제거
+        joinedCourses.forEach(courses => {
+            takenCourses.some((takenCourse, index) => {
+                if (courses === takenCourse) {
+                    takenCourses.splice(index, 1);
+                    return true;
+                }
+                return false;
+            });
         });
     });
 
