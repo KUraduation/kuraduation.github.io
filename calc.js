@@ -1793,7 +1793,7 @@ function initGroups(selectContainer) {
     const selectedDeptCd = selectContainer.querySelector('.dept-select').value;
     const dept = deptList.find(d => d.deptCd === selectedDeptCd);
     if (dept) {
-        dept.groups.forEach((group, idx) => {
+        dept.groups.forEach(group => {
             const groupContainer = document.createElement('div');
             const groupLabel = document.createElement('span');
             groupLabel.textContent = group.groupNm;
@@ -1803,7 +1803,7 @@ function initGroups(selectContainer) {
             groupProgress.className = 'group-progress';
             groupContainer.appendChild(groupProgress);
 
-            groupContainer.className = 'group-container' + idx % 2;
+            groupContainer.className = 'group-container';
             groupContainer.dataset.groupCd = group.groupCd || '';
             groupContainer.dataset.currentCredit = 0;
             groupContainer.dataset.minCredit = group.minCredit;
@@ -1935,7 +1935,7 @@ function calculateMajorGPA(majorContainer) {
     let totalGradePoints = 0;
     let totalGradedCredits = 0;
 
-    majorContainer.querySelectorAll('.group-container0, .group-container1').forEach(groupContainer => {
+    majorContainer.querySelectorAll('.group-container').forEach(groupContainer => {
         groupContainer._takenCourses.forEach(course => {
             const grade = course.dataset.grade;
             const credit = parseInt(course.dataset.credit) || 0;
@@ -2178,7 +2178,7 @@ function updateChart(options = { save: true }) {
 
         if (!dept) return;
 
-        const groupContainers = myMajor.querySelectorAll('.group-container0, .group-container1');
+        const groupContainers = myMajor.querySelectorAll('.group-container');
         groupContainers.forEach(groupContainer => {
             groupContainer._takenCourses = [];
             groupContainer.dataset.currentCredit = 0;
