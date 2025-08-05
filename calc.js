@@ -2186,6 +2186,22 @@ function updateChart(options = { save: true }) {
     // 전체 학점 업데이트
     document.getElementById('current-credit').textContent = currentCredit;
 
+    // 전공 학점 계산
+    let majorCredit = 0;
+    takenCourses.forEach(courseEl => {
+        const credit = parseInt(courseEl.dataset.credit) || 0;
+        const grade = courseEl.dataset.grade;
+        const isMajor = courseEl.dataset.isMajor === 'true';
+
+        // 전공 과목이고 F학점이거나 NP가 아니면 전공 학점에 추가
+        if (isMajor && grade !== 'F' && grade !== 'NP') {
+            majorCredit += credit;
+        }
+    });
+
+    // 전공 학점 업데이트
+    document.getElementById('major-credit').textContent = majorCredit;
+
     // 전체 평점 업데이트
     const overallGpaElement = document.getElementById('overall-gpa');
     if (totalGradedCredits > 0) {

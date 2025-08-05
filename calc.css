@@ -1102,7 +1102,8 @@ body {
     align-items: center;
     gap: 0.4em;
     font-size: 1.1em;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
 }
 
 .gpa-row {
