@@ -11,6 +11,8 @@ const majorDivs = [
 // 학번별 과목을 업데이트하려면 여기다가 년도 추가하고 파일 업로드하면 됨
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const courses = {};
+let similarCourses = []; // 매우 큰 용량이라 실질적 사용 x
+let courseEquivalenceMap = {}; // 이것을 통해 비교
 
 // 평점 시스템
 const gradeSystem = {
@@ -476,7 +478,7 @@ function addNewDeck() {
     switchDeck(newDeckId);
 }
 
-Promise.all(years.map(year =>
+const dataPromises = years.map(year =>
     fetch(`${year}.json`)
         .then(response => {
             if (!response.ok) throw new Error(`네트워크 오류: ${year}.json`);
@@ -485,8 +487,32 @@ Promise.all(years.map(year =>
         .then(data => {
             courses[year] = data;
         })
-)).then(() => {
-    console.log('모든 강의 데이터 로드 완료');
+);
+
+dataPromises.push(
+    fetch('similar.json')
+        .then(response => {
+            if (!response.ok) throw new Error(`네트워크 오류: similar.json`);
+            return response.json();
+        })
+        .then(data => {
+            similarCourses = data;
+        })
+);
+
+Promise.all(dataPromises).then(() => {
+    // 대체과목 맵 생성
+    similarCourses.forEach(group => {
+        if (group.length > 1) {
+            const representative = group[0];
+            group.forEach(courseCode => {
+                courseEquivalenceMap[courseCode] = representative;
+            });
+        }
+    });
+
+    console.log('모든 강의 데이터와 대체과목 정보 로드 완료');
+
     window.dispatchEvent(new Event('coursesLoaded'));
 }).catch(error => {
     console.error('JSON 파일 로딩 중 오류 발생:', error);
@@ -1904,29 +1930,18 @@ function updateCellCredit(cell) {
     creditTotalElement.textContent = displayText;
 }
 
-// 강의(과목) 매핑 시스템(개편된 과목은 여기 추가)
-const courseMapping = [
-    ['GELI001', 'GELI003', 'GELI005', 'GELI007', 'SPGE210', 'GSCE024'], // 학세탐1
-    ['GELI002', 'GELI004', 'GELI006', 'GELI008', 'GSCE025'], // 학세탐2
-    ['IFLS011', 'IFLS013', 'IFLS800'], // 아잉1
-    ['IFLS012', 'IFLS014', 'IFLS801'], // 아잉2
-    ['GEWR001', 'GEWR002'], // 글쓰기
-    ['GEKS005', 'GEKS007'], // 1학년세미나1
-    ['GEKS006', 'GEKS008'], // 1학년세미나2
-    ['GECT001', 'GSKS004', 'SPGS284'], // 정보적사고
-
-    ['HISE131', 'HISE141'], // 한국역사와문화입문
-    ['HISE132', 'HISE142'], // 중국역사와문화입문
-    ['HISE133', 'HISE143'], // 일본역사와문화입문
-];
 // 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
 function isEqualCourse(courseCode1, courseCode2) {
     if (courseCode1 === courseCode2) return true;
-    for (const group of courseMapping) {
-        if (group.includes(courseCode1) && group.includes(courseCode2)) {
-            return true;
-        }
+
+    const representative1 = courseEquivalenceMap[courseCode1];
+    const representative2 = courseEquivalenceMap[courseCode2];
+
+    // 두 과목 모두 대체과목 맵에 있고, 대표과목이 같은 경우
+    if (representative1 && representative1 === representative2) {
+        return true;
     }
+
     return false;
 }
 
