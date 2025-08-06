@@ -517,7 +517,8 @@ function updateSemesterElements() {
     // 기준년도 라벨 업데이트
     const yearLabels = document.querySelectorAll('.dept-select-container span');
     yearLabels.forEach(label => {
-        if (label.textContent === '기준년도' || label.textContent === 'Base Year') {
+        // 기존 조건을 더 포괄적으로 변경
+        if (label.textContent === '기준년도' || label.textContent === 'Criteria') {
             label.textContent = getText('yearLabel');
         }
     });
