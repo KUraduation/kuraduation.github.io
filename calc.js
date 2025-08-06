@@ -11,7 +11,6 @@ const majorDivs = [
 // 학번별 과목을 업데이트하려면 여기다가 년도 추가하고 파일 업로드하면 됨
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const courses = {};
-let courseEquivalenceMap = {};
 
 // 평점 시스템
 const gradeSystem = {
@@ -477,7 +476,7 @@ function addNewDeck() {
     switchDeck(newDeckId);
 }
 
-const dataPromises = years.map(year =>
+Promise.all(years.map(year =>
     fetch(`${year}.json`)
         .then(response => {
             if (!response.ok) throw new Error(`네트워크 오류: ${year}.json`);
@@ -486,21 +485,8 @@ const dataPromises = years.map(year =>
         .then(data => {
             courses[year] = data;
         })
-);
-
-dataPromises.push(
-    fetch('similar_map.json')
-        .then(response => {
-            if (!response.ok) throw new Error(`네트워크 오류: similar_map.json`);
-            return response.json();
-        })
-        .then(data => {
-            courseEquivalenceMap = data;
-        })
-);
-
-Promise.all(dataPromises).then(() => {
-    console.log('모든 강의 데이터와 대체과목 정보 로드 완료');
+)).then(() => {
+    console.log('모든 강의 데이터 로드 완료');
     window.dispatchEvent(new Event('coursesLoaded'));
 }).catch(error => {
     console.error('JSON 파일 로딩 중 오류 발생:', error);
@@ -736,9 +722,9 @@ function showHelpPopup() {
         <p>• 모든 기록은 브라우저에 저장되며, 브라우저 기록을 삭제하지 않는 한 그대로 유지됩니다.</p>
         <p>• 원하는 과목을 드래그하거나, 과목 클릭 후 학기 셀을 클릭해 배치하세요.</p>
         <p>• 배치된 과목을 클릭하여 평점을 설정할 수 있습니다.</p>
-        <p>• 2018년부터 올해까지의 고려대 교육정보시스템 자료를 따릅니다.<br>
+        <p>• 2018년부터 올해까지의 고려대 교육정보시스템 기준을 따릅니다.<br>
             졸업요건에 이상이 있을 시 메일로 문의해주세요.</p>
-        <p>• 변동이 생긴 과목(ex. 자정진>학세탐)의 경우 자동으로 반영되도록 해 두었으나, 이상이 발생할 경우 '직접 추가' 기능을 이용해 학수번호를 직접 설정해주세요.</p>
+        <p>• 변동이 생긴 교양과목(ex. 자정진>학세탐)의 경우 자동으로 반영되도록 해 두었으나, 이상이 발생할 경우 '직접 추가' 기능을 이용해 학수번호를 직접 설정해주세요.</p>
         <p>• 일반교양과목(ex. 과어탈, 종영 등)의 경우 '직접 추가' 기능을 이용해 추가하세요.</p>
         <p>• 졸업요건의 '기준 년도'는 복수전공의 경우 진입년도로 설정해야 하며, 제1전공, 이중전공 등 나머지는 자신의 입학년도로 설정해야 합니다.</p>
         <p>• 심화전공을 이수하시는 경우, 졸업요건에서 제1전공을 고르지 말고 반드시 심화전공만 고르세요!</p>
@@ -1918,18 +1904,29 @@ function updateCellCredit(cell) {
     creditTotalElement.textContent = displayText;
 }
 
+// 강의(과목) 매핑 시스템(개편된 과목은 여기 추가)
+const courseMapping = [
+    ['GELI001', 'GELI003', 'GELI005', 'GELI007', 'SPGE210', 'GSCE024'], // 학세탐1
+    ['GELI002', 'GELI004', 'GELI006', 'GELI008', 'GSCE025'], // 학세탐2
+    ['IFLS011', 'IFLS013', 'IFLS800'], // 아잉1
+    ['IFLS012', 'IFLS014', 'IFLS801'], // 아잉2
+    ['GEWR001', 'GEWR002'], // 글쓰기
+    ['GEKS005', 'GEKS007'], // 1학년세미나1
+    ['GEKS006', 'GEKS008'], // 1학년세미나2
+    ['GECT001', 'GSKS004', 'SPGS284'], // 정보적사고
+
+    ['HISE131', 'HISE141'], // 한국역사와문화입문
+    ['HISE132', 'HISE142'], // 중국역사와문화입문
+    ['HISE133', 'HISE143'], // 일본역사와문화입문
+];
 // 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
 function isEqualCourse(courseCode1, courseCode2) {
     if (courseCode1 === courseCode2) return true;
-
-    const representative1 = courseEquivalenceMap[courseCode1];
-    const representative2 = courseEquivalenceMap[courseCode2];
-
-    // 두 과목 모두 대체과목 맵에 있고, 대표과목이 같은 경우
-    if (representative1 && representative1 === representative2) {
-        return true;
+    for (const group of courseMapping) {
+        if (group.includes(courseCode1) && group.includes(courseCode2)) {
+            return true;
+        }
     }
-
     return false;
 }
 
@@ -2109,8 +2106,9 @@ function updateChart(options = { save: true }) {
         const grade = course.dataset.grade;
 
         // F학점이거나 NP이면 학점 인정 안함
-        // if (grade !== 'F' && grade !== 'NP') // 임시 제거
+        if (grade !== 'F' && grade !== 'NP') {
             currentCredit += credit;
+        }
 
         // 평점 계산 (평점이 입력된 과목만, P/NP 제외)
         if (grade && gradeSystem[grade] !== undefined) {
