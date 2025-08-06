@@ -32,17 +32,23 @@
         <div class="course-container">
             <div class="container-header">
                 <img src="KUraduationlogo.png" alt="KUraduation" class="logo-image">
-                <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
-                    <label for="search-year-select" style="font-size: small;">검색기준</label>
-                    <select id="search-year-select"></select>
+                <div class="header-controls">
+                    <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
+                        <label for="search-year-select" style="font-size: small;" data-i18n="searchCriteria">검색기준</label>
+                        <select id="search-year-select"></select>
+                    </div>
                 </div>
             </div>
+            <div class="language-switcher">
+                <button id="lang-ko-btn" class="lang-btn active" data-lang="ko" data-i18n="korean">한국어</button>
+                <button id="lang-en-btn" class="lang-btn" data-lang="en" data-i18n="english">English</button>
+            </div>    
             <div id="course-container-content">
                 <div class="search-box">
                     <div id="search-type-selector">
-                        <label><input type="radio" name="searchType" value="byDept" checked> 학과 검색</label>
-                        <label><input type="radio" name="searchType" value="byCourseName"> 강의명 검색</label>
-                        <label><input type="radio" name="searchType" value="customCourse"> 직접 추가</label>
+                        <label><input type="radio" name="searchType" value="byDept" checked> <span data-i18n="departmentSearch">학과 검색</span></label>
+                        <label><input type="radio" name="searchType" value="byCourseName"> <span data-i18n="courseNameSearch">강의명 검색</span></label>
+                        <label><input type="radio" name="searchType" value="customCourse"> <span data-i18n="customAdd">직접 추가</span></label>
                     </div>
 
                     <div id="dept-search-container">
@@ -53,27 +59,37 @@
                             <input type="text" id="dept-search-input" placeholder=" " list="dept-suggestions" autocomplete="off">
                             <datalist id="dept-suggestions"></datalist>
                         </div>
-                        <button id="dept-search-btn">검색</button>
+                        <button id="dept-search-btn" class="search-btn" title="검색">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
                     </div>
 
                     <div id="course-search-container">
                         <input type="text" id="course-search-input" placeholder="강의명 또는 학수번호 입력"
                             list="course-suggestions" autocomplete="off">
                         <datalist id="course-suggestions"></datalist>
-                        <button id="course-search-btn">검색</button>
+                        <button id="course-search-btn" class="search-btn" title="검색">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
                     </div>
 
                     <div id="custom-course-container">
                         <div class="custom-course-form">
-                            <label>과목명:</label>
+                            <label data-i18n="courseName">과목명:</label>
                             <input type="text" id="custom-course-name" placeholder="예: 대학영어">
-                            <label>학수번호:</label>
+                            <label data-i18n="courseCode">학수번호:</label>
                             <input type="text" id="custom-course-code" placeholder="예: ENGL001">
-                            <label>학점:</label>
+                            <label data-i18n="credit">학점:</label>
                             <input type="number" id="custom-course-credit" placeholder="예: 3" min="1" max="6">
                             <div class="custom-course-buttons">
-                                <button id="custom-course-add-btn" class="custom-course-add-btn">추가</button>
-                                <button id="custom-course-clear-btn" class="custom-course-cancel-btn">초기화</button>
+                                <button id="custom-course-add-btn" class="custom-course-add-btn" data-i18n="add">추가</button>
+                                <button id="custom-course-clear-btn" class="custom-course-cancel-btn" data-i18n="reset">초기화</button>
                             </div>
                         </div>
                     </div>
@@ -108,32 +124,32 @@
             <div class="deck-management">
                 <div class="deck-tabs-row">
                     <div class="deck-tabs">
-                        <button class="deck-tab active" data-deck="deck1">덱1</button>
-                        <button class="deck-tab" data-deck="deck2">덱2</button>
-                        <button class="deck-tab" data-deck="deck3">덱3</button>
+                        <button class="deck-tab active" data-deck="deck1" data-i18n="deck1">덱1</button>
+                        <button class="deck-tab" data-deck="deck2" data-i18n="deck2">덱2</button>
+                        <button class="deck-tab" data-deck="deck3" data-i18n="deck3">덱3</button>
                         <button class="add-deck-btn" id="add-deck-btn">+</button>
                     </div>
                 </div>
                 <div class="deck-controls-row">
                     <div class="deck-controls">
-                        <button class="deck-copy-paste-btn" id="deck-copy-paste-btn" title="현재 덱 복사">복사</button>
-                        <button class="deck-reset-btn" id="deck-reset-btn" title="현재 덱 초기화">덱 초기화</button>
-                        <button class="history-btn" id="undo-btn" title="실행 취소" disabled>↶</button>
-                        <button class="history-btn" id="redo-btn" title="다시 실행" disabled>↷</button>
+                        <button class="deck-copy-paste-btn" id="deck-copy-paste-btn" title="현재 덱 복사" data-i18n="copy">복사</button>
+                        <button class="deck-reset-btn" id="deck-reset-btn" title="현재 덱 초기화" data-i18n="deckReset">덱 초기화</button>
+                        <button class="history-btn" id="undo-btn" title="실행 취소" disabled data-i18n="undo">↶</button>
+                        <button class="history-btn" id="redo-btn" title="다시 실행" disabled data-i18n="redo">↷</button>
                     </div>
                 </div>
-                <button class="help-btn" id="help-btn" title="도움말">❓</button>
+                <button class="help-btn" id="help-btn" title="도움말" data-i18n="help">❓</button>
                 <div class="total-credit-section">
                     <div class="total-credit-row">
-                        <span>총이수학점: </span>
+                        <span data-i18n="totalCredits">총이수학점: </span>
                         <span id="current-credit">0</span>
-                        <span style="margin-left: 16px;">전공학점: </span>
+                        <span style="margin-left: 16px;" data-i18n="majorCredits">전공학점: </span>
                         <span id="major-credit">0</span>
                     </div>
                     <div class="gpa-row">
-                        <span>평점: </span>
+                        <span data-i18n="gpa">평점: </span>
                         <span id="overall-gpa">N/A</span>
-                        <span style="margin-left: 16px;">전공평점: </span>
+                        <span style="margin-left: 16px;" data-i18n="majorGpa">전공평점: </span>
                         <span id="major-gpa">N/A</span>
                     </div>
                 </div>
