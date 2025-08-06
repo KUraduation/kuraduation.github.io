@@ -2323,7 +2323,8 @@ document.addEventListener('DOMContentLoaded', function () {
         saveToHistory();
     }
 
-    addYearBtn.addEventListener('click', addYearColumn);
+    // 이벤트 위임으로 처리되므로 직접 이벤트 리스너 제거
+    // addYearBtn.addEventListener('click', addYearColumn);
 
     semesterScrollContainer.addEventListener('wheel', (evt) => {
         if (evt.deltaY !== 0) {
