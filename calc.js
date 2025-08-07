@@ -1719,6 +1719,8 @@ function editYearTitle(yearTitleElement, year) {
         }
         decks[currentDeck].customYearNames[year] = newText;
         saveCurrentDeck();
+        saveStateToLocalStorage();
+        saveToHistory();
     }
 
     // Enter 키로 편집 완료
@@ -2358,6 +2360,8 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             semesterGridContainer.insertBefore(newYearColumn, columns[insertionIndex]);
         }
+        saveCurrentDeck();
+        saveStateToLocalStorage();
         saveToHistory();
     }
 
