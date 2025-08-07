@@ -12,8 +12,8 @@ const translations = {
         "customAdd": "직접 추가",
         "search": "검색",
         "courseNamePlaceholder": "강의명 또는 학수번호 입력",
-        "courseNameExample": "예: 대학영어",
-        "courseCodeExample": "예: ENGL001",
+        "courseNameExample": "예: 학문세계의탐구I",
+        "courseCodeExample": "예: GELI005",
         "creditExample": "예: 3",
         
         // 직접 추가 폼
@@ -36,11 +36,13 @@ const translations = {
         "deck4": "4",
         "deck5": "5",
         "copy": "복사",
+        "paste": "붙여넣기",
         "deckReset": "덱 초기화",
         "undo": "↶",
         "redo": "↷",
         "help": "❓",
         "copyTitle": "현재 덱 복사",
+        "pasteTitle": "복사된 덱 붙여넣기",
         "resetTitle": "현재 덱 초기화",
         "undoTitle": "실행 취소",
         "redoTitle": "다시 실행",
@@ -53,8 +55,8 @@ const translations = {
         "helpStorage": "• 모든 기록은 브라우저에 저장되며, 브라우저 기록을 삭제하지 않는 한 그대로 유지됩니다.",
         "helpDragDrop": "• 원하는 과목을 드래그하거나, 과목 클릭 후 학기 셀을 클릭해 배치하세요.",
         "helpClickGrade": "• 배치된 과목을 클릭하여 평점을 설정할 수 있습니다.",
-        "helpSystem": "• 2018년부터 올해까지의 고려대 교육정보시스템 기준을 따릅니다.<br>졸업요건에 이상이 있을 시 메일로 문의해주세요.",
-        "helpChangedCourse": "• 변동이 생긴 교양과목(ex. 자정진>학세탐)의 경우 자동으로 반영되도록 해 두었으나, 이상이 발생할 경우 '직접 추가' 기능을 이용해 학수번호를 직접 설정해주세요.",
+        "helpSystem": "• 2018년부터 올해까지의 고려대 교육정보시스템 자료를 따릅니다.<br>졸업요건에 이상이 있을 시 메일로 문의해주세요.",
+        "helpChangedCourse": "• 변동이 생긴 과목(ex. 자정진>학세탐)의 경우 자동으로 반영되도록 해 두었으나, 이상이 발생할 경우 '직접 추가' 기능을 이용해 학수번호를 직접 설정해주세요.",
         "helpGeneralCourse": "• 일반교양과목(ex. 과어탈, 종영 등)의 경우 '직접 추가' 기능을 이용해 추가하세요.",
         "helpYearSetting": "• 졸업요건의 '기준 년도'는 복수전공의 경우 진입년도로 설정해야 하며, 제1전공, 이중전공 등 나머지는 자신의 입학년도로 설정해야 합니다.",
         "helpIntensiveMajor": "• 심화전공을 이수하시는 경우, 졸업요건에서 제1전공을 고르지 말고 반드시 심화전공만 고르세요!",
@@ -131,8 +133,8 @@ const translations = {
         "customAdd": "Add", 
         "search": "Search",
         "courseNamePlaceholder": "Course name or code",
-        "courseNameExample": "e.g. College English",
-        "courseCodeExample": "e.g. ENGL001",
+        "courseNameExample": "e.g. EXPLORATION OF THE ACADEMIC WORLD I",
+        "courseCodeExample": "e.g. GELI005",
         "creditExample": "e.g. 3",
         
         // Custom add form
@@ -155,11 +157,13 @@ const translations = {
         "deck4": "4",
         "deck5": "5",
         "copy": "Copy",
+        "paste": "Paste",
         "deckReset": "Reset",
         "undo": "↶",
         "redo": "↷",
         "help": "❓",
         "copyTitle": "Copy current deck",
+        "pasteTitle": "Paste copied deck",
         "resetTitle": "Reset current deck",
         "undoTitle": "Undo",
         "redoTitle": "Redo",
@@ -173,7 +177,7 @@ const translations = {
         "helpDragDrop": "• Drag and drop courses or click a course then click a semester cell to place it.",
         "helpClickGrade": "• Click on placed courses to set grades.",
         "helpSystem": "• Based on Korea University's educational information system from 2018 to present.<br>Please contact us if there are issues with graduation requirements.",
-        "helpChangedCourse": "• Changed liberal arts courses (e.g., 자정진>학세탐) are automatically reflected, but if issues occur, use the 'Add' feature to set the course code manually.",
+        "helpChangedCourse": "• Changed courses (e.g., 자정진>학세탐) are automatically reflected, but if issues occur, use the 'Add' feature to set the course code manually.",
         "helpGeneralCourse": "• For general liberal arts courses (e.g., 과어탈, 종영), use the 'Add' feature.",
         "helpYearSetting": "• For graduation requirements 'Criteria', set to entry year for multiple majors, and admission year for primary major, double major, etc.",
         "helpIntensiveMajor": "• If taking intensive major, do not select primary major in graduation requirements, only select intensive major!",
@@ -228,7 +232,7 @@ const translations = {
         "majorHeader": "Major",
         
         // semester cell 관련
-        "creditUnit": "Credit",
+        "creditUnit": " Credit",
         "noCredit": "0 Credit",
         "average": "Average",
         
@@ -268,6 +272,9 @@ function updateAllTexts() {
             element.textContent = text;
         }
     });
+
+    // 복사 붙여넣기 버튼 업데이트
+    updateCopyPasteButton();
     
     // placeholder 업데이트
     updatePlaceholders();
@@ -784,12 +791,12 @@ function updateCopyPasteButton() {
     const copyPasteBtn = document.getElementById('deck-copy-paste-btn');
     if (copyPasteBtn) {
         if (copiedDeckData) {
-            copyPasteBtn.textContent = '붙여넣기';
-            copyPasteBtn.title = '덱 붙여넣기 (복사된 덱 있음)';
+            copyPasteBtn.textContent = getText('paste');
+            copyPasteBtn.title = getText('pasteTitle');
             copyPasteBtn.classList.add('paste-mode');
         } else {
-            copyPasteBtn.textContent = '복사';
-            copyPasteBtn.title = '현재 덱 복사';
+            copyPasteBtn.textContent = getText('copy');
+            copyPasteBtn.title = getText('copyTitle');
             copyPasteBtn.classList.remove('paste-mode');
         }
     }
