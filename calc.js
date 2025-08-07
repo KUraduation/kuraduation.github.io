@@ -202,13 +202,13 @@ const translations = {
         "majorGpaDisplay": "Major GPA:",
         
         // 전공 분류
-        "major1": "Primary Major",
+        "major1": "First Major",
         "major2": "Double Major",
-        "major3": "Multiple Major",
-        "major4": "Transfer Student",
-        "major5": "Convergence Major",
-        "major6": "Intensive Major",
-        "major7": "Student-Designed Major",
+        "major3": "Dual Degree",
+        "major4": "Undergraduate Transfer",
+        "major5": "Relation Major",
+        "major6": "Advanced Major",
+        "major7": "Student's Planned Major",
         
         // 학기 관련
         "semester1": "1st Semester",
