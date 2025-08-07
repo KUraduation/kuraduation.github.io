@@ -1154,7 +1154,7 @@ function editYearTitle(yearTitleElement, year) {
         decks[currentDeck].customYearNames[year] = newText;
         saveCurrentDeck();
         saveStateToLocalStorage();
-        saveCurrentDeck();
+        saveToHistory();
     }
 
     // Enter 키로 편집 완료
