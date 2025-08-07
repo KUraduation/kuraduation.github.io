@@ -563,8 +563,24 @@ function getMajorDivs() {
 
 // 학번별 과목을 업데이트하려면 여기다가 년도 추가하고 파일 업로드하면 됨
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
-const courses = {};
+const info = {};
+let courses = {};
 let courseEquivalenceMap = {};
+
+// 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
+function isEqualCourse(courseCode1, courseCode2) {
+    if (courseCode1 === courseCode2) return true;
+
+    const representative1 = courseEquivalenceMap[courseCode1];
+    const representative2 = courseEquivalenceMap[courseCode2];
+
+    // 두 과목 모두 대체과목 맵에 있고, 대표과목이 같은 경우
+    if (representative1 && representative1 === representative2) {
+        return true;
+    }
+
+    return false;
+}
 
 // 평점 시스템
 const gradeSystem = {
@@ -1037,7 +1053,18 @@ const dataPromises = years.map(year =>
             return response.json();
         })
         .then(data => {
-            courses[year] = data;
+            info[year] = data;
+        })
+);
+
+dataPromises.push(
+    fetch('courses.json')
+        .then(response => {
+            if (!response.ok) throw new Error(`네트워크 오류: courses.json`);
+            return response.json();
+        })
+        .then(data => {
+            courses = data;
         })
 );
 
@@ -2090,10 +2117,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateDeptDatalist() {
         const selectedYear = searchYearSelect.value;
-        if (!courses[selectedYear]) return;
+        if (!info[selectedYear]) return;
 
         const selectedMajorDiv = majorDivSelect.value;
-        const deptList = courses[selectedYear][selectedMajorDiv];
+        const deptList = info[selectedYear][selectedMajorDiv];
         deptDatalist.innerHTML = '';
         if (deptList) {
             deptList.forEach(dept => {
@@ -2106,7 +2133,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateCourseDatalist() {
         const selectedYear = searchYearSelect.value;
-        if (!courses[selectedYear]) return;
+        if (!info[selectedYear]) return;
 
         const keyword = courseSearchInput.value.trim().toLowerCase();
         courseDatalist.innerHTML = '';
@@ -2115,7 +2142,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const suggestions = new Set();
         const maxSuggestions = 50;
 
-        for (const divList of courses[selectedYear]) {
+        for (const divList of info[selectedYear]) {
             if (suggestions.size >= maxSuggestions) break;
             for (const dept of divList) {
                 if (suggestions.size >= maxSuggestions) break;
@@ -2217,12 +2244,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedMajorDiv = majorDivSelect.value;
         const selectedYear = searchYearSelect.value;
 
-        if (!keyword || !courses[selectedYear]) {
+        if (!keyword || !info[selectedYear]) {
             searchResult.textContent = '학과 이름을 입력하세요.';
             return;
         }
 
-        const deptList = courses[selectedYear][selectedMajorDiv];
+        const deptList = info[selectedYear][selectedMajorDiv];
         const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
 
         renderDeptSearchResult(foundDept);
@@ -2270,14 +2297,14 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResult.textContent = '2글자 이상 입력하세요.';
             return;
         }
-        if (!courses[selectedYear]) {
+        if (!info[selectedYear]) {
             searchResult.textContent = '강의 데이터가 로딩 중입니다. 잠시 후 다시 시도해주세요.';
             return;
         }
 
         const foundCourses = [];
         const addedCodes = new Set();
-        for (const divList of courses[selectedYear]) {
+        for (const divList of info[selectedYear]) {
             for (const dept of divList) {
                 if (dept.groups) {
                     for (const group of dept.groups) {
@@ -2398,7 +2425,7 @@ function getTakenCourses() {
 
 function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     const yearToUse = selectedYear || years[years.length - 1];
-    if (!courses[yearToUse] || !courses[yearToUse][majorDiv]) {
+    if (!info[yearToUse] || !info[yearToUse][majorDiv]) {
         console.error('courses 데이터가 아직 로드되지 않았습니다.');
         return;
     }
@@ -2480,7 +2507,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     container.appendChild(select);
 
     const populateDeptSelect = (year, deptToSelect) => {
-        const deptList = courses[year] ? courses[year][majorDiv] : [];
+        const deptList = info[year] ? info[year][majorDiv] : [];
         select.innerHTML = ''; // Clear existing options
         if (deptList) {
             deptList.forEach(dept => {
@@ -2538,8 +2565,8 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
 function initGroups(selectContainer) {
     const year = selectContainer.querySelector('.year-select').value;
     const majorDiv = selectContainer.dataset.majorDiv;
-    if (!courses[year] || !courses[year][majorDiv]) return;
-    const deptList = courses[year][majorDiv];
+    if (!info[year] || !info[year][majorDiv]) return;
+    const deptList = info[year][majorDiv];
     const groupListDiv = selectContainer.querySelector('.group-list');
 
     groupListDiv.innerHTML = '';
@@ -2657,21 +2684,6 @@ function updateCellCredit(cell) {
     creditTotalElement.textContent = displayText;
 }
 
-// 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
-function isEqualCourse(courseCode1, courseCode2) {
-    if (courseCode1 === courseCode2) return true;
-
-    const representative1 = courseEquivalenceMap[courseCode1];
-    const representative2 = courseEquivalenceMap[courseCode2];
-
-    // 두 과목 모두 대체과목 맵에 있고, 대표과목이 같은 경우
-    if (representative1 && representative1 === representative2) {
-        return true;
-    }
-
-    return false;
-}
-
 // 특정 전공의 평점을 계산하는 함수
 function calculateMajorGPA(majorContainer) {
     let totalGradePoints = 0;
@@ -2784,8 +2796,8 @@ function refreshSearchResults() {
             const selectedMajorDiv = document.getElementById('majorDiv-select').value;
             const selectedYear = document.getElementById('search-year-select').value;
 
-            if (keyword && courses[selectedYear]) {
-                const deptList = courses[selectedYear][selectedMajorDiv];
+            if (keyword && info[selectedYear]) {
+                const deptList = info[selectedYear][selectedMajorDiv];
                 const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
                 window.renderDeptSearchResult(foundDept);
             }
@@ -2798,10 +2810,10 @@ function refreshSearchResults() {
                 keyword = match[1].toLowerCase();
             }
 
-            if (keyword.length >= 2 && courses[selectedYear]) {
+            if (keyword.length >= 2 && info[selectedYear]) {
                 const foundCourses = [];
                 const addedCodes = new Set();
-                for (const divList of courses[selectedYear]) {
+                for (const divList of info[selectedYear]) {
                     for (const dept of divList) {
                         if (dept.groups) {
                             for (const group of dept.groups) {
@@ -2901,7 +2913,7 @@ function updateChart(options = { save: true }) {
         const year = myMajor.querySelector('.year-select').value;
         const majorDiv = myMajor.dataset.majorDiv;
         const selectedDeptCd = myMajor.querySelector('.dept-select').value;
-        const deptList = courses[year] ? courses[year][majorDiv] : [];
+        const deptList = info[year] ? info[year][majorDiv] : [];
         const dept = deptList ? deptList.find(d => d.deptCd === selectedDeptCd) : null;
 
         if (!dept) return;
