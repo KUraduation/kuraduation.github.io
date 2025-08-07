@@ -71,11 +71,14 @@ const translations = {
         "noData": "N/A",
         
         // 언어 전환 버튼
-        "korean": "한국어",
-        "english": "English",
+        "korean": "KOR",
+        "english": "ENG",
         
         // 검색 버튼 title
         "searchTitle": "검색",
+        
+        // 검색결과 과목 툴팁
+        "courseTooltip": "드래그 또는 클릭 (다중선택 가능) 후 학기 클릭",
         
         // 전공별 평점 표시
         "majorGpaDisplay": "전공 평점:",
@@ -127,7 +130,7 @@ const translations = {
     },
     en: {
         // Search related
-        "searchCriteria": "Search year",
+        "searchCriteria": "Year",
         "departmentSearch": "by Dept.",
         "courseNameSearch": "Course",
         "customAdd": "Custom", 
@@ -192,11 +195,14 @@ const translations = {
         "noData": "N/A",
         
         // 언어 전환 버튼
-        "korean": "한국어",
-        "english": "English",
+        "korean": "KOR",
+        "english": "ENG",
         
         // 검색 버튼 title
         "searchTitle": "Search",
+        
+        // 검색결과 과목 툴팁
+        "courseTooltip": "Drag or click (multiple selection available) then click semester",
         
         // 전공별 평점 표시
         "majorGpaDisplay": "Major GPA:",
@@ -293,6 +299,9 @@ function updateAllTexts() {
     
     // semester cell 번역 업데이트
     updateSemesterCells();
+    
+    // 검색 결과 툴팁 업데이트
+    updateSearchResultTooltips();
 }
 
 function updatePlaceholders() {
@@ -535,6 +544,13 @@ function updateSemesterElements() {
 function updateSemesterCells() {
     document.querySelectorAll('.semester-cell').forEach(cell => {
         updateCellCredit(cell);
+    });
+}
+
+// 검색 결과 툴팁 업데이트
+function updateSearchResultTooltips() {
+    document.querySelectorAll('.course-item').forEach(courseItem => {
+        courseItem.title = getText('courseTooltip');
     });
 }
 
@@ -2730,8 +2746,8 @@ function isCourseAlreadyTaken(courseCode) {
 function createSearchResultCourse(code, name, credit) {
     const courseItem = document.createElement('div');
     courseItem.className = 'course-item';
-    // 강의 툴팁 추가
-    courseItem.title = "드래그 또는 클릭(다중선택 가능) 후 학기 클릭";
+    // 강의 툴팁 추가 (언어에 따라 다르게 표시)
+    courseItem.title = getText('courseTooltip');
     if (isCourseAlreadyTaken(code)) {
         courseItem.classList.add('taken-in-search');
     }
