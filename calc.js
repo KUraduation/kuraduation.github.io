@@ -1,4 +1,4 @@
-// === 언어 시스템 ===
+//#region 언어 시스템
 // 전역 언어 상태
 let currentLanguage = localStorage.getItem('preferredLanguage') || 'ko';
 
@@ -469,8 +469,6 @@ function updateMajorDropdowns() {
     }
 }
 
-// === 기존 코드 시작 ===
-
 // 학기 관련 요소 업데이트
 function updateSemesterElements() {
     // 학년명 업데이트 (서수 사용)
@@ -547,6 +545,8 @@ function updateSearchResultTooltips() {
         courseItem.title = getText('courseTooltip');
     });
 }
+
+//#endregion
 
 // 전공 분류 배열 (번역 시스템 사용)
 function getMajorDivs() {
