@@ -127,10 +127,10 @@ const translations = {
     },
     en: {
         // Search related
-        "searchCriteria": "Criteria",
-        "departmentSearch": "Department",
+        "searchCriteria": "Search year",
+        "departmentSearch": "by Dept.",
         "courseNameSearch": "Course",
-        "customAdd": "Add", 
+        "customAdd": "Custom", 
         "search": "Search",
         "courseNamePlaceholder": "Course name or code",
         "courseNameExample": "e.g. EXPLORATION OF THE ACADEMIC WORLD I",
