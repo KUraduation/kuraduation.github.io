@@ -1780,6 +1780,7 @@ body {
 
 /* 세로 언어 전환 버튼 */
 .language-switcher-vertical {
+    right: 55px;
     display: flex;
     flex-direction: column;
     background: rgba(255, 192, 203, 0.1); /* 연한 핑크색 배경 */
@@ -1787,5 +1788,5 @@ body {
     padding: 3px;
     gap: 1px;
     border: 1px solid rgba(255, 192, 203, 0.3); /* 연한 핑크색 테두리 */
-    margin-left: 7.2px;
+    margin-right: 5px;
 }
