@@ -29,7 +29,7 @@ const translations = {
         "gpa": "평점:",
         "majorGpa": "전공평점:",
         
-                // 덱 관련
+        // 덱 관련
         "deck1": "1",
         "deck2": "2",
         "deck3": "3",
@@ -38,9 +38,6 @@ const translations = {
         "copy": "복사",
         "paste": "붙여넣기",
         "deckReset": "덱 초기화",
-        "undo": "↶",
-        "redo": "↷",
-        "help": "❓",
         "copyTitle": "현재 덱 복사",
         "pasteTitle": "복사된 덱 붙여넣기",
         "resetTitle": "현재 덱 초기화",
@@ -131,7 +128,7 @@ const translations = {
     en: {
         // Search related
         "searchCriteria": "Year",
-        "departmentSearch": "by Dept.",
+        "departmentSearch": "Department",
         "courseNameSearch": "Course",
         "customAdd": "Custom", 
         "search": "Search",
@@ -148,7 +145,7 @@ const translations = {
         "reset": "Reset",
         
         // Credit display
-        "totalCredits": "Total Credits:",
+        "totalCredits": "Credits:",
         "majorCredits": "Major:",
         "gpa": "GPA:",
         "majorGpa": "Major GPA:",
@@ -162,9 +159,6 @@ const translations = {
         "copy": "Copy",
         "paste": "Paste",
         "deckReset": "Reset",
-        "undo": "↶",
-        "redo": "↷",
-        "help": "❓",
         "copyTitle": "Copy current deck",
         "pasteTitle": "Paste copied deck",
         "resetTitle": "Reset current deck",
@@ -208,7 +202,7 @@ const translations = {
         "majorGpaDisplay": "Major GPA:",
         
         // 전공 분류
-        "major1": "First Major",
+        "major1": "1st Major",
         "major2": "Double Major",
         "major3": "Dual Degree",
         "major4": "Undergraduate Transfer",
