@@ -168,9 +168,71 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 목표 평점 계산 버튼 -->
+            <div class="gpa-goal-section">
+                <button id="gpa-goal-btn" class="gpa-goal-btn" data-i18n="gpaGoalCalc">목표 평점 계산</button>
+            </div>
+
+            <!-- 목표 평점 계산 팝업 -->
+            <div id="gpa-goal-popup" class="gpa-goal-popup" style="display: none;">
+                <div class="gpa-goal-popup-content">
+                    <div class="gpa-goal-popup-header">
+                        <h3 data-i18n="gpaGoalCalculator">목표 평점 계산</h3>
+                        <button id="gpa-goal-close-btn" class="gpa-goal-close-btn">×</button>
+                    </div>
+                    <div class="gpa-goal-popup-body">
+                        <div class="gpa-goal-input-row">
+                            <label for="target-gpa-input" data-i18n="targetGpa">목표 평점:</label>
+                            <input type="number" id="target-gpa-input" class="gpa-goal-input" min="0" max="4.5" step="0.1" placeholder="예: 4.0">
+                        </div>
+                        <div class="gpa-goal-input-row">
+                            <label for="total-remaining-credits" data-i18n="totalRemainingCredits">총 남은 학점:</label>
+                            <input type="number" id="total-remaining-credits" class="gpa-goal-input" min="1" max="200" placeholder="예: 30">
+                        </div>
+                        
+                        <!-- 학기별 계획 토글 -->
+                        <div class="semester-plan-toggle">
+                            <button id="toggle-semester-plan" class="semester-plan-toggle-btn" data-i18n="addSemesterPlan">학기별 계획 추가</button>
+                        </div>
+                        
+                        <!-- 학기별 계획 섹션 (처음에는 숨김) -->
+                        <div id="semester-plan-section" class="semester-plan-section" style="display: none;">
+                            <div class="semester-plan-header">
+                                <h4 data-i18n="semesterPlan">학기별 계획</h4>
+                                <span class="semester-plan-summary"><span id="planned-credits">0</span> / <span id="total-credits">0</span></span>
+                                <button id="semester-plan-close-btn" class="semester-plan-close-btn" title="학기별 계획 제거">×</button>
+                            </div>
+                            <div id="semester-plan-list" class="semester-plan-list">
+                                <!-- 동적으로 추가되는 학기들 -->
+                            </div>
+                            <div class="semester-plan-controls">
+                                <button id="add-semester-btn" class="add-semester-btn" data-i18n="addSemester">+ 학기 추가</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 반영 평점 섹션 -->
+                        <div class="gpa-goal-result-row">
+                            <label data-i18n="reflectedGpa">반영 평점:</label>
+                            <span id="reflected-gpa-result" class="gpa-goal-result">-</span>
+                        </div>
+                        
+                        <div class="gpa-goal-result-row">
+                            <label data-i18n="requiredGpa">필요 평점:</label>
+                            <span id="required-gpa-result" class="gpa-goal-result">-</span>
+                        </div>
+                        
+                        <!-- 저장 버튼 -->
+                        <div class="gpa-goal-save-section">
+                            <button id="gpa-goal-save-btn" class="gpa-goal-save-btn" data-i18n="saveGpaGoal">저장</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div id="selectContainer"></div>
 
+            
             <div class="plus-line-container">
                 <button id="major-add-btn" class="plus-rect-btn">+</button>
             </div>
