@@ -607,7 +607,10 @@ function getMajorDivs() {
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const info = {};
 let courses = {};
-let courseEquivalenceMap = {};
+// 유사과목(대체과목) 맵 로드 비활성화
+// 기존: dataPromises.push(fetch('similar_map.json') ...);
+// 이유: 선택/학점 합산 오류 추적을 위해 유사과목 기능 임시 중단
+courseEquivalenceMap = {};
 
 // 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
 function isEqualCourse(courseCode1, courseCode2) {
@@ -1110,16 +1113,10 @@ dataPromises.push(
         })
 );
 
-dataPromises.push(
-    fetch('similar_map.json')
-        .then(response => {
-            if (!response.ok) throw new Error(`네트워크 오류: similar_map.json`);
-            return response.json();
-        })
-        .then(data => {
-            courseEquivalenceMap = data;
-        })
-);
+// 유사과목(대체과목) 맵 로드 비활성화
+// 기존: dataPromises.push(fetch('similar_map.json') ...);
+// 이유: 선택/학점 합산 오류 추적을 위해 유사과목 기능 임시 중단
+courseEquivalenceMap = {};
 
 Promise.all(dataPromises).then(() => {
     console.log('모든 강의 데이터와 대체과목 정보 로드 완료');
@@ -1460,7 +1457,7 @@ function handleCourseClick(e) {
         closeCoursePopup();
     }
 
-    const courseItem = e.target;
+    const courseItem = e.currentTarget;
 
     // 과목 선택/해제 토글
     toggleCourseSelection(courseItem);
@@ -1506,57 +1503,48 @@ function addSelectedCoursesToCell(targetCell) {
 
     const processedCourses = [];
 
-    // 선택된 모든 과목을 처리
     selectedCourses.forEach(selectedCourse => {
         let takenCourse;
+        let originalCell = null;
 
-        // 블록 옮기기라면
-        if (selectedCourse.classList.contains('taken-course'))
+        if (selectedCourse.classList.contains('taken-course')) {
+            // 이동인 경우 원래 셀 기록
+            originalCell = selectedCourse.parentElement && selectedCourse.parentElement.classList.contains('semester-cell')
+                ? selectedCourse.parentElement
+                : null;
             takenCourse = selectedCourse;
-        // 새로 추가라면
-        else {
-            // 선택된 과목의 데이터 가져오기
+        } else {
             const courseData = {
                 code: selectedCourse.dataset.courseCode,
                 name: selectedCourse.dataset.courseName,
                 credit: selectedCourse.dataset.credit,
                 isTakenCourse: false
             };
-
-            // 전공 여부 자동 판단
             courseData.isMajor = false;
-
             takenCourse = createTakenCourseElement(courseData);
         }
 
-        // 새 과목 추가
         targetCell.appendChild(takenCourse);
 
         processedCourses.push({
             element: takenCourse,
-            originalCell: null,
+            originalCell: originalCell,
         });
-
     });
 
-    // 검색 결과에서 해당 과목 표시 업데이트
     refreshSearchResults();
 
-    // 처리된 과목이 있으면 UI 업데이트
     if (processedCourses.length > 0) {
-        // 영향받은 모든 셀의 학점 업데이트
         const cellsToUpdate = new Set([targetCell]);
         processedCourses.forEach(processed => {
             if (processed.originalCell) {
                 cellsToUpdate.add(processed.originalCell);
             }
         });
-
         cellsToUpdate.forEach(cell => updateCellCredit(cell));
-        updateChart(); // UI 업데이트와 저장을 한 번에
+        updateChart();
     }
 
-    // 히스토리 저장 (여러 과목 이동이므로 한 번만)
     saveToHistory();
 }
 
@@ -1642,12 +1630,19 @@ function handleDrop(e) {
     const targetCell = e.target.closest('.semester-cell');
     if (!targetCell || !draggedCourse) return;
 
-    // 기존 선택을 초기화하고 드래그된 과목만 선택
+    // 기존 선택 초기화 (드래그 소스 선택 상태 제거)
     clearCourseSelection();
-    toggleCourseSelection(draggedCourse);
 
-    // 통합된 추가/이동 로직 호출
+    // 드래그된 항목만 즉시 처리 (선택 토글 불필요)
+    const prevDragged = draggedCourse;
+
+    // 통합된 추가/이동 로직 호출을 위해 임시로 선택 집합에 추가
+    selectedCourses.add(prevDragged);
     addSelectedCoursesToCell(targetCell);
+
+    // 처리 후 선택 상태 정리
+    selectedCourses.clear();
+    document.body.classList.remove('click-mode');
 
     // 드래그오버 태그 제거
     targetCell.classList.remove('dragover');
