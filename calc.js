@@ -490,28 +490,6 @@ function updateMajorDropdowns() {
             label.textContent = getMajorDivs()[parseInt(majorDiv)];
         }
     });
-
-    // 열린 팝업 메뉴 업데이트
-    const openMenu = document.querySelector('.plus-popup-menu');
-    if (openMenu) {
-        openMenu.innerHTML = '';
-        getMajorDivs().forEach((div, idx) => {
-            const item = document.createElement('div');
-            item.textContent = div;
-            item.style.padding = '8px 16px';
-            item.style.cursor = 'pointer';
-            item.style.whiteSpace = 'nowrap';
-            item.addEventListener('mouseenter', () => item.style.background = '#f0f0f0');
-            item.addEventListener('mouseleave', () => item.style.background = '');
-            item.addEventListener('click', function (ev) {
-                ev.stopPropagation();
-                openMenu.remove();
-                menu = null;
-                createDeptDropdown(idx);
-            });
-            openMenu.appendChild(item);
-        });
-    }
 }
 
 // 학과 선택 드롭다운 업데이트
@@ -2683,8 +2661,9 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     });
     document.getElementById('selectContainer').appendChild(container);
 
+    // 초기 로드 시에는 업데이트하지 않음
     if (!selectedYear) {
-        updateChart({ save: false }); // 초기 로드 시에는 저장하지 않음
+        updateChart();
     }
 }
 
