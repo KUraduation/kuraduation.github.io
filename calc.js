@@ -639,7 +639,7 @@ function getMajorDivs() {
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const info = {}; // 연도별 졸업정보
 let courses = {}; // 강의 정보
-let courseEquivalenceMap = {}; // 유사과목
+let similarCourseMap = {}; // 유사과목
 
 //#region --- json 로드 ---
 const dataPromises = years.map(year =>
@@ -671,7 +671,7 @@ dataPromises.push(
             return response.json();
         })
         .then(data => {
-            courseEquivalenceMap = data;
+            similarCourseMap = data;
         })
 );
 
@@ -687,8 +687,8 @@ Promise.all(dataPromises).then(() => {
 function isEqualCourse(courseCode1, courseCode2) {
     if (courseCode1 === courseCode2) return true;
 
-    return courseEquivalenceMap[courseCode1] && courseEquivalenceMap[courseCode1].includes(courseCode2)
-        || courseEquivalenceMap[courseCode2] && courseEquivalenceMap[courseCode2].includes(courseCode1);
+    return similarCourseMap[courseCode1] && similarCourseMap[courseCode1].includes(courseCode2)
+        || similarCourseMap[courseCode2] && similarCourseMap[courseCode2].includes(courseCode1);
 }
 
 // 번역된 학과명 구하는 함수
@@ -880,13 +880,7 @@ function loadStateFromLocalStorage() {
     
     // 페이지 로드 후 모든 과목의 전공 체크 표시 즉시 업데이트
     setTimeout(() => {
-        const takenCourses = getTakenCourses();
-        takenCourses.forEach(courseEl => {
-            const courseCode = courseEl.dataset.courseCode;
-            const courseName = courseEl.dataset.courseName;
-            const isMajor = isCourseInMajorRequirements(courseCode, courseName);
-            updateMajorCheckMark(courseEl, isMajor);
-        });
+        updateMajorCheckMarks();
     }, 100);
 }
 //#endregion
@@ -1263,16 +1257,6 @@ function showCoursePopup(courseElement, event) {
 
     // 전공 여부 판단 (자동 판단 결과를 우선하고, 수동 설정도 유지)
     let isMajor = courseElement.dataset.isMajor === 'true';
-    
-    // 자동 판단 결과가 없으면 자동으로 판단
-    if (courseElement.dataset.isMajor === undefined || courseElement.dataset.isMajor === '') {
-        isMajor = isCourseInMajorRequirements(
-            courseElement.dataset.courseCode, 
-            courseElement.dataset.courseName
-        );
-        // 자동 판단 결과를 저장
-        courseElement.dataset.isMajor = isMajor.toString();
-    }
 
     majorCheckbox.checked = isMajor;
     majorCheckbox.style.marginTop = '4px';
@@ -1482,7 +1466,7 @@ function isCourseAlreadyTaken(courseCode) {
 function createSearchResultCourse(code, name = undefined, credit = undefined) {
     if (!name) {
         name = getCourseName(code);
-        credit = course[code]['credit'];
+        credit = courses[code]['credit'];
     }
     const courseItem = document.createElement('div');
     courseItem.className = 'course-item';
@@ -1521,7 +1505,7 @@ function addCustomCourse(name, code, credit) {
     const content = document.createElement('div');
     content.className = 'result-group-content';
 
-    // 과목 아이템 생성 (전공 여부는 createTakenCourseElement에서 자동으로 판단됨)
+    // 과목 아이템 생성
     const courseItem = createSearchResultCourse(code, name, credit);
 
     content.appendChild(courseItem);
@@ -1715,19 +1699,7 @@ function createTakenCourseElement(courseData) {
     takenCourse.dataset.credit = courseData.credit;
     takenCourse.dataset.grade = courseData.grade || ''; // 평점 정보 추가
 
-    // 전공 여부 판단 로직 개선
-    let isMajor = false;
-    if (courseData.isMajor !== undefined) {
-        isMajor = courseData.isMajor;
-    } else {
-        // 전공 여부 자동 판단: 졸업요건에서 '전공' 키워드가 포함된 과목인지 확인
-        isMajor = isCourseInMajorRequirements(courseData.code, courseData.name);
-    }
-
-    takenCourse.dataset.isMajor = isMajor.toString();
-
-    // 전공 체크 표시 추가 (CSS 스타일 사용)
-    updateMajorCheckMark(takenCourse, isMajor);
+    takenCourse.dataset.isMajor = 'false'; // 전공 여부 기본값
 
     // 제목에 평점 정보도 포함
     const gradeText = courseData.grade ? ` (${courseData.grade})` : '';
@@ -2415,7 +2387,7 @@ document.addEventListener('DOMContentLoaded', function () {
             groupContainer.className = 'result-group';
             const groupHeader = document.createElement('div');
             groupHeader.className = 'result-group-header';
-            groupHeader.innerHTML = `<span>${group.groupNm}</span>`;
+            groupHeader.innerHTML = `<span>${group.name}</span>`;
             const groupContent = document.createElement('div');
             groupContent.className = 'result-group-content';
 
@@ -2738,12 +2710,12 @@ function initGroups(selectContainer) {
 
     groupListDiv.innerHTML = '';
     const selectedDeptCd = selectContainer.querySelector('.dept-select').value;
-    const dept = deptList.find(d => d.deptCd === selectedDeptCd);
+    const dept = deptList.find(d => d.code === selectedDeptCd);
     if (dept) {
         dept.groups.forEach(group => {
             const groupContainer = document.createElement('div');
             const groupLabel = document.createElement('span');
-            groupLabel.textContent = group.groupNm;
+            groupLabel.textContent = group.name;
             groupLabel.className = 'group-label';
             groupContainer.appendChild(groupLabel);
             const groupProgress = document.createElement('span');
@@ -2751,7 +2723,7 @@ function initGroups(selectContainer) {
             groupContainer.appendChild(groupProgress);
 
             groupContainer.className = 'group-container';
-            groupContainer.dataset.groupCd = group.groupCd || '';
+            groupContainer.dataset.groupCd = group.code || '';
             groupContainer.dataset.currentCredit = 0;
             groupContainer.dataset.minCredit = group.minCredit;
             groupContainer.dataset.maxCredit = group.maxCredit;
@@ -2919,6 +2891,13 @@ function updateMajorGPADisplay() {
     });
 }
 
+// 체크 표시 전체 업데이트
+function updateMajorCheckMarks() {
+    const courseElements = document.querySelectorAll('.taken-course');
+    courseElements.forEach(courseElement => {
+        updateMajorCheckMark(courseElement, courseElement.dataset.isMajor === 'true');
+    });
+}
 // 전공 여부에 따라 체크 표시를 업데이트하는 함수
 function updateMajorCheckMark(courseElement, isMajor) {
     // 기존 체크 표시 제거
@@ -2937,140 +2916,6 @@ function updateMajorCheckMark(courseElement, isMajor) {
     
     // CSS에서 data-is-major 속성으로 스타일 제어
     courseElement.dataset.isMajor = isMajor.toString();
-}
-
-// 과목이 졸업요건의 전공 영역에 속하는지 확인하는 함수
-function isCourseInMajorRequirements(courseCode, courseName) {
-    // 현재 설정된 졸업요건들을 확인
-    const majorContainers = document.querySelectorAll('.dept-select-container');
-    
-    for (const container of majorContainers) {
-        const year = container.querySelector('.year-select').value;
-        const majorDiv = parseInt(container.dataset.majorDiv);
-        const deptCd = container.querySelector('.dept-select').value;
-        
-        if (!info[year] || !info[year][majorDiv]) continue;
-        
-        const deptList = info[year][majorDiv];
-        const dept = deptList.find(d => d.deptCd === deptCd);
-        
-        if (!dept || !dept.groups) continue;
-        
-        // 각 그룹을 확인하여 '전공' 키워드가 포함된 그룹에 속하는지 확인
-        for (const group of dept.groups) {
-            // 그룹명에 '전공' 키워드가 포함되어 있는지 확인
-            if (group.groupNm && group.groupNm.includes('전공')) {
-                // 해당 그룹에 과목이 속하는지 확인
-                if (group.courses && group.courses.some(course => 
-                    isEqualCourse(course.code, courseCode) || 
-                    course.name === courseName
-                )) {
-                    return true;
-                }
-            }
-        }
-    }
-    
-    return false;
-}
-
-// 이미 수강한 과목인지 확인하는 함수
-function isCourseAlreadyTaken(courseCode) {
-    const takenCourses = getTakenCourses();
-    return takenCourses.some(course => isEqualCourse(course.dataset.courseCode, courseCode));
-}
-
-// 검색된 강의 셀을 생성하는 함수
-function createSearchResultCourse(code, name, credit) {
-    const courseItem = document.createElement('div');
-    courseItem.className = 'course-item';
-    // 강의 툴팁 추가 (언어에 따라 다르게 표시)
-    courseItem.title = getText('courseTooltip');
-    if (isCourseAlreadyTaken(code)) {
-        courseItem.classList.add('taken-in-search');
-    }
-    courseItem.textContent = `[${code}] ${name} (${credit}학점)`;
-    courseItem.dataset.courseCode = code;
-    courseItem.dataset.courseName = name;
-    courseItem.dataset.credit = credit;
-    courseItem.draggable = true;
-    courseItem.addEventListener('dragstart', handleDragStart);
-    courseItem.addEventListener('click', handleCourseClick);
-
-    return courseItem;
-}
-
-// 검색 결과를 다시 렌더링하는 함수
-function refreshSearchResults() {
-    const searchResult = document.getElementById('search-result');
-    const deptSearchInput = document.getElementById('dept-search-input');
-    const courseSearchInput = document.getElementById('course-search-input');
-    const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
-    const nameInput = document.getElementById('custom-course-name');
-    const codeInput = document.getElementById('custom-course-code');
-    const creditInput = document.getElementById('custom-course-credit');
-
-    // 현재 활성화된 검색 타입 확인
-    let currentSearchType = null;
-    searchTypeRadios.forEach(radio => {
-        if (radio.checked) currentSearchType = radio.value;
-    });
-
-    // 검색 결과가 있고, 검색어가 있는 경우에만 다시 렌더링
-    if (searchResult.children.length > 0) {
-        if (currentSearchType === 'byDept' && deptSearchInput.value.trim() !== '') {
-            // 직접 검색 함수 호출
-            const keyword = deptSearchInput.value.trim();
-            const selectedMajorDiv = document.getElementById('majorDiv-select').value;
-            const selectedYear = document.getElementById('search-year-select').value;
-
-            if (keyword && info[selectedYear]) {
-                const deptList = info[selectedYear][selectedMajorDiv];
-                const foundDept = deptList ? deptList.find(dept => dept.deptNm === keyword) : null;
-                window.renderDeptSearchResult(foundDept);
-            }
-        } else if (currentSearchType === 'byCourseName' && courseSearchInput.value.trim() !== '') {
-            // 직접 검색 함수 호출
-            let keyword = courseSearchInput.value.trim().toLowerCase();
-            const selectedYear = document.getElementById('search-year-select').value;
-            const match = keyword.match(/^(.*) \((.*)\)$/);
-            if (match) {
-                keyword = match[1].toLowerCase();
-            }
-
-            if (keyword.length >= 2 && info[selectedYear]) {
-                const foundCourses = [];
-                const addedCodes = new Set();
-                for (const divList of info[selectedYear]) {
-                    for (const dept of divList) {
-                        if (dept.groups) {
-                            for (const group of dept.groups) {
-                                if (group.courses) {
-                                    for (const course of group.courses) {
-                                        const courseName = course.name.toLowerCase();
-                                        const courseCode = course.code.toLowerCase();
-                                        if (!addedCodes.has(course.code) && (courseName.includes(keyword) || courseCode.includes(keyword))) {
-                                            foundCourses.push(course);
-                                            addedCodes.add(course.code);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                window.renderCourseSearchResult(foundCourses);
-            }
-        } else if (currentSearchType === 'customCourse') {
-            const name = nameInput.value.trim();
-            const code = codeInput.value.trim();
-            const credit = creditInput.value.trim();
-            if (name && code && credit) {
-                addCustomCourse(name, code, parseInt(credit));
-            }
-        }
-    }
-    else clearCourseSelection();
 }
 
 // UI 업데이트만 담당 (저장 로직 제외)
@@ -3150,7 +2995,7 @@ function updateChart(options = { save: true }) {
         const majorDiv = myMajor.dataset.majorDiv;
         const selectedDeptCd = myMajor.querySelector('.dept-select').value;
         const deptList = info[year] ? info[year][majorDiv] : [];
-        const dept = deptList ? deptList.find(d => d.deptCd === selectedDeptCd) : null;
+        const dept = deptList ? deptList.find(d => d.code === selectedDeptCd) : null;
 
         if (!dept) return;
 
@@ -3172,7 +3017,7 @@ function updateChart(options = { save: true }) {
             if (foundGroup) {
                 // 그룹 코드 일치하는 곳에 추가
                 const groupContainer = Array.from(groupContainers).find(gc =>
-                    gc.dataset.groupCd === foundGroup.groupCd
+                    gc.dataset.groupCd === foundGroup.code
                 );
                 if (groupContainer) {
                     addCourese(groupContainer, takenCourse);
@@ -3196,12 +3041,7 @@ function updateChart(options = { save: true }) {
     updateMajorGPADisplay();
 
     // 모든 과목의 전공 체크 표시 업데이트
-    takenCourses.forEach(courseEl => {
-        const courseCode = courseEl.dataset.courseCode;
-        const courseName = courseEl.dataset.courseName;
-        const isMajor = isCourseInMajorRequirements(courseCode, courseName);
-        updateMajorCheckMark(courseEl, isMajor);
-    });
+    updateMajorCheckMarks();
 
     // 각 셀의 학점 업데이트
     document.querySelectorAll('.semester-cell').forEach(cell => {
