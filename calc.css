@@ -478,6 +478,19 @@ body {
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
 }
 
+/* number 입력 필드의 스핀 버튼 스타일링 */
+.custom-course-form input[type="number"]::-webkit-inner-spin-button,
+.custom-course-form input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 20px;
+    margin-right: 4px;
+}
+
+.custom-course-form input[type="number"]::-webkit-inner-spin-button:hover,
+.custom-course-form input[type="number"]::-webkit-outer-spin-button:hover {
+    opacity: 0.8;
+}
+
 .custom-course-buttons {
     grid-column: 1 / -1;
     display: flex;

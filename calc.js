@@ -1916,7 +1916,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.preventDefault();
                 const name = document.getElementById('custom-course-name').value.trim();
                 const code = document.getElementById('custom-course-code').value.trim();
-                const credit = parseInt(document.getElementById('custom-course-credit').value);
+                const credit = parseFloat(document.getElementById('custom-course-credit').value);
                 
                 if (name && code && credit) {
                     addCustomCourse(name, code, credit);
@@ -2694,9 +2694,9 @@ function initGroups(selectContainer) {
 }
 
 function updateGroupProgress(groupContainer) {
-    const minCredit = parseInt(groupContainer.dataset.minCredit);
-    const maxCredit = parseInt(groupContainer.dataset.maxCredit);
-    let currentCredit = parseInt(groupContainer.dataset.currentCredit);
+    const minCredit = parseFloat(groupContainer.dataset.minCredit);
+    const maxCredit = parseFloat(groupContainer.dataset.maxCredit);
+    let currentCredit = parseFloat(groupContainer.dataset.currentCredit);
     currentCredit = maxCredit > 0 ? Math.min(maxCredit, currentCredit) : currentCredit;
 
     // 최소학점이 양수가 아니면 최대학점 기준으로 진행률 체크
@@ -2705,7 +2705,7 @@ function updateGroupProgress(groupContainer) {
     const progress = (stdCredit > 0) ? (currentCredit / stdCredit * 100).toFixed(0) : 0;
     const groupProgress = groupContainer.querySelector('.group-progress');
 
-    groupProgress.textContent = `${currentCredit}/${stdCredit} (${progress}%)`;
+    groupProgress.textContent = `${Number.isInteger(currentCredit) ? currentCredit.toString() : currentCredit.toFixed(1)}/${Number.isInteger(stdCredit) ? stdCredit.toString() : stdCredit.toFixed(1)} (${progress}%)`;
 
     const progressPercent = Math.min(100, parseFloat(progress));
 
@@ -2732,19 +2732,19 @@ function updateGroupProgress(groupContainer) {
 function addCourese(groupContainer, course) {
     groupContainer._takenCourses.push(course);
     const grade = course.dataset.grade;
-    const credit = parseInt(course.dataset.credit) || 0;
+    const credit = parseFloat(course.dataset.credit) || 0;
     
     // 전공 과목이면 평점 상관없이 진행도에 포함 (F, NP 제외)
     if (course.dataset.isMajor === 'true') {
         if (grade !== 'F' && grade !== 'NP') {
             groupContainer.dataset.currentCredit = 
-                parseInt(groupContainer.dataset.currentCredit) + credit;
+                parseFloat(groupContainer.dataset.currentCredit) + credit;
         }
     } else {
         // 일반 과목은 기존 로직 유지
         if (grade !== 'F' && grade !== 'NP') {
             groupContainer.dataset.currentCredit = 
-                parseInt(groupContainer.dataset.currentCredit) + credit;
+                parseFloat(groupContainer.dataset.currentCredit) + credit;
         }
     }
     
@@ -2761,7 +2761,7 @@ function updateCellCredit(cell) {
     let gradedCourseCount = 0;
 
     cell.querySelectorAll('.taken-course').forEach(courseEl => {
-        const credit = parseInt(courseEl.dataset.credit) || 0;
+        const credit = parseFloat(courseEl.dataset.credit) || 0;
         const grade = courseEl.dataset.grade;
         totalCredit += credit;
 
@@ -2773,7 +2773,7 @@ function updateCellCredit(cell) {
     });
 
     // 셀의 학점 표시 업데이트
-    let displayText = `${totalCredit}${getText('creditUnit')}`;
+    let displayText = `${Number.isInteger(totalCredit) ? totalCredit.toString() : totalCredit.toFixed(1)}${getText('creditUnit')}`;
 
     // 평균 평점 계산 및 표시
     if (gradedCourseCount > 0) {
@@ -2796,7 +2796,7 @@ function calculateMajorGPA(majorContainer) {
         groupContainer._takenCourses.forEach(course => {
             if (course.dataset.isMajor !== 'true') return;
             const grade = course.dataset.grade;
-            const credit = parseInt(course.dataset.credit) || 0;
+            const credit = parseFloat(course.dataset.credit) || 0;
             
             // 전공 과목이면 평점 상관없이 총 학점에 포함
             totalMajorCredits += credit;
@@ -3019,7 +3019,7 @@ function updateChart(options = { save: true }) {
     let totalGradedCredits = 0;
 
     takenCourses.forEach(course => {
-        const credit = parseInt(course.dataset.credit) || 0;
+        const credit = parseFloat(course.dataset.credit) || 0;
         const grade = course.dataset.grade;
 
         // F학점이거나 NP이면 학점 인정 안함
@@ -3034,7 +3034,7 @@ function updateChart(options = { save: true }) {
     });
 
     // 전체 학점 업데이트
-    document.getElementById('current-credit').textContent = currentCredit;
+    document.getElementById('current-credit').textContent = Number.isInteger(currentCredit) ? currentCredit.toString() : currentCredit.toFixed(1);
 
     // 전체 평점 업데이트
     const overallGpaElement = document.getElementById('overall-gpa');
@@ -3051,7 +3051,7 @@ function updateChart(options = { save: true }) {
     let majorTotalCredits = 0; // 전공 총 학점 (평점 상관없이)
 
     takenCourses.forEach(courseEl => {
-        const credit = parseInt(courseEl.dataset.credit) || 0;
+        const credit = parseFloat(courseEl.dataset.credit) || 0;
         const grade = courseEl.dataset.grade;
         const isMajor = courseEl.dataset.isMajor === 'true';
 
@@ -3068,7 +3068,7 @@ function updateChart(options = { save: true }) {
     });
     
     // 전공 총 학점 표시 (평점 상관없이)
-    document.getElementById('major-credit').textContent = majorTotalCredits;
+    document.getElementById('major-credit').textContent = Number.isInteger(majorTotalCredits) ? majorTotalCredits.toString() : majorTotalCredits.toFixed(1);
 
     const majorGpaElement = document.getElementById('major-gpa');
     if (majorGradedCredits > 0) {
@@ -3168,7 +3168,7 @@ function updateYearStats() {
 
         // 해당 학년의 모든 semester-cell에서 과목들을 가져와서 계산
         yearColumn.querySelectorAll('.semester-cell .taken-course').forEach(courseEl => {
-            const credit = parseInt(courseEl.dataset.credit) || 0;
+            const credit = parseFloat(courseEl.dataset.credit) || 0;
             const grade = courseEl.dataset.grade;
             const isMajor = courseEl.dataset.isMajor === 'true';
 
@@ -3205,7 +3205,7 @@ function updateYearStats() {
         }
 
         // 학점, 평점, 전공평점 업데이트 (한 줄로 표시)
-        yearStatsElement.textContent = `${getText('creditHeader')}: ${totalCredits}, ${getText('gpaHeader')}: ${gpaText}, ${getText('majorHeader')}: ${majorGpaText}`;
+        yearStatsElement.textContent = `${getText('creditHeader')}: ${Number.isInteger(totalCredits) ? totalCredits.toString() : totalCredits.toFixed(1)}, ${getText('gpaHeader')}: ${gpaText}, ${getText('majorHeader')}: ${majorGpaText}`;
     });
 }
 
@@ -3259,7 +3259,7 @@ function updateGpaGoalInputs() {
 function calculateRequiredGpaOld() {
     const targetGpa = parseFloat(document.getElementById('target-gpa-input').value);
     const remainingCredits = parseInt(document.getElementById('remaining-credits-input').value);
-    const currentCredit = parseInt(document.getElementById('current-credit').textContent);
+    const currentCredit = parseFloat(document.getElementById('current-credit').textContent);
     const currentGpa = parseFloat(document.getElementById('overall-gpa').textContent);
     
     const resultElement = document.getElementById('required-gpa-result');
@@ -3602,7 +3602,7 @@ function getSemesterPlans() {
 function calculateRequiredGpa() {
     const targetGpa = parseFloat(document.getElementById('target-gpa-input').value);
     const totalRemainingCredits = parseInt(document.getElementById('total-remaining-credits').value);
-    const currentCredit = parseInt(document.getElementById('current-credit').textContent);
+    const currentCredit = parseFloat(document.getElementById('current-credit').textContent);
     const currentGpa = parseFloat(document.getElementById('overall-gpa').textContent);
     
     const resultElement = document.getElementById('required-gpa-result');
@@ -3806,7 +3806,7 @@ function hasSavedGpaGoalData() {
 
 // 반영 평점 계산
 function calculateReflectedGpa() {
-    const currentCredit = parseInt(document.getElementById('current-credit').textContent);
+    const currentCredit = parseFloat(document.getElementById('current-credit').textContent);
     const currentGpa = parseFloat(document.getElementById('overall-gpa').textContent);
     const semesterPlans = getSemesterPlans();
     
