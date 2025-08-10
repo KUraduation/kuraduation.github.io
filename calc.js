@@ -2098,6 +2098,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
             }
+
+            // 과목 팝업 상태에서 delete 버튼 클릭
+            if (currentPopup && e.key === 'Delete') {
+                currentPopup.querySelector('.course-popup-delete-btn')?.click();
+            }
         });
     }
 
