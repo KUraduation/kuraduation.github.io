@@ -1480,7 +1480,7 @@ function addCustomCourse(name, code, credit) {
 function createCustomCourse() {
     const name = document.getElementById('custom-course-name').value.trim();
     const code = document.getElementById('custom-course-code').value.trim();
-    const credit = parseInt(document.getElementById('custom-course-credit').value);
+    const credit = parseFloat(document.getElementById('custom-course-credit').value);
 
     if (name && code && credit) {
         addCustomCourse(name, code, credit);
