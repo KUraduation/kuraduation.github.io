@@ -2011,6 +2011,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         menu.remove();
                         menu = null;
                         createDeptDropdown(idx);
+                        saveToHistory();
                     });
                     menu.appendChild(item);
                 });
@@ -2569,6 +2570,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     closeBtn.onclick = () => {
         container.remove();
         updateChart(); // UI 업데이트와 저장을 한 번에
+        saveToHistory();
     };
     closeBtn.addEventListener('mouseenter', () => {
         closeBtn.style.color = '#000';
@@ -2592,6 +2594,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     yearSelect.addEventListener('change', () => {
         updateDeptSelectList(select, yearSelect.value, majorDiv, null);
         updateChart(); // UI 업데이트와 저장을 한 번에
+        saveToHistory();
     });
 
     const groupToggleArea = document.createElement('div');
@@ -2619,6 +2622,7 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     container.appendChild(document.createElement('hr'));
     select.addEventListener('change', () => {
         updateChart(); // UI 업데이트와 저장을 한 번에
+        saveToHistory();
     });
     document.getElementById('selectContainer').appendChild(container);
 
