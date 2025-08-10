@@ -11,6 +11,7 @@ const translations = {
         "courseNameSearch": "강의명 검색",
         "customAdd": "직접 추가",
         "search": "검색",
+        "departmentSearchPlaceholder": "학과 이름 입력",
         "courseNamePlaceholder": "강의명 또는 학수번호 입력",
         "courseNameExample": "예: 학문세계의탐구I",
         "courseCodeExample": "예: GELI005",
@@ -143,6 +144,7 @@ const translations = {
         "courseNameSearch": "Course",
         "customAdd": "Custom",
         "search": "Search",
+        "departmentSearchPlaceholder": "Department name",
         "courseNamePlaceholder": "Course name or code",
         "courseNameExample": "e.g. EXPLORATION OF THE ACADEMIC WORLD I",
         "courseCodeExample": "e.g. GELI005",
@@ -324,6 +326,11 @@ function updateAllTexts() {
 }
 
 function updatePlaceholders() {
+    const deptSearchInput = document.getElementById('dept-search-input');
+    if (deptSearchInput) {
+        deptSearchInput.placeholder = getText('departmentSearchPlaceholder');
+    }
+
     const courseSearchInput = document.getElementById('course-search-input');
     if (courseSearchInput) {
         courseSearchInput.placeholder = getText('courseNamePlaceholder');
