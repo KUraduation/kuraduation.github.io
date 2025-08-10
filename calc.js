@@ -847,9 +847,7 @@ function resetDeck(deckId) {
 
     if (currentDeck === deckId) {
         loadDeck(deckId);
-        loadDeckGraduationRequirements(deckId); // 졸업요건도 초기화
         updateChart(); // UI 업데이트와 저장을 한 번에
-        refreshSearchResults(); // 검색 결과도 초기화
     } else {
         saveStateToLocalStorage();
     }
@@ -901,9 +899,6 @@ function switchDeck(deckId) {
     currentDeck = deckId;
     updateDeckTabs();
     loadDeck(deckId);
-
-    // 새 덱의 졸업요건 로드
-    loadDeckGraduationRequirements(deckId);
 
     updateChart(); // UI 업데이트와 저장을 한 번에
 }
