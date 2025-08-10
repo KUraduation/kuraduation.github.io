@@ -2857,7 +2857,8 @@ function updateMajorCheckMark(courseElement) {
     if (isMajor) {
         const checkMark = document.createElement('span');
         checkMark.className = 'major-check';
-        checkMark.textContent = '✓';
+        //checkMark.textContent = '✓';
+        checkMark.textContent = 'M';
         courseElement.appendChild(checkMark);
     }
 }
