@@ -877,11 +877,6 @@ function loadStateFromLocalStorage() {
     loadDeck(currentDeck);
     updateDeckTabs();
     updateChart({ save: false }); // 첫 로드 시에는 다시 저장하지 않음
-    
-    // 페이지 로드 후 모든 과목의 전공 체크 표시 즉시 업데이트
-    setTimeout(() => {
-        updateMajorCheckMarks();
-    }, 100);
 }
 //#endregion
 
@@ -1002,7 +997,7 @@ function saveCurrentDeck() {
                     name: course.dataset.courseName,
                     credit: course.dataset.credit,
                     grade: course.dataset.grade || '',
-                    isMajor: course.dataset.isMajor === 'true', // 전공 여부 저장
+                    isMajor: course.dataset.isMajor === 'undefined' ? undefined : course.dataset.isMajor === 'true', // 전공 여부 저장
                 };
                 coursesInSemester.push(courseData);
             });
@@ -1120,11 +1115,6 @@ function loadDeck(deckId) {
                 semesterData.forEach(courseData => {
                     const newCourse = createTakenCourseElement(courseData);
                     targetCell.appendChild(newCourse);
-                    
-                    // 기존 데이터의 전공 여부에 따라 체크 표시 업데이트
-                    if (courseData.isMajor !== undefined) {
-                        updateMajorCheckMark(newCourse, courseData.isMajor === 'true');
-                    }
                 });
             }
         });
@@ -1256,7 +1246,7 @@ function showCoursePopup(courseElement, event) {
     majorCheckbox.id = 'major-checkbox';
 
     // 전공 여부 판단 (자동 판단 결과를 우선하고, 수동 설정도 유지)
-    let isMajor = courseElement.dataset.isMajor === 'true';
+    let isMajor = isMajorCourse(courseElement);
 
     majorCheckbox.checked = isMajor;
     majorCheckbox.style.marginTop = '4px';
@@ -1294,9 +1284,6 @@ function showCoursePopup(courseElement, event) {
 
         courseElement.dataset.grade = selectedGrade;
         courseElement.dataset.isMajor = isMajor;
-
-        // 전공 여부에 따라 체크 표시 업데이트
-        updateMajorCheckMark(courseElement, isMajor);
 
         // 제목 업데이트
         const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
@@ -1698,8 +1685,8 @@ function createTakenCourseElement(courseData) {
     takenCourse.dataset.courseName = courseData.name;
     takenCourse.dataset.credit = courseData.credit;
     takenCourse.dataset.grade = courseData.grade || ''; // 평점 정보 추가
-
-    takenCourse.dataset.isMajor = 'false'; // 전공 여부 기본값
+    // 전공 여부 기본값은 undefined
+    takenCourse.dataset.isMajor = courseData.isMajor;
 
     // 제목에 평점 정보도 포함
     const gradeText = courseData.grade ? ` (${courseData.grade})` : '';
@@ -2895,17 +2882,19 @@ function updateMajorGPADisplay() {
 function updateMajorCheckMarks() {
     const courseElements = document.querySelectorAll('.taken-course');
     courseElements.forEach(courseElement => {
-        updateMajorCheckMark(courseElement, courseElement.dataset.isMajor === 'true');
+        updateMajorCheckMark(courseElement);
     });
 }
 // 전공 여부에 따라 체크 표시를 업데이트하는 함수
-function updateMajorCheckMark(courseElement, isMajor) {
+function updateMajorCheckMark(courseElement) {
     // 기존 체크 표시 제거
     const existingCheck = courseElement.querySelector('.major-check');
     if (existingCheck) {
         existingCheck.remove();
     }
-    
+
+    const isMajor = isMajorCourse(courseElement);
+
     // 전공과목이면 체크 표시 추가
     if (isMajor) {
         const checkMark = document.createElement('span');
@@ -2913,9 +2902,32 @@ function updateMajorCheckMark(courseElement, isMajor) {
         checkMark.textContent = '✓';
         courseElement.appendChild(checkMark);
     }
-    
-    // CSS에서 data-is-major 속성으로 스타일 제어
-    courseElement.dataset.isMajor = isMajor.toString();
+}
+
+// 과목이 졸업요건의 전공 영역에 속하는지 확인하는 함수
+function isCourseInMajorRequirements(courseCode) {
+
+    let isMajor = false;
+
+    document.querySelectorAll('.group-container').forEach(groupContainer => {
+        const groupCourses = groupContainer._takenCourses || [];
+        if (groupCourses.some(course => course.dataset.courseCode === courseCode)) {
+            if (groupContainer.querySelector('.group-label').textContent.includes('전공')) {
+                isMajor = true;
+                return true;
+            }
+        }
+    });
+
+    return isMajor;
+}
+// 과목이 전공 과목인지 확인하는 함수
+function isMajorCourse(courseElement) {
+    // 설정값이 있으면 그대로 설정
+    if (courseElement.dataset.isMajor !== undefined && courseElement.dataset.isMajor !== 'undefined')
+        return courseElement.dataset.isMajor === 'true';
+    // 설정값이 없으면 졸업요건에 따라 확인
+    return isCourseInMajorRequirements(courseElement.dataset.courseCode);
 }
 
 // UI 업데이트만 담당 (저장 로직 제외)
@@ -2963,7 +2975,7 @@ function updateChart(options = { save: true }) {
     takenCourses.forEach(courseEl => {
         const credit = parseFloat(courseEl.dataset.credit) || 0;
         const grade = courseEl.dataset.grade;
-        const isMajor = courseEl.dataset.isMajor === 'true';
+        const isMajor = isMajorCourse(courseEl);
 
         if (isMajor) {
             // 전공 과목이면 평점 상관없이 총 학점에 포함
@@ -3011,7 +3023,7 @@ function updateChart(options = { save: true }) {
 
             const foundGroup = dept.groups.find(group => {
                 // 과목코드로 매칭
-                return group.courses.some(course => isEqualCourse(course.code, courseCode));
+                return group.courses.some(courseCd => isEqualCourse(courseCd, courseCode));
             });
 
             if (foundGroup) {
