@@ -18,9 +18,9 @@ const translations = {
         "creditExample": "예: 3",
 
         // 직접 추가 폼
-        "courseName": "과목명:",
-        "courseCode": "학수번호:",
-        "credit": "학점:",
+        "courseName": "과목명",
+        "courseCode": "학수번호",
+        "credit": "학점",
         "add": "추가",
         "reset": "초기화",
 
@@ -135,7 +135,17 @@ const translations = {
         "year5": "5학년",
         "year6": "6학년",
         "year7": "7학년",
-        "year8": "8학년"
+        "year8": "8학년",
+
+        // 강의 클릭 팝업
+        "grade": "평점",
+        "selectGrade": "평점 선택",
+        "majorCourse": "전공 과목",
+        "isMajorCourse": "이 과목을 전공 평점 계산에 포함",
+        "saveCourseSetting": "저장",
+        "deleteCourse": "삭제",
+        "confirmDeleteCourse": "이 과목을 삭제하시겠습니까?",
+        "cancelSetting": "취소",
     },
     en: {
         // Search related
@@ -151,9 +161,9 @@ const translations = {
         "creditExample": "e.g. 3",
 
         // Custom add form
-        "courseName": "Name:",
-        "courseCode": "Code:",
-        "credit": "Credit:",
+        "courseName": "Name",
+        "courseCode": "Code",
+        "credit": "Credit",
         "add": "Add",
         "reset": "Reset",
 
@@ -268,7 +278,17 @@ const translations = {
         "year5": "5th",
         "year6": "6th",
         "year7": "7th",
-        "year8": "8th"
+        "year8": "8th",
+
+        // 강의 클릭 팝업
+        "grade": "Grade",
+        "selectGrade": "Select Grade",
+        "majorCourse": "Major Course",
+        "isMajorCourse": "Include this course in Major GPA calculation",
+        "saveCourseSetting": "Save",
+        "deleteCourse": "Delete",
+        "confirmDeleteCourse": "Are you sure you want to delete this course?",
+        "cancelSetting": "Cancel",
     }
 };
 
@@ -558,6 +578,16 @@ function getDeptName(dept) {
 // 강의코드로 번역된 강의명 구하는 함수
 function getCourseName(code, lan = undefined) {
     return courses[code]['name'][lan || currentLanguage || 'ko'];
+}
+// 강의 Element로 번역된 강의명 구하는 함수(권장)
+function getCourseNameFromElement(courseElement) {
+    return courseElement.dataset.isCustom === 'true' ? courseElement.dataset.courseName
+        : getCourseName(courseElement.dataset.courseCode);
+}
+// 강의 Element로 학점 구하는 함수(권장)
+function getCourseCreditFromElement(courseElement) {
+    return courseElement.dataset.isCustom === 'true' ? courseElement.dataset.courseCredit
+        : courses[courseElement.dataset.courseCode]['credit'];
 }
 
 // 평점 시스템
@@ -1025,7 +1055,7 @@ let draggedCourse = null;
 let currentPopup = null; // 현재 열린 팝업 추적
 
 // 과목 팝업 표시 함수
-function showCoursePopup(courseElement, event) {
+function showCoursePopup(courseElement, event) {//todo
     // 기존 팝업이 있으면 제거
     if (currentPopup) {
         currentPopup.remove();
@@ -1033,8 +1063,8 @@ function showCoursePopup(courseElement, event) {
     }
 
     const courseCode = courseElement.dataset.courseCode;
-    const courseName = courseElement.dataset.courseName;
-    const credit = courseElement.dataset.credit;
+    const courseName = getCourseNameFromElement(courseElement);
+    const credit = getCourseCreditFromElement(courseElement);
     const currentGrade = courseElement.dataset.grade || '';
 
     // 팝업 생성
@@ -1050,13 +1080,13 @@ function showCoursePopup(courseElement, event) {
     // 상세 정보
     const info = document.createElement('div');
     info.className = 'course-popup-info';
-    info.innerHTML = `<div><strong>학점:</strong> ${credit}학점</div>`;
+    info.innerHTML = `<div><strong>${getText('credit')}:</strong> ${credit}</div>`;
     popup.appendChild(info);
 
     // 평점 선택 영역
     const gradeSection = document.createElement('div');
     gradeSection.className = 'course-popup-grade';
-    gradeSection.innerHTML = '<div><strong>평점:</strong></div>';
+    gradeSection.innerHTML = `<div><strong>${getText('grade')}:</strong></div>`;
 
     const gradeSelect = document.createElement('select');
     gradeSelect.className = 'grade-select';
@@ -1067,7 +1097,7 @@ function showCoursePopup(courseElement, event) {
     // 기본 옵션 (평점 미입력)
     const defaultOption = document.createElement('option');
     defaultOption.value = '';
-    defaultOption.textContent = '평점 선택';
+    defaultOption.textContent = getText('selectGrade'); // "평점 선택"
     gradeSelect.appendChild(defaultOption);
 
     // 평점 옵션들 추가
@@ -1095,13 +1125,13 @@ function showCoursePopup(courseElement, event) {
     majorSection.className = 'course-popup-major';
     majorSection.style.marginTop = '12px';
     majorSection.style.marginBottom = '20px'; // 버튼과의 간격 추가
-    majorSection.innerHTML = '<div><strong>전공 과목:</strong></div>';
+    majorSection.innerHTML = `<div><strong>${getText('majorCourse')}:</strong></div>`;
 
     const majorCheckbox = document.createElement('input');
     majorCheckbox.type = 'checkbox';
     majorCheckbox.id = 'major-checkbox';
 
-    // 전공 여부 판단 (자동 판단 결과를 우선하고, 수동 설정도 유지)
+    // 전공 여부 판단 (설정 결과를 우선하고 없을 시 자동 판단)
     let isMajor = isMajorCourse(courseElement);
 
     majorCheckbox.checked = isMajor;
@@ -1110,7 +1140,7 @@ function showCoursePopup(courseElement, event) {
 
     const majorLabel = document.createElement('label');
     majorLabel.htmlFor = 'major-checkbox';
-    majorLabel.textContent = '이 과목을 전공 평점 계산에 포함';
+    majorLabel.textContent = getText("isMajorCourse");
     majorLabel.style.cursor = 'pointer';
 
     const majorContainer = document.createElement('div');
@@ -1127,7 +1157,7 @@ function showCoursePopup(courseElement, event) {
     // 저장 버튼
     const saveBtn = document.createElement('button');
     saveBtn.className = 'course-popup-save-btn';
-    saveBtn.textContent = '저장';
+    saveBtn.textContent = getText('saveCourseSetting'); // "저장"
     saveBtn.style.backgroundColor = '#28a745';
     saveBtn.style.color = 'white';
     saveBtn.style.border = 'none';
@@ -1143,7 +1173,7 @@ function showCoursePopup(courseElement, event) {
 
         // 제목 업데이트
         const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
-        courseElement.title = `${courseName} (${credit}학점)${gradeText}`;
+        courseElement.title = `${courseName} (${credit})${gradeText}`;
         updateChart(); // UI 업데이트와 저장을 한 번에
         closeCoursePopup();
         saveToHistory();
@@ -1153,9 +1183,9 @@ function showCoursePopup(courseElement, event) {
     // 삭제 버튼
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'course-popup-delete-btn';
-    deleteBtn.textContent = '삭제';
+    deleteBtn.textContent = getText('deleteCourse'); // "삭제"
     deleteBtn.addEventListener('click', () => {
-        if (confirm(`"${courseName}" 과목을 삭제하시겠습니까?`)) {
+        if (confirm(`${getText('confirmDeleteCourse')}:\n${courseName}`)) {
             deleteCourse(courseElement);
         }
     });
@@ -1164,7 +1194,7 @@ function showCoursePopup(courseElement, event) {
     // 닫기 버튼
     const closeBtn = document.createElement('button');
     closeBtn.className = 'course-popup-close-btn';
-    closeBtn.textContent = '닫기';
+    closeBtn.textContent = getText('cancelSetting'); // "취소"
     closeBtn.addEventListener('click', closeCoursePopup);
     buttons.appendChild(closeBtn);
 
@@ -1554,7 +1584,7 @@ function createTakenCourseElement(courseData) {
 
     // 제목에 평점 정보도 포함
     const gradeText = grade ? ` (${grade})` : '';
-    takenCourse.title = `${courseName} (${courseCredit}학점)${gradeText}`;
+    takenCourse.title = `${courseName} (${courseCredit})${gradeText}`;
 
     takenCourse.draggable = true;
     takenCourse.addEventListener('dragstart', handleDragStart);
