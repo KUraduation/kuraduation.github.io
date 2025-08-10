@@ -1510,20 +1510,25 @@ function handleCellClick(e) {
 }
 
 function createTakenCourseElement(courseData) {
+    const courseCode = courseData.code;
+    const grade = courseData.grade || '';
+    const isCustom = courseData.isCustom || false;
+    const courseName = isCustom ? courseData.name : getCourseName(courseCode);
+    const courseCredit = isCustom ? courseData.credit : courses[courseCode]['credit'];
+
     const takenCourse = document.createElement('div');
     takenCourse.className = 'taken-course';
-    takenCourse.textContent = courseData.name;
-    takenCourse.dataset.courseCode = courseData.code;
-    takenCourse.dataset.courseName = courseData.name;
-    takenCourse.dataset.credit = courseData.credit;
-    takenCourse.dataset.grade = courseData.grade || ''; // 평점 정보 추가
-    // 전공 여부 기본값은 undefined
-    takenCourse.dataset.isMajor = courseData.isMajor;
-    takenCourse.dataset.isCustom = courseData.isCustom || false; // 커스텀 과목 여부
+    takenCourse.textContent = courseName;
+    takenCourse.dataset.courseCode = courseCode;
+    takenCourse.dataset.courseName = courseName;
+    takenCourse.dataset.credit = courseCredit;
+    takenCourse.dataset.grade = grade; // 평점 정보 추가
+    takenCourse.dataset.isMajor = courseData.isMajor; // 전공 여부 기본값은 undefined
+    takenCourse.dataset.isCustom = isCustom; // 커스텀 과목 여부
 
     // 제목에 평점 정보도 포함
-    const gradeText = courseData.grade ? ` (${courseData.grade})` : '';
-    takenCourse.title = `${courseData.name} (${courseData.credit}학점)${gradeText}`;
+    const gradeText = grade ? ` (${grade})` : '';
+    takenCourse.title = `${courseName} (${courseCredit}학점)${gradeText}`;
 
     takenCourse.draggable = true;
     takenCourse.addEventListener('dragstart', handleDragStart);
