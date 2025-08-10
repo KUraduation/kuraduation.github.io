@@ -81,9 +81,6 @@ const translations = {
         "saveGpaGoal": "저장",
         "savedGpaGoal": "저장됨",
         "reflectedGpa": "반영 평점:",
-      
-        // 기타
-        "noData": "N/A",
 
         // 검색 버튼 title
         "searchTitle": "검색",
@@ -216,9 +213,6 @@ const translations = {
         "saveGpaGoal": "Save",
         "savedGpaGoal": "Saved",
         "reflectedGpa": "Reflected GPA:",
-        
-        // 기타
-        "noData": "N/A",
 
         // 검색 버튼 title
         "searchTitle": "Search",
@@ -389,17 +383,6 @@ function updateTitles() {
 }
 
 function updateSpecialElements() {
-    // N/A 텍스트 업데이트
-    const overallGpa = document.getElementById('overall-gpa');
-    const majorGpa = document.getElementById('major-gpa');
-
-    if (overallGpa && overallGpa.textContent === 'N/A') {
-        overallGpa.textContent = getText('noData');
-    }
-    if (majorGpa && majorGpa.textContent === 'N/A') {
-        majorGpa.textContent = getText('noData');
-    }
-
     // 덱 탭 텍스트 업데이트
     updateDeckTabTexts();
 
