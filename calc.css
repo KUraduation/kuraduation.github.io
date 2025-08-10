@@ -1495,6 +1495,7 @@ body {
 }
 
 .taken-course {
+    position: relative; /* 체크 표시의 위치 기준점 */
     background-color: #e0e0e0;
     border: 1px solid #bbb;
     border-radius: 4px;
@@ -1508,6 +1509,25 @@ body {
     box-sizing: border-box; /* padding과 border가 너비에 포함되도록 */
     flex-shrink: 0; /* 줄어들지 않도록 */
     transition: all 0.2s ease; /* 부드러운 전환 효과 */
+}
+
+.major-check-mark {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background-color: #dc143c;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+    z-index: 1;
+    box-shadow: 0 0 2px rgba(0,0,0,0.5);
+    content: '✔';
 }
 
 .taken-course:hover {
