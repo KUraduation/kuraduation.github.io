@@ -310,13 +310,16 @@ function updateAllTexts() {
     // 언어 전환 버튼 상태 업데이트
     updateLanguageButtons();
 
+    // 학과검색기 majorDivs 업데이트
+    updateMajorDivs();
+
     // semester header 번역 업데이트
     updateSemesterHeader();
     
     // 목표 평점 계산 텍스트 업데이트
     updateGpaGoalTexts();
 
-    loadDeck(currentDeck); // todo
+    loadDeck(currentDeck);
     updateChart({save: false}); // 차트 업데이트
 }
 
@@ -416,6 +419,22 @@ function updateLanguageButtons() {
         } else if (currentLanguage === 'en') {
             enBtn.classList.add('active');
         }
+    }
+}
+
+// 학과검색기 majorDivs 업데이트
+function updateMajorDivs() {
+    const majorDivSelect = document.getElementById('majorDiv-select');
+    if (majorDivSelect) {
+        const currentValue = majorDivSelect.value;
+        majorDivSelect.innerHTML = '';
+        getMajorDivs().forEach((majorDiv, idx) => {
+            const option = document.createElement('option');
+            option.value = idx;
+            option.textContent = majorDiv;
+            majorDivSelect.appendChild(option);
+        });
+        majorDivSelect.value = currentValue;
     }
 }
 
