@@ -83,12 +83,7 @@ const translations = {
         "reflectedGpa": "반영 평점:",
       
         // 기타
-        "addYear": "+",
         "noData": "N/A",
-
-        // 언어 전환 버튼
-        "korean": "KOR",
-        "english": "ENG",
 
         // 검색 버튼 title
         "searchTitle": "검색",
@@ -157,8 +152,8 @@ const translations = {
         "creditExample": "e.g. 3",
 
         // Custom add form
-        "courseName": "Course Name:",
-        "courseCode": "Course Code:",
+        "courseName": "Name:",
+        "courseCode": "Code:",
         "credit": "Credit:",
         "add": "Add",
         "reset": "Reset",
@@ -223,12 +218,7 @@ const translations = {
         "reflectedGpa": "Reflected GPA:",
         
         // 기타
-        "addYear": "+",
         "noData": "N/A",
-
-        // 언어 전환 버튼
-        "korean": "KOR",
-        "english": "ENG",
 
         // 검색 버튼 title
         "searchTitle": "Search",
@@ -332,8 +322,8 @@ function updateAllTexts() {
     // semester cell 번역 업데이트
     updateSemesterCells();
 
-    // 검색 결과 툴팁 업데이트
-    updateSearchResultTooltips();
+    // 검색 결과 새로고침
+    refreshSearchResults();
     
     // 목표 평점 계산 텍스트 업데이트
     updateGpaGoalTexts();
@@ -591,13 +581,6 @@ function updateSemesterCells() {
     });
 }
 
-// 검색 결과 툴팁 업데이트
-function updateSearchResultTooltips() {
-    document.querySelectorAll('.course-item').forEach(courseItem => {
-        courseItem.title = getText('courseTooltip');
-    });
-}
-
 //#endregion
 
 // 전공 분류 배열 (번역 시스템 사용)
@@ -674,8 +657,8 @@ function getDeptName(dept) {
     return dept['name'][currentLanguage || 'ko'];
 }
 // 강의코드로 번역된 강의명 구하는 함수
-function getCourseName(code) {
-    return courses[code]['name'][currentLanguage || 'ko'];
+function getCourseName(code, lan = undefined) {
+    return courses[code]['name'][lan || currentLanguage || 'ko'];
 }
 
 // 평점 시스템
@@ -1440,7 +1423,7 @@ function createSearchResultCourse(code, name = undefined, credit = undefined) {
     if (isCourseAlreadyTaken(code)) {
         courseItem.classList.add('taken-in-search');
     }
-    courseItem.textContent = `[${code}] ${name} (${credit}학점)`;
+    courseItem.textContent = `[${code}] ${name} (${credit})`;
     courseItem.dataset.courseCode = code;
     courseItem.dataset.courseName = name;
     courseItem.dataset.credit = credit;
@@ -2409,12 +2392,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function searchCourseByName() {
-        let keyword = courseSearchInput.value.trim().toLowerCase();
+        let keyword = courseSearchInput.value.trim().toUpperCase();
         const selectedYear = searchYearSelect.value;
-        const match = keyword.match(/^(.*) \((.*)\)$/);
-        if (match) {
-            keyword = match[1].toUpperCase();
-        }
 
         if (keyword.length < 2) {
             searchResult.textContent = '2글자 이상 입력하세요.';
@@ -2432,8 +2411,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     for (const group of dept.groups) {
                         if (group.courses) {
                             for (const courseCode of group.courses) {
-                                const courseName = getCourseName(courseCode);
-                                if (courseName.includes(keyword) || courseCode.includes(keyword)) {
+                                if (('[' + courseCode + '] ' + getCourseName(courseCode, 'ko')).includes(keyword)
+                                    || ('[' + courseCode + '] ' + getCourseName(courseCode, 'en')).includes(keyword)) {
                                     foundCourses.add(courseCode);
                                 }
                             }
