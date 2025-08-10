@@ -32,17 +32,23 @@
         <div class="course-container">
             <div class="container-header">
                 <img src="KUraduationlogo.png" alt="KUraduation" class="logo-image">
-                <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
-                    <label for="search-year-select" style="font-size: small;">검색기준</label>
-                    <select id="search-year-select"></select>
+                <div class="header-controls">
+                    <div id="search-year-container" style="display: flex; gap: 8px; align-items: center;">
+                        <label for="search-year-select" style="font-size: small;"
+                            data-i18n="searchCriteria">검색기준</label>
+                        <select id="search-year-select"></select>
+                    </div>
                 </div>
             </div>
             <div id="course-container-content">
                 <div class="search-box">
                     <div id="search-type-selector">
-                        <label><input type="radio" name="searchType" value="byDept" checked> 학과 검색</label>
-                        <label><input type="radio" name="searchType" value="byCourseName"> 강의명 검색</label>
-                        <label><input type="radio" name="searchType" value="customCourse"> 직접 추가</label>
+                        <label><input type="radio" name="searchType" value="byDept" checked> <span
+                                data-i18n="departmentSearch">학과 검색</span></label>
+                        <label><input type="radio" name="searchType" value="byCourseName"> <span
+                                data-i18n="courseNameSearch">강의명 검색</span></label>
+                        <label><input type="radio" name="searchType" value="customCourse"> <span
+                                data-i18n="customAdd">직접 추가</span></label>
                     </div>
 
                     <div id="dept-search-container">
@@ -50,30 +56,45 @@
                             <select id="majorDiv-select"></select>
                         </div>
                         <div class="floating-dropdown">
-                            <input type="text" id="dept-search-input" placeholder=" " list="dept-suggestions" autocomplete="off">
+                            <input type="text" id="dept-search-input" placeholder=" " list="dept-suggestions"
+                                autocomplete="off">
                             <datalist id="dept-suggestions"></datalist>
                         </div>
-                        <button id="dept-search-btn">검색</button>
+                        <button id="dept-search-btn" class="search-btn" title="검색">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
                     </div>
 
                     <div id="course-search-container">
                         <input type="text" id="course-search-input" placeholder="강의명 또는 학수번호 입력"
                             list="course-suggestions" autocomplete="off">
                         <datalist id="course-suggestions"></datalist>
-                        <button id="course-search-btn">검색</button>
+                        <button id="course-search-btn" class="search-btn" title="검색">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
                     </div>
 
                     <div id="custom-course-container">
                         <div class="custom-course-form">
-                            <label>과목명:</label>
+                            <label data-i18n="courseName">과목명:</label>
                             <input type="text" id="custom-course-name" placeholder="예: 대학영어">
-                            <label>학수번호:</label>
+                            <label data-i18n="courseCode">학수번호:</label>
                             <input type="text" id="custom-course-code" placeholder="예: ENGL001">
-                            <label>학점:</label>
-                            <input type="number" id="custom-course-credit" placeholder="예: 3" min="1" max="6">
+                            <label data-i18n="credit">학점:</label>
+                            <input type="number" id="custom-course-credit" placeholder="예: 3 또는 1.5" min="1" max="6" step="0.5">
                             <div class="custom-course-buttons">
-                                <button id="custom-course-add-btn" class="custom-course-add-btn">추가</button>
-                                <button id="custom-course-clear-btn" class="custom-course-cancel-btn">초기화</button>
+                                <button id="custom-course-add-btn" class="custom-course-add-btn"
+                                    data-i18n="add">추가</button>
+                                <button id="custom-course-clear-btn" class="custom-course-cancel-btn"
+                                    data-i18n="reset">초기화</button>
                             </div>
                         </div>
                     </div>
@@ -108,39 +129,110 @@
             <div class="deck-management">
                 <div class="deck-tabs-row">
                     <div class="deck-tabs">
-                        <button class="deck-tab active" data-deck="deck1">덱1</button>
-                        <button class="deck-tab" data-deck="deck2">덱2</button>
-                        <button class="deck-tab" data-deck="deck3">덱3</button>
+                        <div class="language-switcher-vertical">
+                            <button id="lang-ko-btn" class="lang-btn active" data-lang="ko"
+                                data-i18n="korean">KOR</button>
+                            <button id="lang-en-btn" class="lang-btn" data-lang="en" data-i18n="english">ENG</button>
+                        </div>
+
+                        <button class="deck-tab active" data-deck="deck1" data-i18n="deck1">덱1</button>
+                        <button class="deck-tab" data-deck="deck2" data-i18n="deck2">덱2</button>
+                        <button class="deck-tab" data-deck="deck3" data-i18n="deck3">덱3</button>
                         <button class="add-deck-btn" id="add-deck-btn">+</button>
+
+                        <button class="help-btn" id="help-btn" title="도움말">❓</button>
                     </div>
                 </div>
                 <div class="deck-controls-row">
                     <div class="deck-controls">
-                        <button class="deck-copy-paste-btn" id="deck-copy-paste-btn" title="현재 덱 복사">복사</button>
-                        <button class="deck-reset-btn" id="deck-reset-btn" title="현재 덱 초기화">덱 초기화</button>
+                        <button class="deck-copy-paste-btn" id="deck-copy-paste-btn" title="현재 덱 복사"
+                            data-i18n="copy">복사</button>
+                        <button class="deck-reset-btn" id="deck-reset-btn" title="현재 덱 초기화" data-i18n="deckReset">덱
+                            초기화</button>
                         <button class="history-btn" id="undo-btn" title="실행 취소" disabled>↶</button>
                         <button class="history-btn" id="redo-btn" title="다시 실행" disabled>↷</button>
                     </div>
                 </div>
-                <button class="help-btn" id="help-btn" title="도움말">❓</button>
                 <div class="total-credit-section">
                     <div class="total-credit-row">
-                        <span>총이수학점: </span>
+                        <span data-i18n="totalCredits">총이수학점: </span>
                         <span id="current-credit">0</span>
-                        <span style="margin-left: 16px;">전공학점: </span>
+                        <span style="margin-left: 16px;" data-i18n="majorCredits">전공학점: </span>
                         <span id="major-credit">0</span>
                     </div>
                     <div class="gpa-row">
-                        <span>평점: </span>
+                        <span data-i18n="gpa">평점: </span>
                         <span id="overall-gpa">N/A</span>
-                        <span style="margin-left: 16px;">전공평점: </span>
+                        <span style="margin-left: 16px;" data-i18n="majorGpa">전공평점: </span>
                         <span id="major-gpa">N/A</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 목표 평점 계산 버튼 -->
+            <div class="gpa-goal-section">
+                <button id="gpa-goal-btn" class="gpa-goal-btn" data-i18n="gpaGoalCalc">목표 평점 계산</button>
+            </div>
+
+            <!-- 목표 평점 계산 팝업 -->
+            <div id="gpa-goal-popup" class="gpa-goal-popup" style="display: none;">
+                <div class="gpa-goal-popup-content">
+                    <div class="gpa-goal-popup-header">
+                        <h3 data-i18n="gpaGoalCalculator">목표 평점 계산</h3>
+                        <button id="gpa-goal-close-btn" class="gpa-goal-close-btn">×</button>
+                    </div>
+                    <div class="gpa-goal-popup-body">
+                        <div class="gpa-goal-input-row">
+                            <label for="target-gpa-input" data-i18n="targetGpa">목표 평점:</label>
+                            <input type="number" id="target-gpa-input" class="gpa-goal-input" min="0" max="4.5" step="0.1" placeholder="예: 4.0">
+                        </div>
+                        <div class="gpa-goal-input-row">
+                            <label for="total-remaining-credits" data-i18n="totalRemainingCredits">총 남은 학점:</label>
+                            <input type="number" id="total-remaining-credits" class="gpa-goal-input" min="1" max="200" placeholder="예: 30">
+                        </div>
+                        
+                        <!-- 학기별 계획 토글 -->
+                        <div class="semester-plan-toggle">
+                            <button id="toggle-semester-plan" class="semester-plan-toggle-btn" data-i18n="addSemesterPlan">학기별 계획 추가</button>
+                        </div>
+                        
+                        <!-- 학기별 계획 섹션 (처음에는 숨김) -->
+                        <div id="semester-plan-section" class="semester-plan-section" style="display: none;">
+                            <div class="semester-plan-header">
+                                <h4 data-i18n="semesterPlan">학기별 계획</h4>
+                                <span class="semester-plan-summary"><span id="planned-credits">0</span> / <span id="total-credits">0</span></span>
+                                <button id="semester-plan-close-btn" class="semester-plan-close-btn" title="학기별 계획 제거">×</button>
+                            </div>
+                            <div id="semester-plan-list" class="semester-plan-list">
+                                <!-- 동적으로 추가되는 학기들 -->
+                            </div>
+                            <div class="semester-plan-controls">
+                                <button id="add-semester-btn" class="add-semester-btn" data-i18n="addSemester">+ 학기 추가</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 반영 평점 섹션 -->
+                        <div class="gpa-goal-result-row">
+                            <label data-i18n="reflectedGpa">반영 평점:</label>
+                            <span id="reflected-gpa-result" class="gpa-goal-result">-</span>
+                        </div>
+                        
+                        <div class="gpa-goal-result-row">
+                            <label data-i18n="requiredGpa">필요 평점:</label>
+                            <span id="required-gpa-result" class="gpa-goal-result">-</span>
+                        </div>
+                        
+                        <!-- 저장 버튼 -->
+                        <div class="gpa-goal-save-section">
+                            <button id="gpa-goal-save-btn" class="gpa-goal-save-btn" data-i18n="saveGpaGoal">저장</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="selectContainer"></div>
 
+            
             <div class="plus-line-container">
                 <button id="major-add-btn" class="plus-rect-btn">+</button>
             </div>

@@ -323,7 +323,7 @@ body {
 .container-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: flex-start;
     font-weight: bold;
     user-select: none;
     padding: 8px 12px;
@@ -335,27 +335,85 @@ body {
     border-bottom: 1px solid rgba(220, 20, 60, 0.08);
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.lang-btn {
+    background: transparent;
+    border: none;
+    color: #666;
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-size: 0.5em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Cafe24OhsquareAir-v2.0';
+}
+
+.lang-btn:hover {
+    background: rgba(220, 20, 60, 0.1);
+    color: #dc143c;
+}
+
+.lang-btn.active {
+    background: #dc143c;
+    color: white;
+    font-weight: bold;
+}
+
+.lang-btn.active:hover {
+    background: #b91c3c;
+}
+
 .logo-image {
     height: 32px; /* 로고 높이 조정 */
     width: auto; /* 비율 유지 */
     object-fit: contain; /* 이미지 비율 유지하며 크기 조정 */
 }
 
+
+
 #search-year-container select {
-    min-width: 80px;
-    font-size: 0.9em;
+    min-width: 45px;
+    font-size: 0.8em;
+    padding: 2px 4px;
+    border: 1px solid rgba(220, 20, 60, 0.2);
+    border-radius: 6px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 7.5px;
+}
+
+#search-year-container select:focus {
+    outline: none;
+    border-color: #dc143c;
+    box-shadow: 0 0 5px rgba(220, 20, 60, 0.2);
+}
+
+#search-year-container select:hover {
+    border-color: #dc143c;
 }
 
 #search-year-container label {
-    font-weight: normal;
-    color: #666;
+    font-weight: 600;
+    color: #dc143c;
+    font-size: 0.8em;
+    margin-right: -1px;
+    margin-top: 7.5px;
 }
 
 /* 교양과목 추가 관련 스타일 */
 #search-type-selector {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     flex-wrap: nowrap;
     justify-content: space-between;
 }
@@ -420,6 +478,19 @@ body {
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
 }
 
+/* number 입력 필드의 스핀 버튼 스타일링 */
+.custom-course-form input[type="number"]::-webkit-inner-spin-button,
+.custom-course-form input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 20px;
+    margin-right: 4px;
+}
+
+.custom-course-form input[type="number"]::-webkit-inner-spin-button:hover,
+.custom-course-form input[type="number"]::-webkit-outer-spin-button:hover {
+    opacity: 0.8;
+}
+
 .custom-course-buttons {
     grid-column: 1 / -1;
     display: flex;
@@ -465,6 +536,9 @@ body {
 
 .deck-tabs-row {
     margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .deck-tabs {
@@ -966,6 +1040,7 @@ body {
 }
 
 .deck-reset-btn {
+    width: 5em;
     background-color: white;
     color: #333;
     border: 2px solid rgba(220, 20, 60, 0.1);
@@ -999,6 +1074,11 @@ body {
     align-items: center; /* flex-end에서 center로 변경하여 동일 선상에 정렬 */
 }
 
+/* 강의명 검색 컨테이너 특별 간격 */
+#course-search-container {
+    gap: 12px; /* 강의명 검색 컨테이너와 버튼 간격 늘리기 */
+}
+
 /* 학과 이름 입력 필드와 검색 버튼 사이의 간격을 8px로 설정 */
 #dept-search-container .floating-dropdown:nth-child(2),
 #course-search-container .floating-dropdown:nth-child(1) {
@@ -1008,6 +1088,15 @@ body {
 /* 초기에는 강의명 검색 UI 숨김 */
 #course-search-container {
     display: none;
+    /* 강의명 검색 컨테이너 특별 스타일 */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 2px 2px; /* 상하 패딩을 늘려서 전체 높이 맞춤 */
+    box-shadow: none;
+    justify-content: center;
+    align-items: center;
+    min-height: 10px; /* 최소 높이 설정으로 학과명 검색과 동일한 크기 */
 }
 
 #search-result {
@@ -1151,14 +1240,14 @@ body {
 /* 도움말 버튼 스타일 */
 .help-btn {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 5px;
+    right: 5px;
     background: white;
     color: #495057;
     border: 2px solid #495057;
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     font-size: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -1561,6 +1650,29 @@ body {
     align-items: center; /* flexbox를 사용한 세로 중앙 정렬 */
 }
 
+/* 강의명 검색 입력 필드 특별 스타일 */
+#course-search-container input {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(248, 248, 248, 0.9) 100%);
+    border: 2px solid rgba(220, 20, 60, 0.15);
+    border-radius: 20px;
+    height: 24px; 
+    text-align: center; /* 텍스트 가운데 정렬 */
+    box-shadow: 
+        0 2px 8px rgba(220, 20, 60, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+#course-search-container input:focus {
+    border-color: #dc143c;
+    background: white;
+    box-shadow: 
+        0 0 0 3px rgba(220, 20, 60, 0.15),
+        0 4px 16px rgba(220, 20, 60, 0.12);
+    transform: translateY(-1px);
+}
+
 .floating-dropdown select:focus,
 .floating-dropdown input:focus {
     outline: none;
@@ -1613,12 +1725,11 @@ body {
 /* 검색 버튼 스타일 개선 */
 #dept-search-btn, #course-search-btn {
     width: 3.2em;
-    padding: 8px 8px; /* 버튼 패딩도 줄임 */
+    padding: 6px; /* 아이콘에 맞게 패딩 조정 */
     background: linear-gradient(135deg, #dc143c, #b22222);
     color: white;
     border: none;
     border-radius: 12px;
-    font-size: 0.8em; /* 버튼 폰트 크기 줄임 */
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(220, 20, 60, 0.2);
@@ -1627,11 +1738,615 @@ body {
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    justify-content: center; /* 버튼 내부 텍스트 중앙 정렬 */
+    justify-content: center; /* 아이콘 중앙 정렬 */
 }
 
 #dept-search-btn:hover, #course-search-btn:hover {
     background: linear-gradient(135deg, #b22222, #8b0000);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(220, 20, 60, 0.3);
+}
+
+/* 강의명 검색 버튼 특별 스타일 */
+#course-search-btn {
+    background: linear-gradient(135deg, #dc143c, #c41e3a);
+    box-shadow: 
+        0 2px 8px rgba(220, 20, 60, 0.25),
+        0 1px 3px rgba(220, 20, 60, 0.1);
+}
+
+#course-search-btn:hover {
+    background: linear-gradient(135deg, #b22222, #a01818);
+    box-shadow: 
+        0 4px 12px rgba(220, 20, 60, 0.35),
+        0 2px 6px rgba(220, 20, 60, 0.15);
+    transform: translateY(-2px);
+}
+
+/* 돋보기 아이콘 스타일 */
+.search-icon {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* 언어 전환 버튼 스타일 */
+.language-switcher {
+    display: flex;
+    background: rgba(255, 192, 203, 0.1); /* 연한 핑크색 배경 */
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+    border: 1px solid rgba(255, 192, 203, 0.3); /* 연한 핑크색 테두리 */
+    align-self: flex-start;
+}
+
+/* 로고와 언어 전환 버튼 컨테이너 */
+.logo-language-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: -3px;
+}
+
+/* 세로 언어 전환 버튼 */
+.language-switcher-vertical {
+    right: 55px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 192, 203, 0.1); /* 연한 핑크색 배경 */
+    border-radius: 8px;
+    padding: 3px;
+    gap: 1px;
+    border: 1px solid rgba(255, 192, 203, 0.3); /* 연한 핑크색 테두리 */
+    margin-right: 5px;
+}
+
+/* 목표 평점 계산 버튼 스타일 */
+.gpa-goal-section {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0;
+}
+
+.gpa-goal-btn {
+    background-color: white;
+    color: #333;
+    border: 2px solid rgba(220, 20, 60, 0.1);
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.05);
+    font-weight: 500;
+}
+
+.gpa-goal-btn:hover {
+    background-color: rgba(220, 20, 60, 0.05);
+    border-color: rgba(220, 20, 60, 0.2);
+    box-shadow: 0 4px 16px rgba(220, 20, 60, 0.1);
+    transform: translateY(-1px);
+}
+
+.gpa-goal-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.1);
+}
+
+/* 목표 평점 계산 팝업 스타일 */
+.gpa-goal-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 250px;
+    max-width: 350px;
+    width: 67.5vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(220, 20, 60, 0.1);
+}
+
+.gpa-goal-popup-content {
+    padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.gpa-goal-popup-header {
+    background: linear-gradient(135deg, #dc143c, #b22222);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    touch-action: none;
+}
+
+.gpa-goal-popup-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.gpa-goal-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.gpa-goal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.gpa-goal-popup-body {
+    padding: 20px;
+    background: white;
+}
+
+.gpa-goal-input-row,
+.gpa-goal-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 4px 0;
+}
+
+.gpa-goal-input-row:last-child,
+.gpa-goal-result-row:last-child {
+    margin-bottom: 0;
+}
+
+.gpa-goal-input-row label,
+.gpa-goal-result-row label {
+    font-weight: 500;
+    color: #333;
+    font-size: 1.25em;
+    margin-left: 15px;
+}
+
+.gpa-goal-input {
+    width: 100px;
+    padding: 10px 14px;
+    border: 2px solid rgba(220, 20, 60, 0.15);
+    border-radius: 8px;
+    font-size: 0.95em;
+    transition: all 0.3s ease;
+    background: white;
+    color: #333;
+}
+
+.gpa-goal-input:focus {
+    outline: none;
+    border-color: rgba(220, 20, 60, 0.4);
+    box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.gpa-goal-input:hover {
+    border-color: rgba(220, 20, 60, 0.3);
+}
+
+.gpa-goal-result {
+    font-weight: 600;
+    font-size: 1.2em;
+    color: #dc143c;
+    min-width: 100px;
+    text-align: center;
+    padding: 12px 16px;
+    background: rgba(220, 20, 60, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(220, 20, 60, 0.1);
+}
+
+/* 결과가 계산되었을 때의 스타일 */
+.gpa-goal-result.calculated {
+    background: linear-gradient(135deg, rgba(220, 20, 60, 0.1), rgba(178, 34, 34, 0.05));
+    border-color: rgba(220, 20, 60, 0.2);
+    color: #b22222;
+}
+
+/* 에러 상태 스타일 */
+.gpa-goal-input.error {
+    border-color: #ff4444;
+    background: rgba(255, 68, 68, 0.05);
+}
+
+.gpa-goal-result.error {
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.05);
+    border-color: rgba(255, 68, 68, 0.2);
+}
+
+/* 성공 상태 스타일 */
+.gpa-goal-result.success {
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.05);
+    border-color: rgba(40, 167, 69, 0.2);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .gpa-goal-popup {
+        min-width: 280px;
+        max-width: 95vw;
+        width: 95vw;
+        margin: 10px;
+    }
+    
+    .gpa-goal-input-row,
+    .gpa-goal-result-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .gpa-goal-input-row label,
+    .gpa-goal-result-row label {
+        min-width: auto;
+    }
+    
+    .gpa-goal-input {
+        width: 100%;
+    }
+    
+    .gpa-goal-result {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .semester-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .semester-item-label {
+        min-width: auto;
+    }
+    
+    .semester-item-input {
+        width: 100%;
+    }
+    
+    .semester-plan-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+/* 학기별 계획 토글 버튼 */
+.semester-plan-toggle {
+    margin: 16px 0;
+    text-align: center;
+}
+
+.semester-plan-toggle-btn {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    color: #495057;
+    border: 2px solid rgba(220, 20, 60, 0.1);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.semester-plan-toggle-btn:hover {
+    background: linear-gradient(135deg, #e9ecef, #dee2e6);
+    border-color: rgba(220, 20, 60, 0.2);
+    transform: translateY(-1px);
+}
+
+.semester-plan-toggle-btn.active {
+    background: linear-gradient(135deg, #dc143c, #b22222);
+    color: white;
+    border-color: #dc143c;
+    display: none;
+}
+
+/* 학기별 계획 섹션 */
+.semester-plan-section {
+    margin: 20px 0;
+    padding: 10px;
+    background: rgba(220, 20, 60, 0.02);
+    border: 1px solid rgba(220, 20, 60, 0.1);
+    border-radius: 12px;
+}
+
+.semester-plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    margin-left: 10px;
+    border-bottom: 1px solid rgba(220, 20, 60, 0.1);
+}
+
+.semester-plan-header h4 {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 600;
+    color: #333;
+}
+
+.semester-plan-summary {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.semester-plan-list {
+    margin-bottom: 12px;
+}
+
+/* 학기 항목 */
+.semester-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border: 1px solid rgba(220, 20, 60, 0.1);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.semester-item:hover {
+    border-color: rgba(220, 20, 60, 0.2);
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.05);
+}
+
+.semester-item-label {
+    font-weight: 500;
+    color: #333;
+    min-width: 80px;
+    font-size: 0.95em;
+    margin-right: 25px;
+}
+
+.semester-item-input {
+    width: 50px;
+    padding: 8px 10px;
+    border: 1px solid rgba(220, 20, 60, 0.15);
+    border-radius: 6px;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    margin-left: -30px;
+    margin-right: 15px;
+}
+
+/* 학점 입력 박스와 평점 입력 박스 사이의 간격 조정 */
+.semester-item-input.semester-credits {
+    margin-left: -40px;
+}
+
+.semester-item-input.semester-gpa {
+    margin-left: -10px;
+}
+
+.semester-item-input:focus {
+    outline: none;
+    border-color: rgba(220, 20, 60, 0.4);
+    box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.1);
+}
+
+.semester-item-input.error {
+    border-color: #ff4444;
+    background: rgba(255, 68, 68, 0.05);
+}
+
+.semester-item-remove {
+    background: none;
+    border: none;
+    color: #dc143c;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-size: 1.2em;
+    line-height: 1;
+    margin-left: -10px;
+    margin-bottom: -4px;
+}
+
+.semester-item-remove:hover {
+    background: rgba(220, 20, 60, 0.1);
+    transform: scale(1.1);
+    
+}
+
+/* 학기 추가 버튼 */
+.semester-plan-controls {
+    text-align: center;
+}
+
+.add-semester-btn {
+    background: linear-gradient(135deg, #dc143c, #b22222);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.add-semester-btn:hover {
+    background: linear-gradient(135deg, #b22222, #8b0000);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+}
+
+.add-semester-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 학점 초과 경고 */
+.semester-plan-section.warning {
+    border-color: #ffc107;
+    background: rgba(255, 193, 7, 0.05);
+}
+
+.semester-plan-summary.warning {
+    color: #856404;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .semester-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .semester-item-label {
+        min-width: auto;
+    }
+    
+    .semester-item-input {
+        width: 100%;
+    }
+    
+    .semester-plan-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+/* 저장 버튼 섹션 */
+.gpa-goal-save-section {
+    margin-top: 20px;
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(220, 20, 60, 0.1);
+}
+
+.gpa-goal-save-btn {
+    background: linear-gradient(135deg, #dc143c, #b22222);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    min-width: 100px;
+}
+
+.gpa-goal-save-btn:hover {
+    background: linear-gradient(135deg, #b22222, #8b0000);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+}
+
+.gpa-goal-save-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
+}
+
+.gpa-goal-save-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.gpa-goal-save-btn.saved {
+    background: linear-gradient(135deg, #dc143c, #b22222);
+}
+
+.gpa-goal-save-btn.saved:hover {
+    background: linear-gradient(135deg, #b22222, #8b0000);
+}
+
+/* 학기별 계획 닫기 버튼 */
+.semester-plan-close-btn {
+    background: none;
+    border: none;
+    color: #dc143c;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    line-height: 1;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.semester-plan-close-btn:hover {
+    background: rgba(220, 20, 60, 0.1);
+    transform: scale(1.1);
+}
+
+.semester-plan-close-btn:active {
+    transform: scale(1);
+}
+
+/* 전공 과목 체크 표시 스타일 */
+.major-check {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #28a745;
+    color: white;
+    border-radius: 50%;
+    width: 9px;
+    height: 9px;
+    font-size: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    border: 1px solid white;
+}
+
+/* 전공 과목이 체크 표시를 가질 수 있도록 relative 포지션 설정 */
+.taken-course[data-is-major="true"] {
+    position: relative;
 }
