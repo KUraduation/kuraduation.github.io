@@ -959,6 +959,7 @@ function saveCurrentDeck() {
                     credit: course.dataset.credit,
                     grade: course.dataset.grade || '',
                     isMajor: course.dataset.isMajor === 'undefined' ? undefined : course.dataset.isMajor === 'true', // 전공 여부 저장
+                    isCustom: course.dataset.isCustom === 'true' // 커스텀 과목 여부 저장
                 };
                 coursesInSemester.push(courseData);
             });
@@ -1411,7 +1412,7 @@ function isCourseAlreadyTaken(courseCode) {
 }
 
 // 검색된 강의 셀을 생성하는 함수(code만 주면 courses에서 찾아 넣기)
-function createSearchResultCourse(code, name = undefined, credit = undefined) {
+function createSearchResultCourse(code, name = undefined, credit = undefined, isCustom = false) {
     if (!name) {
         name = getCourseName(code);
         credit = courses[code]['credit'];
@@ -1427,6 +1428,7 @@ function createSearchResultCourse(code, name = undefined, credit = undefined) {
     courseItem.dataset.courseCode = code;
     courseItem.dataset.courseName = name;
     courseItem.dataset.credit = credit;
+    courseItem.dataset.isCustom = isCustom;
     courseItem.draggable = true;
     courseItem.addEventListener('dragstart', handleDragStart);
     courseItem.addEventListener('click', handleCourseClick);
@@ -1454,7 +1456,7 @@ function addCustomCourse(name, code, credit) {
     content.className = 'result-group-content';
 
     // 과목 아이템 생성
-    const courseItem = createSearchResultCourse(code, name, credit);
+    const courseItem = createSearchResultCourse(code, name, credit, true);
 
     content.appendChild(courseItem);
     searchResult.appendChild(content);
@@ -1588,11 +1590,12 @@ function addSelectedCoursesToCell(targetCell) {
                 : null;
             takenCourse = selectedCourse;
         } else {
+            // 새 과목인 경우 새로운 taken-course 요소 생성
             const courseData = {
                 code: selectedCourse.dataset.courseCode,
                 name: selectedCourse.dataset.courseName,
                 credit: selectedCourse.dataset.credit,
-                isTakenCourse: false
+                isCustom: selectedCourse.dataset.isCustom === 'true', // 커스텀 과목 여부
             };
             // 전공 여부는 createTakenCourseElement에서 자동으로 판단됨
             takenCourse = createTakenCourseElement(courseData);
@@ -1648,6 +1651,7 @@ function createTakenCourseElement(courseData) {
     takenCourse.dataset.grade = courseData.grade || ''; // 평점 정보 추가
     // 전공 여부 기본값은 undefined
     takenCourse.dataset.isMajor = courseData.isMajor;
+    takenCourse.dataset.isCustom = courseData.isCustom || false; // 커스텀 과목 여부
 
     // 제목에 평점 정보도 포함
     const gradeText = courseData.grade ? ` (${courseData.grade})` : '';
