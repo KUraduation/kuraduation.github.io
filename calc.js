@@ -304,23 +304,20 @@ function updateAllTexts() {
     // title 속성 업데이트
     updateTitles();
 
-    // 특수한 요소들 업데이트
-    updateSpecialElements();
+    // 덱 탭 텍스트 업데이트
+    updateDeckTabTexts();
 
     // 언어 전환 버튼 상태 업데이트
     updateLanguageButtons();
 
     // semester header 번역 업데이트
-    updateYearStats();
-
-    // semester cell 번역 업데이트
-    updateSemesterCells();
-
-    // 검색 결과 새로고침
-    refreshSearchResults();
+    updateSemesterHeader();
     
     // 목표 평점 계산 텍스트 업데이트
     updateGpaGoalTexts();
+
+    loadDeck(currentDeck); // todo
+    updateChart({save: false}); // 차트 업데이트
 }
 
 function updatePlaceholders() {
@@ -382,23 +379,6 @@ function updateTitles() {
     }
 }
 
-function updateSpecialElements() {
-    // 덱 탭 텍스트 업데이트
-    updateDeckTabTexts();
-
-    // 전공별 평점 표시 업데이트
-    updateMajorGPADisplay();
-
-    // 전공 드롭다운 업데이트
-    updateMajorDropdowns();
-
-    // 학과 선택 드롭다운 업데이트
-    updateDeptSelects();
-
-    // 학기 관련 업데이트
-    updateSemesterElements();
-}
-
 function updateDeckTabTexts() {
     const deckTabs = document.querySelectorAll('.deck-tab');
     deckTabs.forEach(tab => {
@@ -439,44 +419,7 @@ function updateLanguageButtons() {
     }
 }
 
-// 전공 드롭다운 업데이트
-function updateMajorDropdowns() {
-    // majorDiv-select 업데이트
-    const majorDivSelect = document.getElementById('majorDiv-select');
-    if (majorDivSelect) {
-        const currentValue = majorDivSelect.value;
-        majorDivSelect.innerHTML = '';
-        getMajorDivs().forEach((majorDiv, idx) => {
-            const option = document.createElement('option');
-            option.value = idx;
-            option.textContent = majorDiv;
-            majorDivSelect.appendChild(option);
-        });
-        majorDivSelect.value = currentValue;
-    }
-
-    // 전공별 라벨 업데이트
-    const majorLabels = document.querySelectorAll('.dept-select-container > div:first-child > div:first-child');
-    majorLabels.forEach((label) => {
-        const majorDiv = label.closest('.dept-select-container').dataset.majorDiv;
-        if (majorDiv && majorDiv >= 0 && majorDiv < getMajorDivs().length) {
-            label.textContent = getMajorDivs()[parseInt(majorDiv)];
-        }
-    });
-}
-
 // 학과 선택 드롭다운 업데이트
-function updateDeptSelects() {
-    // 모든 학과 선택 드롭다운 업데이트
-    const deptSelects = document.querySelectorAll('.dept-select');
-    deptSelects.forEach(select => {
-        const year = select.closest('.dept-select-container').querySelector('.year-select').value;
-        const majorDiv = select.closest('.dept-select-container').dataset.majorDiv;
-        const selectedDeptCd = select.value; // 현재 선택된 학과 코드
-
-        updateDeptSelectList(select, year, majorDiv, selectedDeptCd);
-    });
-}
 function updateDeptSelectList(select, year, majorDiv, deptToSelect) {
     select.innerHTML = ''; // 기존 옵션 제거
     const deptList = info[year] ? info[year][majorDiv] : [];
@@ -494,24 +437,8 @@ function updateDeptSelectList(select, year, majorDiv, deptToSelect) {
 
 }
 
-// 학기 관련 요소 업데이트
-function updateSemesterElements() {
-    // 학년명 업데이트 (서수 사용)
-    const yearTitles = document.querySelectorAll('.year-title');
-    yearTitles.forEach(title => {
-        const yearMatch = title.textContent.match(/^(\d+)/);
-        if (yearMatch) {
-            const year = parseInt(yearMatch[1]);
-            const yearKey = `year${year}`;
-            if (translations[currentLanguage][yearKey]) {
-                title.textContent = getText(yearKey);
-            } else {
-                // 8학년 이상인 경우 n'th 형태로 생성
-                title.textContent = `${year}${getText('yearSuffix')}`;
-            }
-        }
-    });
-
+// 학기 헤더 업데이트
+function updateSemesterHeader() {
     // row-header 업데이트 (학기명)
     const rowHeaders = document.querySelectorAll('.row-header');
     rowHeaders.forEach((header, index) => {
@@ -524,43 +451,6 @@ function updateSemesterElements() {
         } else if (index === 3) {
             header.textContent = getText('winterShort');
         }
-    });
-
-    // 학년 편집/삭제 버튼 title 업데이트
-    const yearEditTitles = document.querySelectorAll('.year-title[style*="cursor: pointer"]');
-    yearEditTitles.forEach(title => {
-        title.title = getText('yearEditTitle');
-    });
-
-    const yearRemoveBtns = document.querySelectorAll('.remove-year-btn');
-    yearRemoveBtns.forEach(btn => {
-        btn.title = getText('yearRemoveTitle');
-    });
-
-    // 년도 선택 드롭다운 업데이트
-    const yearSelects = document.querySelectorAll('.year-select option');
-    yearSelects.forEach(option => {
-        const yearMatch = option.textContent.match(/^(\d+)/);
-        if (yearMatch) {
-            const year = yearMatch[1];
-            option.textContent = year;
-        }
-    });
-
-    // 기준년도 라벨 업데이트
-    const yearLabels = document.querySelectorAll('.dept-select-container span');
-    yearLabels.forEach(label => {
-        // 기존 조건을 더 포괄적으로 변경
-        if (label.textContent === '기준년도' || label.textContent === 'Criteria') {
-            label.textContent = getText('yearLabel');
-        }
-    });
-}
-
-// semester cell 번역 업데이트
-function updateSemesterCells() {
-    document.querySelectorAll('.semester-cell').forEach(cell => {
-        updateCellCredit(cell);
     });
 }
 
