@@ -2807,20 +2807,32 @@ function updateMajorCheckMark(courseElement) {
 
 // 과목이 졸업요건의 전공 영역에 속하는지 확인하는 함수
 function isCourseInMajorRequirements(courseCode) {
-
-    let isMajor = false;
-
-    document.querySelectorAll('.group-container').forEach(groupContainer => {
-        const groupCourses = groupContainer._takenCourses || [];
-        if (groupCourses.some(course => course.dataset.courseCode === courseCode)) {
-            if (groupContainer.querySelector('.group-label').textContent.includes('전공')) {
-                isMajor = true;
-                return true;
+    // 모든 전공 컨테이너를 확인
+    const majorContainers = document.querySelectorAll('.dept-select-container');
+    
+    for (const majorContainer of majorContainers) {
+        const year = majorContainer.querySelector('.year-select')?.value;
+        const majorDiv = majorContainer.dataset.majorDiv;
+        const selectedDeptCd = majorContainer.querySelector('.dept-select')?.value;
+        
+        if (!year || majorDiv === undefined || !selectedDeptCd) continue;
+        
+        const deptList = info[year] ? info[year][majorDiv] : [];
+        const dept = deptList ? deptList.find(d => d.code === selectedDeptCd) : null;
+        
+        if (!dept) continue;
+        
+        // 해당 학과의 모든 그룹에서 전공 그룹을 찾아 과목이 포함되어 있는지 확인
+        for (const group of dept.groups) {
+            if (group.name.includes('전공')) {
+                if (group.courses.some(courseCd => isEqualCourse(courseCd, courseCode))) {
+                    return true;
+                }
             }
         }
-    });
-
-    return isMajor;
+    }
+    
+    return false;
 }
 // 과목이 전공 과목인지 확인하는 함수
 function isMajorCourse(courseElement) {
@@ -2988,7 +3000,7 @@ function updateYearStats() {
         yearColumn.querySelectorAll('.semester-cell .taken-course').forEach(courseEl => {
             const credit = parseFloat(courseEl.dataset.credit) || 0;
             const grade = courseEl.dataset.grade;
-            const isMajor = courseEl.dataset.isMajor === 'true';
+            const isMajor = isMajorCourse(courseEl);
 
             // F학점이거나 NP이면 학점 인정 안함, 그 외에는 학점 인정
             if (grade !== 'F' && grade !== 'NP') {
