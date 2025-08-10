@@ -419,6 +419,9 @@ function updateSpecialElements() {
     // 전공 드롭다운 업데이트
     updateMajorDropdowns();
 
+    // 학과 선택 드롭다운 업데이트
+    updateDeptSelects();
+
     // 학기 관련 업데이트
     updateSemesterElements();
 }
@@ -509,6 +512,35 @@ function updateMajorDropdowns() {
             openMenu.appendChild(item);
         });
     }
+}
+
+// 학과 선택 드롭다운 업데이트
+function updateDeptSelects() {
+    // 모든 학과 선택 드롭다운 업데이트
+    const deptSelects = document.querySelectorAll('.dept-select');
+    deptSelects.forEach(select => {
+        const year = select.closest('.dept-select-container').querySelector('.year-select').value;
+        const majorDiv = select.closest('.dept-select-container').dataset.majorDiv;
+        const selectedDeptCd = select.value; // 현재 선택된 학과 코드
+
+        updateDeptSelectList(select, year, majorDiv, selectedDeptCd);
+    });
+}
+function updateDeptSelectList(select, year, majorDiv, deptToSelect) {
+    select.innerHTML = ''; // 기존 옵션 제거
+    const deptList = info[year] ? info[year][majorDiv] : [];
+    if (deptList) {
+        deptList.forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept.code; // 학과 코드로 설정
+            option.textContent = getDeptName(dept); // 번역된 학과명 사용
+            select.appendChild(option);
+        });
+    }
+    if (deptToSelect) {
+        select.value = deptToSelect; // 선택된 학과 코드 설정
+    }
+
 }
 
 // 학기 관련 요소 업데이트
@@ -2657,26 +2689,10 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     select.className = 'dept-select';
     container.appendChild(select);
 
-    const populateDeptSelect = (year, deptToSelect) => {
-        const deptList = info[year] ? info[year][majorDiv] : [];
-        select.innerHTML = ''; // Clear existing options
-        if (deptList) {
-            deptList.forEach(dept => {
-                const option = document.createElement('option');
-                option.value = dept.deptCd;
-                option.textContent = dept.deptNm;
-                select.appendChild(option);
-            });
-        }
-        if (deptToSelect) {
-            select.value = deptToSelect;
-        }
-    };
-
-    populateDeptSelect(yearToUse, selectedDeptCd);
+    updateDeptSelectList(select, yearToUse, majorDiv, selectedDeptCd);
 
     yearSelect.addEventListener('change', () => {
-        populateDeptSelect(yearSelect.value, null);
+        updateDeptSelectList(select, yearSelect.value, majorDiv, null);
         updateChart(); // UI 업데이트와 저장을 한 번에
     });
 
