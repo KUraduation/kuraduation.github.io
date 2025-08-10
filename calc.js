@@ -610,21 +610,14 @@ let courses = {};
 // 유사과목(대체과목) 맵 로드 비활성화
 // 기존: dataPromises.push(fetch('similar_map.json') ...);
 // 이유: 선택/학점 합산 오류 추적을 위해 유사과목 기능 임시 중단
-courseEquivalenceMap = {};
+let courseEquivalenceMap = {};
 
 // 강의(과목) 코드가 같은지 확인하려면 모두 이 함수를 사용
 function isEqualCourse(courseCode1, courseCode2) {
     if (courseCode1 === courseCode2) return true;
 
-    const representative1 = courseEquivalenceMap[courseCode1];
-    const representative2 = courseEquivalenceMap[courseCode2];
-
-    // 두 과목 모두 대체과목 맵에 있고, 대표과목이 같은 경우
-    if (representative1 && representative1 === representative2) {
-        return true;
-    }
-
-    return false;
+    return courseEquivalenceMap[courseCode1] && courseEquivalenceMap[courseCode1].includes(courseCode2)
+        || courseEquivalenceMap[courseCode2] && courseEquivalenceMap[courseCode2].includes(courseCode1);
 }
 
 // 평점 시스템
@@ -1129,10 +1122,16 @@ dataPromises.push(
         })
 );
 
-// 유사과목(대체과목) 맵 로드 비활성화
-// 기존: dataPromises.push(fetch('similar_map.json') ...);
-// 이유: 선택/학점 합산 오류 추적을 위해 유사과목 기능 임시 중단
-courseEquivalenceMap = {};
+dataPromises.push(
+    fetch('similar_map.json')
+        .then(response => {
+            if (!response.ok) throw new Error(`네트워크 오류: similar_map.json`);
+            return response.json();
+        })
+        .then(data => {
+            courseEquivalenceMap = data;
+        })
+);
 
 Promise.all(dataPromises).then(() => {
     console.log('모든 강의 데이터와 대체과목 정보 로드 완료');
