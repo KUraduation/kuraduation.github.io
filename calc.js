@@ -468,17 +468,18 @@ function updateMajorDivs() {
 // 학과 선택 드롭다운 업데이트
 function updateDeptSelectList(select, year, majorDiv, deptToSelect) {
     select.innerHTML = ''; // 기존 옵션 제거
-    const deptList = info[year] ? info[year][majorDiv] : [];
-    if (deptList) {
-        deptList.forEach(dept => {
+    const deptObject = info[year] ? info[year][majorDiv] : {};
+    if (deptObject) {
+        Object.keys(deptObject).forEach(code => {
+            const dept = deptObject[code];
             const option = document.createElement('option');
-            option.value = dept.code; // 학과 코드로 설정
-            option.textContent = getDeptName(dept); // 번역된 학과명 사용
+            option.value = code;
+            option.textContent = getDeptName(dept);
             select.appendChild(option);
         });
     }
     if (deptToSelect) {
-        select.value = deptToSelect; // 선택된 학과 코드 설정
+        select.value = deptToSelect;
     }
 
 }
@@ -2173,10 +2174,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!info[selectedYear]) return;
 
         const selectedMajorDiv = majorDivSelect.value;
-        const deptList = info[selectedYear][selectedMajorDiv];
+        const deptObject = info[selectedYear][selectedMajorDiv];
         deptDatalist.innerHTML = '';
-        if (deptList) {
-            deptList.forEach(dept => {
+        if (deptObject) {
+            Object.values(deptObject).forEach(dept => {
                 const option = document.createElement('option');
                 option.value = getDeptName(dept);
                 deptDatalist.appendChild(option);
@@ -2195,17 +2196,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const suggestions = new Set();
         const maxSuggestions = 50;
 
-        for (const divList of info[selectedYear]) {
+        for (const majorDiv of info[selectedYear]) {
             if (suggestions.size >= maxSuggestions) break;
-            for (const dept of divList) {
+            for (const dept of Object.values(majorDiv)) {
                 if (suggestions.size >= maxSuggestions) break;
                 if (dept.groups) {
-                    for (const group of dept.groups) {
+                    for (const group of Object.values(dept.groups)) {
                         if (suggestions.size >= maxSuggestions) break;
                         if (group.courses) {
                             for (const courseCode of group.courses) {
                                 const courseName = getCourseName(courseCode).toUpperCase();
-                                if (courseName.includes(keyword) || courseCode.includes(keyword)) {
+                                if (courseName.includes(keyword) || courseCode.toUpperCase().includes(keyword)) {
                                     suggestions.add(`[${courseCode}] ${getCourseName(courseCode)}`);
                                     if (suggestions.size >= maxSuggestions) break;
                                 }
@@ -2269,7 +2270,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        dept.groups.forEach(group => {
+        Object.values(dept.groups).forEach(group => {
             const groupContainer = document.createElement('div');
             groupContainer.className = 'result-group';
             const groupHeader = document.createElement('div');
@@ -2299,8 +2300,17 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const deptList = info[selectedYear][selectedMajorDiv];
-        const foundDept = deptList ? deptList.find(dept => dept.name.ko === keyword || dept.name.en == keyword) : null;
+        const deptObject = info[selectedYear][selectedMajorDiv];
+        let foundDept = null;
+        if (deptObject) {
+            const deptCode = Object.keys(deptObject).find(code => {
+                const dept = deptObject[code];
+                return dept.name.ko === keyword || dept.name.en === keyword;
+            });
+            if (deptCode) {
+                foundDept = deptObject[deptCode];
+            }
+        }
 
         renderDeptSearchResult(foundDept);
     }
@@ -2344,10 +2354,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const foundCourses = new Set();
-        for (const divList of info[selectedYear]) {
-            for (const dept of divList) {
+        for (const majorDiv of info[selectedYear]) {
+            for (const dept of Object.values(majorDiv)) {
                 if (dept.groups) {
-                    for (const group of dept.groups) {
+                    for (const group of Object.values(dept.groups)) {
                         if (group.courses) {
                             for (const courseCode of group.courses) {
                                 if (('[' + courseCode + '] ' + getCourseName(courseCode, 'ko')).includes(keyword)
@@ -2360,7 +2370,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         }
-        renderCourseSearchResult(foundCourses);
+        renderCourseSearchResult(Array.from(foundCourses));
     }
 
     // 전역 함수로 등록
@@ -2592,14 +2602,14 @@ function initGroups(selectContainer) {
     const year = selectContainer.querySelector('.year-select').value;
     const majorDiv = selectContainer.dataset.majorDiv;
     if (!info[year] || !info[year][majorDiv]) return;
-    const deptList = info[year][majorDiv];
+    const deptObject = info[year][majorDiv];
     const groupListDiv = selectContainer.querySelector('.group-list');
 
     groupListDiv.innerHTML = '';
     const selectedDeptCd = selectContainer.querySelector('.dept-select').value;
-    const dept = deptList.find(d => d.code === selectedDeptCd);
+    const dept = deptObject[selectedDeptCd];
     if (dept) {
-        dept.groups.forEach(group => {
+        Object.entries(dept.groups).forEach(([groupCode, group]) => {
             const groupContainer = document.createElement('div');
             const groupLabel = document.createElement('span');
             groupLabel.textContent = group.name;
@@ -2610,7 +2620,7 @@ function initGroups(selectContainer) {
             groupContainer.appendChild(groupProgress);
 
             groupContainer.className = 'group-container';
-            groupContainer.dataset.groupCd = group.code || '';
+            groupContainer.dataset.groupCd = groupCode;
             groupContainer.dataset.currentCredit = 0;
             groupContainer.dataset.minCredit = group.minCredit;
             groupContainer.dataset.maxCredit = group.maxCredit;
@@ -2817,13 +2827,13 @@ function isCourseInMajorRequirements(courseCode) {
         
         if (!year || majorDiv === undefined || !selectedDeptCd) continue;
         
-        const deptList = info[year] ? info[year][majorDiv] : [];
-        const dept = deptList ? deptList.find(d => d.code === selectedDeptCd) : null;
+        const deptObject = info[year] ? info[year][majorDiv] : {};
+        const dept = deptObject ? deptObject[selectedDeptCd] : null;
         
         if (!dept) continue;
         
         // 해당 학과의 모든 그룹에서 전공 그룹을 찾아 과목이 포함되어 있는지 확인
-        for (const group of dept.groups) {
+        for (const group of Object.values(dept.groups)) {
             if (group.name.includes('전공')) {
                 if (group.courses.some(courseCd => isEqualCourse(courseCd, courseCode))) {
                     return true;
@@ -2919,8 +2929,8 @@ function updateChart(options = { save: true }) {
         const year = myMajor.querySelector('.year-select').value;
         const majorDiv = myMajor.dataset.majorDiv;
         const selectedDeptCd = myMajor.querySelector('.dept-select').value;
-        const deptList = info[year] ? info[year][majorDiv] : [];
-        const dept = deptList ? deptList.find(d => d.code === selectedDeptCd) : null;
+        const deptObject = info[year] ? info[year][majorDiv] : {};
+        const dept = deptObject ? deptObject[selectedDeptCd] : null;
 
         if (!dept) return;
 
@@ -2934,15 +2944,19 @@ function updateChart(options = { save: true }) {
         takenCourses.forEach(takenCourse => {
             const courseCode = takenCourse.dataset.courseCode;
 
-            const foundGroup = dept.groups.find(group => {
-                // 과목코드로 매칭
-                return group.courses.some(courseCd => isEqualCourse(courseCd, courseCode));
-            });
+            let foundGroupCode = null;
+            for (const groupCode in dept.groups) {
+                const group = dept.groups[groupCode];
+                if (group.courses.some(courseCd => isEqualCourse(courseCd, courseCode))) {
+                    foundGroupCode = groupCode;
+                    break;
+                }
+            }
 
-            if (foundGroup) {
+            if (foundGroupCode) {
                 // 그룹 코드 일치하는 곳에 추가
                 const groupContainer = Array.from(groupContainers).find(gc =>
-                    gc.dataset.groupCd === foundGroup.code
+                    gc.dataset.groupCd === foundGroupCode
                 );
                 if (groupContainer) {
                     addCourese(groupContainer, takenCourse);
