@@ -678,6 +678,13 @@
         },
         "credit": 3
     },
+    "HUSS301": {
+        "name": {
+            "ko": "인공지능,리걸테크와법",
+            "en": "AI, LEGALTECH AND LAW"
+        },
+        "credit": 3
+    },
     "DCSC224": {
         "name": {
             "ko": "객체지향프로그래밍",
@@ -699,10 +706,24 @@
         },
         "credit": 3
     },
+    "HUSS302": {
+        "name": {
+            "ko": "고전데이터처리와비판적AI리터러시",
+            "en": "DIGITAL CLASSICS AND CRITICAL AI LITERACY"
+        },
+        "credit": 3
+    },
     "RUSS342": {
         "name": {
             "ko": "러시아희곡",
             "en": "RUSSIAN DRAMA"
+        },
+        "credit": 3
+    },
+    "HUSS303": {
+        "name": {
+            "ko": "기술적복제가능성시대의인공지능문학과미디어",
+            "en": "AI LITERATURE AND MEDIA IN THE AGE OF TECHNOLOGICAL REPRODUCIBILITY"
         },
         "credit": 3
     },
@@ -720,10 +741,24 @@
         },
         "credit": 3
     },
+    "HUSS304": {
+        "name": {
+            "ko": "창업과혁신",
+            "en": "ENTREPRENEURSHIP & INNOVATION"
+        },
+        "credit": 3
+    },
     "RUSS340": {
         "name": {
             "ko": "주제로읽는러시아문학",
             "en": "THEMATIC APPROACHES TO RUSSIAN LITERATURE"
+        },
+        "credit": 3
+    },
+    "HUSS305": {
+        "name": {
+            "ko": "비즈니스플래닝",
+            "en": "BUSINESS PLANNING"
         },
         "credit": 3
     },
@@ -4843,12 +4878,26 @@
         },
         "credit": 3
     },
+    "HUSS201": {
+        "name": {
+            "ko": "디지털문화산업과공공성",
+            "en": "DIGITAL CONTENT INDUSTRY AND PUBLICNESS"
+        },
+        "credit": 3
+    },
     "CWMS410": {
         "name": {
             "ko": "편집출판캡스톤디자인Ⅱ",
             "en": "CAPSTONE DESIGN IN EDITORIAL AND PUBLISHING Ⅱ"
         },
         "credit": 3
+    },
+    "HUSS202": {
+        "name": {
+            "ko": "인문사회데이터처리를위한교과큐레이션",
+            "en": "CURATING FOR HUMANITIES AND SOCIAL SCIENCES DATA PROCESSING"
+        },
+        "credit": 1
     },
     "RUSS240": {
         "name": {
@@ -16645,12 +16694,75 @@
         },
         "credit": 3
     },
+    "HUSS405": {
+        "name": {
+            "ko": "현장실습Ⅲ",
+            "en": "FIELD WORKⅢ"
+        },
+        "credit": 9
+    },
+    "HUSS406": {
+        "name": {
+            "ko": "현장실습Ⅳ",
+            "en": "FIELD WORKⅣ"
+        },
+        "credit": 12
+    },
+    "HUSS407": {
+        "name": {
+            "ko": "스타트업성장전략",
+            "en": "SCALE-UP STRATEGY OF STARTUP"
+        },
+        "credit": 3
+    },
+    "HUSS408": {
+        "name": {
+            "ko": "스타트업실전프로젝트",
+            "en": "STARTUP BEYOND CAPSTONE"
+        },
+        "credit": 3
+    },
+    "HUSS401": {
+        "name": {
+            "ko": "공공가치실현을위한경영전략",
+            "en": "BUSINESS STRATEGY FOR REALIZING PUBLIC VALUE"
+        },
+        "credit": 3
+    },
+    "HUSS402": {
+        "name": {
+            "ko": "스타트업과디지털인문융합",
+            "en": "STARTUPS AND DIGITAL CONVERGENCE"
+        },
+        "credit": 3
+    },
+    "HUSS403": {
+        "name": {
+            "ko": "현장실습Ⅰ",
+            "en": "FIELD WORKⅠ"
+        },
+        "credit": 3
+    },
     "JMCO348": {
         "name": {
             "ko": "방송영화기초제작실습",
             "en": "INTRODUCTION TO FILM AND TV PRODUCTION"
         },
         "credit": 3
+    },
+    "HUSS404": {
+        "name": {
+            "ko": "현장실습Ⅱ",
+            "en": "FIELD WORKⅡ"
+        },
+        "credit": 6
+    },
+    "HUSS409": {
+        "name": {
+            "ko": "지산학리더십아카데미",
+            "en": "TRIPLE HELIX LEADERSHIP ACADEMY"
+        },
+        "credit": 1
     },
     "STAT312": {
         "name": {
@@ -25577,6 +25689,13 @@
         },
         "credit": 3
     },
+    "COOP039": {
+        "name": {
+            "ko": "실습연계직무교육A",
+            "en": "PRACTICE-RELATED JOB TRAINING A"
+        },
+        "credit": 3
+    },
     "POLI105": {
         "name": {
             "ko": "현대민주주의의미래",
@@ -28139,6 +28258,13 @@
         },
         "credit": 2
     },
+    "NEIK332": {
+        "name": {
+            "ko": "화학적에너지수송",
+            "en": "CHEMICAL ENERGY TRANSPORT"
+        },
+        "credit": 3
+    },
     "SOCI376": {
         "name": {
             "ko": "정신건강의사회학",
@@ -30659,6 +30785,13 @@
         },
         "credit": 3
     },
+    "HUSS004": {
+        "name": {
+            "ko": "HUSS아카데미",
+            "en": "HUSS ACADEMY"
+        },
+        "credit": 1
+    },
     "SMCI102": {
         "name": {
             "ko": "스마트도시개론",
@@ -30778,6 +30911,13 @@
         },
         "credit": 3
     },
+    "KHES427": {
+        "name": {
+            "ko": "영상정보학",
+            "en": "MEDICAL IMAGE INFORMATION"
+        },
+        "credit": 3
+    },
     "KHES426": {
         "name": {
             "ko": "최신진단의과학",
@@ -30852,6 +30992,13 @@
         "name": {
             "ko": "미술사란무엇인가",
             "en": "WHAT IS ARCHAEOLOGY"
+        },
+        "credit": 3
+    },
+    "KHES433": {
+        "name": {
+            "ko": "식품환경안전평가및실험",
+            "en": "FOOD ENVIRONMENTAL SAFETY ASSESSMENT AND LABORATORY"
         },
         "credit": 3
     },
@@ -31104,6 +31251,13 @@
         "name": {
             "ko": "환경및식품위생학",
             "en": "ENVIRONMENT AND FOOD HYGIENE"
+        },
+        "credit": 3
+    },
+    "KHES416": {
+        "name": {
+            "ko": "동위원소이용",
+            "en": "NUCLEAR MEDICINE"
         },
         "credit": 3
     },
@@ -34859,6 +35013,13 @@
         },
         "credit": 3
     },
+    "KHES324": {
+        "name": {
+            "ko": "진단검사과학",
+            "en": "NUCLEAR MEDICINE TECHNOLOGY AND URINALYSIS-LECTURE & LABORATORY"
+        },
+        "credit": 3
+    },
     "KFBT342": {
         "name": {
             "ko": "식품가공학Ⅱ",
@@ -34877,6 +35038,13 @@
         "name": {
             "ko": "식품가공학Ⅰ",
             "en": "FOOD PROCESSINGⅠ"
+        },
+        "credit": 3
+    },
+    "KHES328": {
+        "name": {
+            "ko": "법의과학",
+            "en": "FORENSIC SCIENCE"
         },
         "credit": 3
     },
@@ -34926,6 +35094,13 @@
         "name": {
             "ko": "식품미생물학",
             "en": "FOOD MICROBIOLOGY"
+        },
+        "credit": 3
+    },
+    "KHES332": {
+        "name": {
+            "ko": "노인보건학",
+            "en": "HEALH IN OLD AGE"
         },
         "credit": 3
     },
@@ -35003,6 +35178,13 @@
         "name": {
             "ko": "식품미생물학Ⅰ",
             "en": "FOOD MICROBIOLOGY Ⅰ"
+        },
+        "credit": 3
+    },
+    "KHES333": {
+        "name": {
+            "ko": "방사선의산업및의학응용",
+            "en": "APPLICATION OF INDUSTRY AND MEDICAL RADIATION"
         },
         "credit": 3
     },
@@ -35272,10 +35454,31 @@
         },
         "credit": 3
     },
+    "NEIK101": {
+        "name": {
+            "ko": "에너지신산업세미나I",
+            "en": "NEW ENERGY INDUSTRY SEMINAR I"
+        },
+        "credit": 1
+    },
+    "NEIK100": {
+        "name": {
+            "ko": "에너지신산업머신러닝개론",
+            "en": "INTRODUCTION TO MACHINE LEARNING FOR NEW ENERGY INDUSTRY"
+        },
+        "credit": 3
+    },
     "INST411": {
         "name": {
             "ko": "통계논설발표연구I",
             "en": "STUDIES ON PRESENTATION OF STATISTICAL ARTICLES I"
+        },
+        "credit": 3
+    },
+    "NEIK104": {
+        "name": {
+            "ko": "에너지신산업데이터애널리틱스",
+            "en": "DATA ANALYTICS FOR NEW ENERGY INDUSTRY"
         },
         "credit": 3
     },
@@ -36606,6 +36809,20 @@
         "name": {
             "ko": "인체해부학의이해및실습",
             "en": "HUMAN ANATOMY WITH LABORATORY"
+        },
+        "credit": 3
+    },
+    "KHES236": {
+        "name": {
+            "ko": "해부생리학",
+            "en": "HUMAN ANATOMY AND PHYSIOLOGY"
+        },
+        "credit": 3
+    },
+    "KHES235": {
+        "name": {
+            "ko": "보건자료처리",
+            "en": "PRINCIPLES OF CONVERGENCE DATA ANALYSIS"
         },
         "credit": 3
     },
@@ -37995,10 +38212,31 @@
         },
         "credit": 3
     },
+    "NEIK243": {
+        "name": {
+            "ko": "에너지와기후변화",
+            "en": "ENERGY AND CLIMATE CHANGE"
+        },
+        "credit": 3
+    },
     "PHYS468": {
         "name": {
             "ko": "우주론",
             "en": "COSMOLOGY"
+        },
+        "credit": 3
+    },
+    "NEIK242": {
+        "name": {
+            "ko": "에너지환경기술",
+            "en": "ENERGY AND ENVIRONMENTAL TECHNOLOGIES"
+        },
+        "credit": 3
+    },
+    "NEIK241": {
+        "name": {
+            "ko": "에너지와기술의경제학",
+            "en": "ENERGY AND TECHNOLOGY ECONOMICS"
         },
         "credit": 3
     },
@@ -47667,7 +47905,7 @@
             "ko": "경영학입문",
             "en": "INTRODUCTION TO BUSINESS"
         },
-        "credit": 3
+        "credit": 0
     },
     "CSIE454": {
         "name": {
@@ -48366,6 +48604,13 @@
         "name": {
             "ko": "질병과치료그리고건강생활",
             "en": "ILLNESS, HEALING AND HEALTH"
+        },
+        "credit": 3
+    },
+    "ENGY319": {
+        "name": {
+            "ko": "에너지기후변화정책",
+            "en": "CLIMATE CHANGE AND ENERGY POLICY"
         },
         "credit": 3
     },
@@ -53581,6 +53826,13 @@
         "name": {
             "ko": "한국한시의세계",
             "en": "INTRODUCTION TO KOREAN POETRY IN CLASSICAL CHINESE"
+        },
+        "credit": 3
+    },
+    "ENGY416": {
+        "name": {
+            "ko": "에너지저장소재설계",
+            "en": "ENERGY STORAGE MATERIALS"
         },
         "credit": 3
     },

@@ -1032,6 +1032,7 @@
         "BSMS206",
         "LIBS357",
         "KHES424",
+        "KHES236",
         "KHES238",
         "BMED218"
     ],
@@ -1767,7 +1768,10 @@
     "IFLS125": ["CHIN103"],
     "SOYS225": ["PUBS372"],
     "BTK402": ["BTEC402"],
-    "KHBE321": ["BMED309"],
+    "KHBE321": [
+        "BMED309",
+        "KHES427"
+    ],
     "SOYS226": ["PUBS376"],
     "KHBE322": ["BMED318"],
     "SOYS227": ["PUBS415"],
@@ -1781,10 +1785,16 @@
         "KECE413",
         "KECE417"
     ],
-    "KHBE323": ["BMED309"],
+    "KHBE323": [
+        "BMED309",
+        "KHES427"
+    ],
     "POL432": ["POLI379"],
     "KEEE475": ["KECE418"],
-    "KHBE324": ["BMED318"],
+    "KHBE324": [
+        "BMED318",
+        "KHES427"
+    ],
     "KEEE476": ["KECE445"],
     "KEEE473": ["KECE424"],
     "POL435": ["POLI336"],
@@ -2788,7 +2798,10 @@
         "HISE135"
     ],
     "PAPP212": ["PAPP368"],
-    "HIE056": ["HISE134"],
+    "HIE056": [
+        "HISE134",
+        "HISE144"
+    ],
     "KLL392": ["KORS178"],
     "NRB351": ["LIET365"],
     "PAPP214": ["PAPP354"],
@@ -2999,7 +3012,10 @@
     "CLL359": ["CHIS401"],
     "LA382": ["KORS308"],
     "CLL358": ["CHIS305"],
-    "HISE153": ["HISE134"],
+    "HISE153": [
+        "HISE134",
+        "HISE144"
+    ],
     "HISE154": [
         "HISE133",
         "HISE143"
@@ -3040,7 +3056,10 @@
     "HOW100": ["HOEW115"],
     "LAW032": ["JURA241"],
     "ELL413": ["ENGS401"],
-    "HISE157": ["HISE134"],
+    "HISE157": [
+        "HISE134",
+        "HISE144"
+    ],
     "HISE158": [
         "HISE135",
         "HISE142"
@@ -5974,7 +5993,6 @@
     ],
     "KLE382": ["KLLE359"],
     "KLE387": ["KLLE359"],
-    "CYDF210": ["CYDF233"],
     "KLE380": ["KLLE250"],
     "KHHM401": ["KHPM311"],
     "KLE389": ["KLLE316"],
@@ -5990,7 +6008,6 @@
     "CYDF207": ["CYDF202"],
     "PHL227": ["PHIL130"],
     "ZA366": ["DCSC405"],
-    "CYDF206": ["CYDF233"],
     "KHHM403": ["KHPM401"],
     "PHL226": ["PHIL226"],
     "CYDF204": ["CYDF217"],
@@ -6548,7 +6565,10 @@
         "AMSE201",
         "KMSE201"
     ],
-    "KHHM391": ["KHES239"],
+    "KHHM391": [
+        "KHES239",
+        "KHES235"
+    ],
     "MG106": [
         "IFLS327",
         "GERM172"
@@ -9035,6 +9055,7 @@
     "EDBA232": ["GLOB331"],
     "KHHM221": [
         "KHES239",
+        "KHES235",
         "KHPM203"
     ],
     "BMED322": ["BMED420"],
@@ -9058,7 +9079,10 @@
     "DPAK231": ["DPAD203"],
     "KHHM224": ["KHPM202"],
     "BTK301": ["BTEC301"],
-    "KHHM222": ["KHES239"],
+    "KHHM222": [
+        "KHES239",
+        "KHES235"
+    ],
     "EEE478": ["COSE312"],
     "KHPM307": [
         "KHPM109",
@@ -9347,7 +9371,8 @@
         "BSMS222",
         "BSMS317",
         "KHPM203",
-        "KHES239"
+        "KHES239",
+        "KHES235"
     ],
     "ISIE453": ["IMEN453"],
     "ISIE455": [
@@ -9365,7 +9390,8 @@
         "BSMS222",
         "BSMS317",
         "KHPM203",
-        "KHES239"
+        "KHES239",
+        "KHES235"
     ],
     "MTH008": ["MATH161"],
     "KLLS102": [
@@ -9422,7 +9448,10 @@
         "GETE016",
         "SPFL131"
     ],
-    "KHPH433": ["BSMS206"],
+    "KHPH433": [
+        "BSMS206",
+        "KHES236"
+    ],
     "PHEK158": ["PHEK224"],
     "PHEK156": ["PHEK226"],
     "MIS321": [
@@ -9715,6 +9744,7 @@
     "AAH080": ["GSLA019"],
     "HEE255": ["HEED333"],
     "KHEH418": [
+        "KHES235",
         "KHES239",
         "KHES422",
         "BSMS419"
@@ -9758,6 +9788,8 @@
     ],
     "LIET391": ["LIET338"],
     "HEE220": ["HEED234"],
+    "KHES402": ["KHES416"],
+    "KHES401": ["KHES427"],
     "KHES406": ["KHES228"],
     "ARAH223": ["CUHC223"],
     "ARAH222": ["CUHC222"],
@@ -9800,6 +9832,7 @@
         "IFLS156",
         "IFLS802"
     ],
+    "KHES415": ["KHES433"],
     "CEE320": ["ACEE314"],
     "CEE322": ["ACEE321"],
     "MM367": ["HANM477"],
@@ -9957,7 +9990,10 @@
         "IFLS125"
     ],
     "IND315": ["IMEN357"],
-    "KHPM207": ["KHES238"],
+    "KHPM207": [
+        "KHES236",
+        "KHES238"
+    ],
     "IND316": ["IMEN357"],
     "MG203": ["GERM205"],
     "IND317": ["IMEN335"],
@@ -10487,6 +10523,7 @@
     "SPOS401": ["SPOS409"],
     "AAH070": ["GSFC028"],
     "LIF317": ["LIBT381"],
+    "KHPH331": ["KHES427"],
     "KHPH334": ["BMED211"],
     "MTH150": ["MATH211"],
     "LIET468": ["LIET317"],
@@ -10814,7 +10851,10 @@
         "DPAD216",
         "DPAD301"
     ],
-    "KHEH307": ["BSMS413"],
+    "KHEH307": [
+        "KHES433",
+        "BSMS413"
+    ],
     "KHEH308": ["KHES312"],
     "DSSP441": ["SPHY441"],
     "KHEH305": [
@@ -10846,6 +10886,7 @@
     "BIDS124": ["BDSC124"],
     "BIDS123": ["BDSC123"],
     "KHES306": ["KHES345"],
+    "KHES305": ["KHES333"],
     "AD244": ["DPAD306"],
     "AD241": ["GSSO031"],
     "MSU151": [
@@ -11047,6 +11088,7 @@
     "KHES324": ["KHES334"],
     "DSSP423": ["SPHY424"],
     "SOC238": ["SOCI398"],
+    "KHES322": ["KHES328"],
     "IND450": ["IMEN362"],
     "SEE212": ["KECE210"],
     "KHES326": ["KHES345"],
@@ -11296,6 +11338,7 @@
     "SOY160": ["PUBS217"],
     "INST412": ["NAST404"],
     "INST411": ["NAST403"],
+    "NEIK104": ["NEIK100"],
     "CHM326": ["CHEM326"],
     "CHM324": ["CHEM457"],
     "KHDL403": ["KHPM426"],
@@ -11381,6 +11424,7 @@
     "KHDL424": ["BMED208"],
     "KHDL425": [
         "KHES239",
+        "KHES235",
         "BSMS317",
         "BSMS222",
         "KHPM203"
@@ -11455,6 +11499,7 @@
     "TEDU201": ["SEDU101"],
     "KHDL421": [
         "KHES304",
+        "KHES427",
         "BMED309"
     ],
     "NSG324": [
@@ -11640,6 +11685,7 @@
         "GETE016",
         "SPFL131"
     ],
+    "KHPH234": ["KHES427"],
     "NC403": ["LIBT371"],
     "NC401": ["LIET434"],
     "APHY431": [
@@ -11693,7 +11739,10 @@
     "KLLS332": ["KORS487"],
     "KLLS335": ["KORS485"],
     "KLLS334": ["KORS316"],
-    "KHPH220": ["BSMS206"],
+    "KHPH220": [
+        "BSMS206",
+        "KHES236"
+    ],
     "ZE309": ["BTEC309"],
     "APHY463": [
         "SPHY375",
@@ -11738,6 +11787,7 @@
     "AMC402": ["NMCH432"],
     "GEEE209": ["KECE210"],
     "ZE305": ["BTEC305"],
+    "KHPH214": ["KHES427"],
     "GEEE208": ["KECE204"],
     "ZE306": ["BTEC306"],
     "GEEE205": ["KECE205"],
@@ -12197,7 +12247,10 @@
     "HAN246": ["HANM480"],
     "SEE315": ["KECE204"],
     "KFBT441": ["KFBT443"],
-    "KHES223": ["KHES239"],
+    "KHES223": [
+        "KHES235",
+        "KHES239"
+    ],
     "SOC338": ["SOCI352"],
     "SEE316": ["KECE370"],
     "SEE313": ["KECE364"],
@@ -12925,6 +12978,7 @@
     "KHDL331": [
         "BSMS317",
         "BSMS222",
+        "KHES235",
         "KHES239",
         "KHPM203"
     ],
@@ -14389,6 +14443,7 @@
     "KHCP309": [
         "BSMS206",
         "KHES238",
+        "KHES236",
         "KHES424"
     ],
     "DSDC371": [
@@ -14506,6 +14561,7 @@
     "KHCP329": [
         "BSMS206",
         "KHES238",
+        "KHES236",
         "KHES424"
     ],
     "PHL357": ["PHIL207"],
@@ -14539,7 +14595,9 @@
         "KHES335"
     ],
     "FRA233": ["FRAN427"],
+    "KHCP316": ["KHES328"],
     "FRA234": ["FRAN428"],
+    "KHCP313": ["KHES328"],
     "LSS201": [
         "SPOS223",
         "SPOS211"
@@ -14550,6 +14608,7 @@
         "BSMS211",
         "BMED303"
     ],
+    "KHCP318": ["KHES328"],
     "MATE403": ["MATE408"],
     "PHL367": ["PHIL365"],
     "AC236": ["ECOP202"],
@@ -14961,6 +15020,7 @@
         "ARDE363",
         "ARDE373"
     ],
+    "KHRS323": ["KHES416"],
     "KHRS324": ["BMED318"],
     "KHRS321": [
         "BMED228",
@@ -15013,6 +15073,7 @@
     "ARDE387": ["ARDE323"],
     "KHRS317": ["BMED223"],
     "ARDE389": ["ARDE314"],
+    "KHRS318": ["KHES416"],
     "KY121A": [
         "IFLS011",
         "IFLS013",
@@ -15045,7 +15106,9 @@
     "NSG202": ["NRSG262"],
     "IC237": ["CHEM231"],
     "NSG203": ["NRSG265"],
+    "KHRS306": ["KHES416"],
     "KHRS304": [
+        "KHES236",
         "KHES238",
         "BMED215",
         "BSMS218"
@@ -15063,6 +15126,7 @@
     "STA170": ["STAT180"],
     "JE202": ["PAPP240"],
     "STA171": ["STAT201"],
+    "KHRS301": ["KHES416"],
     "KHRS302": ["BMED423"],
     "NRE202": [
         "LIBT336",
@@ -15714,10 +15778,19 @@
     "ME344": ["PSYC326"],
     "CNCE417": ["COSE441"],
     "CNCE416": ["COSE441"],
-    "KHCP223": ["KHES334"],
-    "KHCP222": ["KHES334"],
+    "KHCP223": [
+        "KHES334",
+        "KHES324"
+    ],
+    "KHCP222": [
+        "KHES324",
+        "KHES334"
+    ],
     "LC359": ["ENGS403"],
-    "KHCP224": ["KHES334"],
+    "KHCP224": [
+        "KHES324",
+        "KHES334"
+    ],
     "LC368": ["SLSC235"],
     "NG336": ["LIST203"],
     "NRSG461": [
@@ -16034,7 +16107,8 @@
     "KHCP255": [
         "BSMS222",
         "BSMS317",
-        "KHES239"
+        "KHES239",
+        "KHES235"
     ],
     "CESE212": ["ACEE224"],
     "CESE211": ["ACEE227"],
@@ -16143,6 +16217,7 @@
     "JD202": ["JMCO272"],
     "KHRS231": ["BMED217"],
     "JD201": ["JMCO253"],
+    "KHRS230": ["KHES427"],
     "CHBE410": ["CHBE420"],
     "KHRS234": ["KHES301"],
     "SF335": ["ELED342"],
@@ -16195,6 +16270,7 @@
         "DCCS418",
         "DCCS216"
     ],
+    "KHRS227": ["KHES427"],
     "ARDE236": [
         "ARDE375",
         "ARDE258"
@@ -16215,6 +16291,7 @@
     "CHBE400": ["CHBE399"],
     "SF332": ["ELED322"],
     "CHBE401": ["CHBE417"],
+    "KHRS222": ["KHES427"],
     "KHRS223": ["KHES229"],
     "CHBE404": ["CHBE418"],
     "CHBE407": ["CHBE418"],
@@ -16275,6 +16352,7 @@
     "KHRS218": ["KHES224"],
     "CSIE412": ["DCCS412"],
     "ARDE201": ["ARDE151"],
+    "KHRS215": ["KHES427"],
     "ARDE202": [
         "ARDE283",
         "ARDE288"
@@ -16309,6 +16387,7 @@
     "ARDE211": ["ARDE275"],
     "LIFS215": ["LIFS223"],
     "DEU232": ["GERS207"],
+    "KHRS207": ["KHES427"],
     "CSIE423": ["DCCS417"],
     "CSIE424": [
         "DCCS418",
@@ -17263,6 +17342,7 @@
         "BSMS317",
         "BSMS222",
         "BMED420",
+        "KHES235",
         "KHES239"
     ],
     "SLSC193": ["SLSC240"],
@@ -17805,6 +17885,7 @@
     "SLSC284": ["SLSC296"],
     "KHSU150": [
         "BSMS206",
+        "KHES236",
         "KHES238",
         "BMED218",
         "KHES424",
@@ -17864,7 +17945,8 @@
     "KHSU170": [
         "BSMS218",
         "BMED215",
-        "KHES238"
+        "KHES238",
+        "KHES236"
     ],
     "ARDE136": ["ARDE159"],
     "ARDE137": ["ARDE270"],
