@@ -61,7 +61,7 @@ const translations = {
         "helpMultipleMajor": "• 여러 전공에 해당되는 강의는 위쪽 전공부터 순차 적용됩니다.",
         "helpExcessCredit": "• 일부 학과에서 적용되는 '전공필수 초과 이수시 전공선택으로 인정'은 구조상 구현이 어렵습니다. 양해 부탁드립니다.",
         "helpRetakeCourse": "• 동일 강의코드는 재수강으로 간주되며 전체학점 계산에서 한 번만 반영됩니다.",
-        "helpContact": "• 문의사항은 여기로 —> <a href=\"mailto:lemonplugin@gmail.com\" target=\"_blank\">lemonplugin@gmail.com</a>",
+        "helpContact": "• 문의사항은 여기로 —> <a href=\"mailto:lemonplugin@gmail.com\" target=\"_blank\">lemonplugin@gmail.com</a><br>• Instagram —> <a href=\"https://www.instagram.com/kuraduation.official/\" target=\"_blank\">@kuraduation.official</a>",
         "helpClose": "닫기",
         
         // 목표 평점 계산
@@ -204,7 +204,7 @@ const translations = {
         "helpMultipleMajor": "• Courses applicable to multiple majors are applied sequentially from the top major.",
         "helpExcessCredit": "• 'Excess required major credits count as major electives' applied by some departments is difficult to implement structurally. Thank you for your understanding.",
         "helpRetakeCourse": "• Identical course codes are considered retakes and are only counted once in total credit calculation.",
-        "helpContact": "• For inquiries —> <a href=\"mailto:lemonplugin@gmail.com\" target=\"_blank\">lemonplugin@gmail.com</a>",
+        "helpContact": "• For inquiries —> <a href=\"mailto:lemonplugin@gmail.com\" target=\"_blank\">lemonplugin@gmail.com</a><br>• Instagram —> <a href=\"https://www.instagram.com/kuraduation.official/\" target=\"_blank\">@kuraduation.official</a>",
         "helpClose": "Close",
       
         // GPA Goal Calculator
