@@ -146,6 +146,20 @@ const translations = {
         "deleteCourse": "삭제",
         "confirmDeleteCourse": "이 과목을 삭제하시겠습니까?",
         "cancelSetting": "취소",
+
+        // 재수강 계산기
+        "retakeCourses": "재수강 과목",
+        "retakeCalculator": "재수강 계산기",
+        "retakeCourseName": "과목명",
+        "retakeCurrentGrade": "현재 성적",
+        "retakeTargetGrade": "목표 성적",
+        "retakeCredit": "학점",
+        "retakeEffect": "개선 효과",
+        "noRetakeCourses": "재수강 대상 과목이 없습니다.",
+        "retakeSummary": "재수강 요약",
+        "retakeInstructions": "재수강 후 예상 성적을 입력하면 목표 평점 달성 가능성을 계산합니다.",
+        "saveRetakeChanges": "재수강 변경사항 저장",
+        "retakeChangesSaved": "재수강 변경사항이 저장되었습니다.",
     },
     en: {
         // Search related
@@ -206,6 +220,20 @@ const translations = {
         "helpRetakeCourse": "• Identical course codes are considered retakes and are only counted once in total credit calculation.",
         "helpContact": "• For inquiries —> <a href=\"mailto:lemonplugin@gmail.com\" target=\"_blank\">lemonplugin@gmail.com</a><br>• Instagram —> <a href=\"https://www.instagram.com/kuraduation.official/\" target=\"_blank\">@kuraduation.official</a>",
         "helpClose": "Close",
+      
+        // Retake Calculator
+        "retakeCourses": "Retake Courses",
+        "retakeCalculator": "Retake Calculator",
+        "retakeCourseName": "Course Name",
+        "retakeCurrentGrade": "Current Grade",
+        "retakeTargetGrade": "Target Grade",
+        "retakeCredit": "Credit",
+        "retakeEffect": "Improvement",
+        "noRetakeCourses": "No retake courses available.",
+        "retakeSummary": "Retake Summary",
+        "retakeInstructions": "Enter your expected grade after retaking the course to calculate the likelihood of achieving your target GPA.",
+        "saveRetakeChanges": "Save Retake Changes",
+        "retakeChangesSaved": "Retake changes have been saved.",
       
         // GPA Goal Calculator
         "gpaGoalCalc": "GPA Goal Calculator",
@@ -289,6 +317,20 @@ const translations = {
         "deleteCourse": "Delete",
         "confirmDeleteCourse": "Are you sure you want to delete this course?",
         "cancelSetting": "Cancel",
+
+        // 재수강 계산기
+        "retakeCourses": "Retake Courses",
+        "retakeCalculator": "Retake Calculator",
+        "retakeCourseName": "Course Name",
+        "retakeCurrentGrade": "Current Grade",
+        "retakeTargetGrade": "Target Grade",
+        "retakeCredit": "Credit",
+        "retakeEffect": "Retake Effect",
+        "noRetakeCourses": "No retake courses available.",
+        "retakeSummary": "Retake Summary",
+        "retakeInstructions": "Enter your expected grade after retaking the course to calculate the likelihood of achieving your target GPA.",
+        "saveRetakeChanges": "Save Retake Changes",
+        "retakeChangesSaved": "Retake changes have been saved.",
     }
 };
 
@@ -340,6 +382,9 @@ function updateAllTexts() {
     
     // 목표 평점 계산 텍스트 업데이트
     updateGpaGoalTexts();
+    
+    // 재수강 계산기 텍스트 업데이트
+    updateRetakeCalculatorTexts();
 
     loadDeck(currentDeck);
     updateChart({save: false}); // 차트 업데이트
@@ -2077,7 +2122,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.key === 'Escape') {
                 closeCoursePopup();
                 closeHelpPopup();
-                closeGpaGoalPopup();
                 if (isClickMoveMode) {
                     clearCourseSelection();
                 }
@@ -2111,6 +2155,9 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // 목표 평점 계산 이벤트 리스너 설정
     setupGpaGoalEventListeners();
+    
+    // 재수강 계산기 이벤트 리스너 설정
+    setupRetakeCalculatorEventListeners();
 
     window.addEventListener('coursesLoaded', () => {
         loadStateFromLocalStorage();
@@ -3041,6 +3088,7 @@ function updateYearStats() {
 
 // 목표 평점 계산 기능
 let gpaGoalPopup = null;
+let isGpaGoalDataSaved = false; // 목표 평점 데이터 저장 상태 추적
 
 // 목표 평점 계산 팝업 표시
 function showGpaGoalPopup() {
@@ -3061,6 +3109,11 @@ function showGpaGoalPopup() {
         if (!dataLoaded) {
             document.getElementById('target-gpa-input').focus();
         }
+        
+        // 저장 전에는 재수강 변경사항을 반영평점에 반영, 저장 후에는 반영하지 않음
+        if (!isGpaGoalDataSaved) {
+            updateGpaGoalWithRetakeChanges();
+        }
     }
 }
 
@@ -3073,6 +3126,12 @@ function closeGpaGoalPopup() {
         
         // 저장 버튼 상태 초기화
         updateSaveButtonState(false);
+        
+        // 저장 상태 초기화 (다음에 팝업을 열 때 재수강 변경사항을 반영할 수 있도록)
+        isGpaGoalDataSaved = false;
+        
+        // 재수강 계산기 변경 사항 초기화
+        resetRetakeChanges();
     }
 }
 
@@ -3148,20 +3207,7 @@ function hideGpaGoalError() {
     // 에러 메시지 숨김 로직 (필요시 구현)
 }
 
-// 팝업 외부 클릭 시 닫기
-function handleGpaGoalOutsideClick(event) {
-    const popup = document.getElementById('gpa-goal-popup');
-    if (popup && !popup.contains(event.target) && event.target.id !== 'gpa-goal-btn') {
-        closeGpaGoalPopup();
-    }
-}
 
-// 키보드 이벤트 처리 (ESC로 닫기)
-function handleGpaGoalKeydown(event) {
-    if (event.key === 'Escape') {
-        closeGpaGoalPopup();
-    }
-}
 
 // 목표 평점 계산 이벤트 리스너 설정
 function setupGpaGoalEventListeners() {
@@ -3214,11 +3260,7 @@ function setupGpaGoalEventListeners() {
         saveBtn.addEventListener('click', saveGpaGoalData);
     }
     
-    // 외부 클릭 이벤트
-    document.addEventListener('click', handleGpaGoalOutsideClick);
-    
-    // 키보드 이벤트
-    document.addEventListener('keydown', handleGpaGoalKeydown);
+
 }
 
 // 다국어 지원을 위한 텍스트 업데이트
@@ -3234,6 +3276,38 @@ function updateGpaGoalTexts() {
             }
         }
     });
+}
+
+// 재수강 계산기 다국어 지원을 위한 텍스트 업데이트
+function updateRetakeCalculatorTexts() {
+    // 재수강 팝업 헤더 제목 업데이트 (팝업이 열려있지 않아도)
+    const retakePopup = document.getElementById('retake-courses-popup');
+    if (retakePopup) {
+        const popupTitle = retakePopup.querySelector('h3');
+        if (popupTitle) {
+            popupTitle.textContent = getText('retakeCalculator');
+        }
+        
+        // 저장 버튼 텍스트 업데이트 (팝업이 열려있지 않아도)
+        const saveBtn = retakePopup.querySelector('#retake-save-btn');
+        if (saveBtn) {
+            saveBtn.textContent = getText('saveRetakeChanges');
+        }
+        
+        // 재수강 팝업이 열려있다면 테이블 내용도 업데이트
+        if (retakePopup.style.display !== 'none') {
+            const retakeCoursesList = retakePopup.querySelector('#retake-courses-list');
+            if (retakeCoursesList) {
+                updateRetakeCoursesList();
+            }
+        }
+    }
+    
+    // 목표 평점 계산기 내의 재수강 과목 버튼 텍스트 업데이트
+    const retakeBtn = document.getElementById('retake-courses-btn');
+    if (retakeBtn) {
+        retakeBtn.textContent = getText('retakeCourses');
+    }
 }
 
 // 학기별 계획 관련 변수
@@ -3536,6 +3610,9 @@ function saveGpaGoalData() {
     
     // 저장 완료 메시지 (선택사항)
     console.log('목표 평점 계산 데이터가 저장되었습니다.');
+    
+    // 저장 상태 업데이트
+    isGpaGoalDataSaved = true;
 }
 
 // 목표 평점 계산 데이터 불러오기
@@ -3575,9 +3652,12 @@ function loadGpaGoalData() {
         }
         
             // 계산 실행
-    calculateRequiredGpa();
-    calculateReflectedGpa();
-    updateSemesterPlanSummary();
+        calculateRequiredGpa();
+        calculateReflectedGpa();
+        updateSemesterPlanSummary();
+        
+        // 저장된 데이터가 있으면 저장 상태를 true로 설정
+        isGpaGoalDataSaved = true;
         
         return true;
     }
@@ -3691,16 +3771,17 @@ function calculateReflectedGpa() {
 }
 
 let isDraggingGpaPopup = false;
+let isDraggingRetakePopup = false;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
 
 function centerGpaGoalPopup() {
     const popup = document.getElementById('gpa-goal-popup');
     if (!popup) return;
-    // 초기에는 fixed 중앙 정렬 유지 (기존 CSS를 덮어씀)
+    // CSS와 동일한 위치 설정
     popup.style.position = 'fixed';
     popup.style.top = '50%';
-    popup.style.left = '50%';
+    popup.style.left = '35%';
     popup.style.transform = 'translate(-50%, -50%)';
 }
 
@@ -3742,4 +3823,414 @@ function enableGpaGoalPopupDrag() {
 
     headerEl.addEventListener('mousedown', onMouseDown);
     headerEl.dataset.dragEnabled = 'true';
+}
+
+//#region --- 재수강 계산기 기능 ---
+
+// 재수강 후보자 목록을 전역 변수로 관리
+let currentRetakeCandidates = [];
+
+// 재수강 대상 과목 찾기 (C+ 이하)
+function getRetakeCandidates() {
+    // 이미 로드된 후보자가 있다면 반환
+    if (currentRetakeCandidates.length > 0) {
+        return currentRetakeCandidates;
+    }
+    
+    const retakeCandidates = [];
+    
+    // 모든 덱에서 과목들을 수집
+    Object.keys(decks).forEach(deckKey => {
+        const deck = decks[deckKey];
+        Object.keys(deck.years).forEach(yearKey => {
+            const year = deck.years[yearKey];
+            Object.keys(year).forEach(semesterKey => {
+                const semester = year[semesterKey];
+                // semester는 배열이므로 forEach로 순회
+                if (Array.isArray(semester)) {
+                    semester.forEach((course, courseIndex) => {
+                        if (course.grade && course.credit) {
+                            const gradePoint = gradeSystem[course.grade];
+                            // C+ 이하 (2.5 이하)인 과목만 재수강 대상으로 분류
+                            if (gradePoint !== undefined && gradePoint <= 2.5) {
+                                // 디버깅: 덱 데이터 구조 확인
+                                console.log('덱 과목 데이터:', course);
+                                
+                                // 과목명 가져오기
+                                let courseName = course.name || `과목${courseIndex + 1}`;
+                                if (course.code && courses[course.code]) {
+                                    courseName = getCourseName(course.code);
+                                }
+                                
+                                console.log('최종 과목명:', courseName);
+                                
+                                retakeCandidates.push({
+                                    deck: deckKey,
+                                    year: yearKey,
+                                    semester: semesterKey,
+                                    courseIndex: courseIndex,
+                                    courseName: courseName,
+                                    courseCode: course.code || '',
+                                    credit: course.credit,
+                                    currentGrade: course.grade,
+                                    currentGradePoint: gradePoint,
+                                    targetGrade: course.grade, // 기본값은 현재 성적
+                                    targetGradePoint: gradePoint // 기본값은 현재 평점
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    });
+    
+    // 전역 변수에 저장
+    currentRetakeCandidates = retakeCandidates;
+    return retakeCandidates;
+}
+
+// 재수강 팝업 표시
+function showRetakeCoursesPopup() {
+    const popup = document.getElementById('retake-courses-popup');
+    if (popup) {
+        popup.style.display = 'block';
+        updateRetakeCoursesList();
+        centerRetakeCoursesPopup();
+        enableRetakeCoursesPopupDrag();
+    }
+}
+
+// 재수강 팝업 숨김
+function closeRetakeCoursesPopup() {
+    const popup = document.getElementById('retake-courses-popup');
+    if (popup) {
+        popup.style.display = 'none';
+    }
+}
+
+// 재수강 팝업 위치 설정
+function centerRetakeCoursesPopup() {
+    const popup = document.getElementById('retake-courses-popup');
+    if (!popup) return;
+    
+    popup.style.position = 'fixed';
+    popup.style.top = '20%';
+    popup.style.left = '75%';
+    popup.style.transform = 'translateX(-50%)';
+}
+
+// 재수강 팝업 드래그 기능 활성화
+function enableRetakeCoursesPopupDrag() {
+    const popup = document.getElementById('retake-courses-popup');
+    const headerEl = popup.querySelector('.retake-courses-popup-header');
+    if (!popup || !headerEl) return;
+
+    if (headerEl.dataset.dragEnabled === 'true') {
+        return; // 이미 드래그 리스너가 연결됨
+    }
+
+    const onMouseDown = (e) => {
+        isDraggingRetakePopup = true;
+        const rect = popup.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+        popup.style.position = 'fixed';
+        popup.style.transform = 'none';
+        popup.style.left = `${rect.left}px`;
+        popup.style.top = `${rect.top}px`;
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDraggingRetakePopup) return;
+        const newLeft = e.clientX - dragOffsetX;
+        const newTop = e.clientY - dragOffsetY;
+        popup.style.left = `${newLeft}px`;
+        popup.style.top = `${newTop}px`;
+    };
+
+    const onMouseUp = () => {
+        isDraggingRetakePopup = false;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    headerEl.addEventListener('mousedown', onMouseDown);
+    headerEl.dataset.dragEnabled = 'true';
+}
+
+// 재수강 과목 목록 업데이트
+function updateRetakeCoursesList() {
+    const retakeCandidates = getRetakeCandidates();
+    const listContainer = document.getElementById('retake-courses-list');
+    
+    if (!listContainer) return;
+    
+    if (retakeCandidates.length === 0) {
+        listContainer.innerHTML = `
+            <div class="no-retake-courses">
+                <p>${getText('noRetakeCourses')}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // 재수강 과목 목록 생성
+    let html = `
+        <div class="retake-instructions">
+            <p>${getText('retakeInstructions')}</p>
+        </div>
+        <div class="retake-courses-table">
+            <div class="retake-courses-header">
+                <div class="retake-course-name">${getText('retakeCourseName')}</div>
+                <div class="retake-current-grade">${getText('retakeCurrentGrade')}</div>
+                <div class="retake-target-grade">${getText('retakeTargetGrade')}</div>
+                <div class="retake-credit">${getText('retakeCredit')}</div>
+                <div class="retake-effect">${getText('retakeEffect')}</div>
+            </div>
+    `;
+    
+    retakeCandidates.forEach((course, index) => {
+        const improvement = course.targetGradePoint - course.currentGradePoint;
+        const improvementText = improvement > 0 ? `+${improvement.toFixed(1)}` : improvement.toFixed(1);
+        
+        // 언어 전환 시 과목명을 다시 가져오기
+        let courseName = course.courseName;
+        if (course.courseCode && courses[course.courseCode]) {
+            courseName = getCourseName(course.courseCode);
+        }
+        
+        html += `
+            <div class="retake-course-row" data-index="${index}">
+                <div class="retake-course-name">${courseName}</div>
+                <div class="retake-current-grade">${course.currentGrade} (${course.currentGradePoint})</div>
+                <div class="retake-target-grade">
+                    <select class="retake-grade-select" onchange="updateRetakeGrade(${index}, this.value)">
+                        ${Object.keys(gradeSystem).map(grade => 
+                            `<option value="${grade}" ${grade === course.targetGrade ? 'selected' : ''}>${grade} (${gradeSystem[grade]})</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="retake-credit">${course.credit}</div>
+                <div class="retake-effect ${improvement > 0 ? 'positive' : 'neutral'}">${improvementText}</div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+            listContainer.innerHTML = html;
+    }
+
+// 재수강 성적 업데이트
+function updateRetakeGrade(index, newGrade) {
+    if (currentRetakeCandidates[index]) {
+        currentRetakeCandidates[index].targetGrade = newGrade;
+        currentRetakeCandidates[index].targetGradePoint = gradeSystem[newGrade];
+        
+        // 해당 행의 개선 효과 업데이트
+        const row = document.querySelector(`[data-index="${index}"]`);
+        if (row) {
+            const effectElement = row.querySelector('.retake-effect');
+            const improvement = currentRetakeCandidates[index].targetGradePoint - currentRetakeCandidates[index].currentGradePoint;
+            const improvementText = improvement > 0 ? `+${improvement.toFixed(1)}` : improvement.toFixed(1);
+            
+            effectElement.textContent = improvementText;
+            effectElement.className = `retake-effect ${improvement > 0 ? 'positive' : 'neutral'}`;
+        }
+    }
+}
+
+
+
+// 재수강 계산기 이벤트 리스너 설정
+function setupRetakeCalculatorEventListeners() {
+    // 재수강 과목 버튼 클릭 이벤트
+    const retakeBtn = document.getElementById('retake-courses-btn');
+    if (retakeBtn) {
+        retakeBtn.addEventListener('click', showRetakeCoursesPopup);
+    }
+    
+    // 재수강 팝업 닫기 버튼 이벤트
+    const closeBtn = document.getElementById('retake-courses-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeRetakeCoursesPopup);
+    }
+    
+    // 재수강 팝업 외부 클릭 시 닫기
+    const popup = document.getElementById('retake-courses-popup');
+    if (popup) {
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                closeRetakeCoursesPopup();
+            }
+        });
+    }
+    
+    // 재수강 저장 버튼 이벤트
+    const saveBtn = document.getElementById('retake-save-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveRetakeChanges);
+    }
+}
+
+// 재수강 변경 사항 초기화
+function resetRetakeChanges() {
+    // 재수강 팝업이 열려있다면 닫기
+    const retakePopup = document.getElementById('retake-courses-popup');
+    if (retakePopup && retakePopup.style.display !== 'none') {
+        closeRetakeCoursesPopup();
+    }
+    
+    // 재수강 변경 사항 localStorage에서 제거
+    localStorage.removeItem('retakeChanges');
+    
+    // 전역 변수 초기화
+    currentRetakeCandidates = [];
+    
+    // 목표 평점 팝업의 반영 평점을 원래 값으로 복원
+    updateGpaGoalDisplay();
+}
+
+// 목표 평점 팝업의 반영 평점을 현재 GPA로 복원
+function updateGpaGoalDisplay() {
+    const reflectedGpaElement = document.getElementById('reflected-gpa-result');
+    if (reflectedGpaElement) {
+        const currentGpaElement = document.getElementById('overall-gpa');
+        if (currentGpaElement) {
+            const currentGpa = currentGpaElement.textContent;
+            reflectedGpaElement.textContent = currentGpa;
+            reflectedGpaElement.className = 'gpa-goal-result';
+        }
+    }
+    
+    // 필요 평점도 초기화
+    const requiredGpaElement = document.getElementById('required-gpa-result');
+    if (requiredGpaElement) {
+        requiredGpaElement.textContent = '-';
+        requiredGpaElement.className = 'gpa-goal-result';
+    }
+}
+
+//#endregion
+
+// 재수강 변경사항 저장
+function saveRetakeChanges() {
+    console.log('재수강 후보자 목록:', currentRetakeCandidates);
+    
+    // 모든 재수강 후보자 정보를 저장 (변경사항 여부와 관계없이)
+    const retakeData = {
+        timestamp: Date.now(),
+        changes: currentRetakeCandidates.map(course => ({
+            deck: course.deck,
+            year: course.year,
+            semester: course.semester,
+            courseIndex: course.courseIndex,
+            courseCode: course.code || '',
+            currentGrade: course.currentGrade,
+            targetGrade: course.targetGrade,
+            credit: course.credit
+        }))
+    };
+    
+    localStorage.setItem('retakeChanges', JSON.stringify(retakeData));
+    
+    // 목표평점계산기의 반영평점 업데이트
+    updateGpaGoalWithRetakeChanges();
+    
+    // 성공 메시지 표시
+    alert(getText('retakeChangesSaved'));
+    
+    // 재수강 팝업은 닫지 않음 (사용자가 직접 닫을 수 있도록)
+}
+
+// 목표평점계산기에 재수강 변경사항 반영
+function updateGpaGoalWithRetakeChanges() {
+    const retakeData = localStorage.getItem('retakeChanges');
+    if (!retakeData) return;
+    
+    try {
+        const data = JSON.parse(retakeData);
+        const changes = data.changes;
+        
+        if (changes.length === 0) return;
+        
+        // 현재 평점과 학점 가져오기
+        const currentGpaElement = document.getElementById('overall-gpa');
+        const currentCreditElement = document.getElementById('current-credit');
+        
+        if (!currentGpaElement || !currentCreditElement) return;
+        
+        const currentGpa = parseFloat(currentGpaElement.textContent);
+        const currentCredit = parseFloat(currentCreditElement.textContent);
+        
+        if (isNaN(currentGpa) || isNaN(currentCredit)) return;
+        
+        // 재수강 변경사항을 반영한 평점 계산
+        let totalGradePoints = currentGpa * currentCredit;
+        
+        changes.forEach(change => {
+            const currentGradePoint = gradeSystem[change.currentGrade];
+            const targetGradePoint = gradeSystem[change.targetGrade];
+            const gradePointDifference = targetGradePoint - currentGradePoint;
+            
+            if (gradePointDifference !== 0) {
+                totalGradePoints += gradePointDifference * change.credit;
+            }
+        });
+        
+        const adjustedGpa = totalGradePoints / currentCredit;
+        
+        // 목표평점계산기 팝업이 열려있다면 반영평점과 필요평점 업데이트
+        const gpaGoalPopup = document.getElementById('gpa-goal-popup');
+        if (gpaGoalPopup && gpaGoalPopup.style.display !== 'none') {
+            // 반영평점 업데이트
+            const reflectedGpaElement = document.getElementById('reflected-gpa-result');
+            if (reflectedGpaElement) {
+                reflectedGpaElement.textContent = adjustedGpa.toFixed(2);
+                reflectedGpaElement.className = 'gpa-goal-result calculated success';
+            }
+            
+            // 필요평점 재계산
+            const targetGpaInput = document.getElementById('target-gpa-input');
+            const totalRemainingCreditsInput = document.getElementById('total-remaining-credits');
+            
+            if (targetGpaInput && totalRemainingCreditsInput) {
+                const targetGpa = parseFloat(targetGpaInput.value);
+                const remainingCredits = parseInt(totalRemainingCreditsInput.value);
+                
+                if (!isNaN(targetGpa) && !isNaN(remainingCredits)) {
+                    // 필요평점 계산: (목표 총 평점 × (현재 총학점 + 남은 학점) - 현재 총 평점 × 현재 총학점) ÷ 남은 학점
+                    const totalCredits = currentCredit + remainingCredits;
+                    const requiredGpa = ((targetGpa * totalCredits) - (adjustedGpa * currentCredit)) / remainingCredits;
+                    
+                    const requiredGpaElement = document.getElementById('required-gpa-result');
+                    if (requiredGpaElement) {
+                        const requiredGpaFormatted = requiredGpa.toFixed(2);
+                        requiredGpaElement.textContent = requiredGpaFormatted;
+                        requiredGpaElement.className = 'gpa-goal-result calculated';
+                        
+                        // 결과에 따른 스타일 적용
+                        if (requiredGpa <= 4.5 && requiredGpa >= 0) {
+                            requiredGpaElement.classList.add('success');
+                            requiredGpaElement.classList.remove('error');
+                        } else {
+                            requiredGpaElement.classList.add('error');
+                            requiredGpaElement.classList.remove('success');
+                        }
+                    }
+                }
+            }
+        }
+        
+        console.log('재수강 변경사항이 목표평점계산기에 반영되었습니다:', {
+            originalGPA: currentGpa,
+            adjustedGPA: adjustedGpa,
+            changes: changes
+        });
+        
+    } catch (error) {
+        console.error('재수강 변경사항 반영 중 오류:', error);
+    }
 }
