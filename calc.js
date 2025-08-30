@@ -71,6 +71,20 @@ const translations = {
         // 목표 평점 계산
         "gpaGoalCalc": "목표 평점 계산",
         "gpaGoalCalculator": "목표 평점 계산",
+        "deckSimulation": "덱 비교",
+        "deckComparison": "덱 비교",
+        "totalCourses": "총 과목",
+        "gradeDistribution": "성적 분포",
+        "totalCredits": "총이수학점",
+        "overallGpa": "전체평점", 
+        "majorGpa": "전공평점",
+        "graduationRequirements": "졸업요건",
+        "noRequirementsSet": "졸업요건이 설정되지 않았습니다",
+        "noCourseData": "과목 데이터가 없습니다",
+        "gradeCoursesTitle": "성적 과목 목록",
+        "noGradeCourses": "성적의 과목이 없습니다",
+        "courses": "과목",
+        "year": "학년",
         "targetGpa": "목표 평점:",
         "totalRemainingCredits": "총 남은 학점:",
         "requiredGpa": "필요 평점:",
@@ -246,6 +260,20 @@ const translations = {
         // GPA Goal Calculator
         "gpaGoalCalc": "GPA Goal Calculator",
         "gpaGoalCalculator": "GPA Goal Calculator",
+        "deckSimulation": "Comparison",
+        "deckComparison": "Deck Comparison",
+        "totalCourses": "Total Courses",
+        "gradeDistribution": "Grade Distribution",
+        "totalCredits": "Total Credits",
+        "overallGpa": "Overall GPA",
+        "majorGpa": "Major GPA", 
+        "graduationRequirements": "Graduation Requirements",
+        "noRequirementsSet": "Graduation requirements not set",
+        "noCourseData": "No course data available",
+        "gradeCoursesTitle": "Courses with Grade",
+        "noGradeCourses": "No courses with grade",
+        "courses": " courses",
+        "year": " Year",
         "targetGpa": "Target GPA:",
         "totalRemainingCredits": "Total Remaining Credits:",
         "requiredGpa": "Required GPA:",
@@ -1083,6 +1111,696 @@ function applyImportedData(importedData) {
         console.error('데이터 적용 오류:', error);
         alert('데이터를 적용하는 중 오류가 발생했습니다.');
     }
+}
+
+// 덱 시뮬레이션 팝업 표시
+function showDeckSimulationPopup() {
+    const popup = document.getElementById('deck-simulation-popup');
+    if (popup) {
+        popup.style.display = 'flex';
+        
+        // 덱 선택 드롭다운 초기화
+        initializeDeckSelectors();
+        
+        // ESC 키로 팝업 닫기
+        document.addEventListener('keydown', handleDeckSimulationEscKey);
+    }
+}
+
+// 덱 시뮬레이션 팝업 숨김
+function closeDeckSimulationPopup() {
+    const popup = document.getElementById('deck-simulation-popup');
+    if (popup) {
+        popup.style.display = 'none';
+        
+        // ESC 키 이벤트 리스너 제거
+        document.removeEventListener('keydown', handleDeckSimulationEscKey);
+        
+        // 차트 인스턴스 정리
+        if (gradeChartA) {
+            gradeChartA.destroy();
+            gradeChartA = null;
+        }
+        if (gradeChartB) {
+            gradeChartB.destroy();
+            gradeChartB = null;
+        }
+    }
+}
+
+// ESC 키 처리
+function handleDeckSimulationEscKey(e) {
+    if (e.key === 'Escape') {
+        closeDeckSimulationPopup();
+    }
+}
+
+// 덱 선택 드롭다운 초기화
+function initializeDeckSelectors() {
+    const selectA = document.getElementById('deck-select-a');
+    const selectB = document.getElementById('deck-select-b');
+    
+    if (!selectA || !selectB) return;
+    
+    // 기존 옵션 초기화
+    selectA.innerHTML = '';
+    selectB.innerHTML = '';
+    
+    // 현재 존재하는 덱들로 옵션 생성
+    for (let i = 1; i <= deckCount; i++) {
+        const deckId = `deck${i}`;
+        const deckName = decks[deckId] ? decks[deckId].name : `덱${i}`;
+        
+        // A 영역 옵션
+        const optionA = document.createElement('option');
+        optionA.value = deckId;
+        optionA.textContent = deckName;
+        if (deckId === 'deck1') optionA.selected = true;
+        selectA.appendChild(optionA);
+        
+        // B 영역 옵션
+        const optionB = document.createElement('option');
+        optionB.value = deckId;
+        optionB.textContent = deckName;
+        if (deckId === 'deck2') optionB.selected = true;
+        selectB.appendChild(optionB);
+    }
+    
+    // 이벤트 리스너 추가
+    selectA.addEventListener('change', (e) => {
+        updateDeckSimulationData();
+    });
+    
+    selectB.addEventListener('change', (e) => {
+        updateDeckSimulationData();
+    });
+    
+    // 초기 데이터 로드
+    updateDeckSimulationData();
+}
+
+// 덱 이름 표시 업데이트 (더 이상 사용하지 않음)
+// function updateDeckNameDisplay(section, deckId) {
+//     const displayElement = document.getElementById(`deck-name-${section}`);
+//     if (displayElement && decks[deckId]) {
+//         displayElement.textContent = decks[deckId].name;
+//     }
+// }
+
+// 덱 데이터 계산
+function calculateDeckStats(deckId) {
+    if (!decks[deckId] || !decks[deckId].years) {
+        return {
+            totalCredits: 0,
+            overallGpa: 0,
+            majorGpa: 0,
+            gradeDistribution: {}
+        };
+    }
+
+    let totalCredits = 0;
+    let totalGradePoints = 0;
+    let totalGradedCredits = 0;
+    let majorGradePoints = 0;
+    let majorGradedCredits = 0;
+    let gradeDistribution = {};
+
+    // 성적 분포 초기화
+    const grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F', 'P', 'NP'];
+    grades.forEach(grade => {
+        gradeDistribution[grade] = 0;
+    });
+
+    // 각 학년의 각 학기를 순회
+    Object.keys(decks[deckId].years).forEach(year => {
+        const yearData = decks[deckId].years[year];
+        Object.keys(yearData).forEach(semester => {
+            const courses = yearData[semester];
+            courses.forEach(course => {
+                const credit = parseFloat(course.credit) || 0;
+                const grade = course.grade;
+                const isMajor = course.isMajor === true;
+
+                // 총 학점 계산
+                totalCredits += credit;
+
+                // 성적 분포 계산
+                if (grade && gradeDistribution.hasOwnProperty(grade)) {
+                    gradeDistribution[grade]++;
+                }
+
+                // 평점 계산 (P/NP 제외)
+                if (grade && gradeSystem[grade] !== undefined) {
+                    const gradePoint = gradeSystem[grade];
+                    totalGradePoints += gradePoint * credit;
+                    totalGradedCredits += credit;
+
+                    // 전공 평점 계산
+                    if (isMajor) {
+                        majorGradePoints += gradePoint * credit;
+                        majorGradedCredits += credit;
+                    }
+                }
+            });
+        });
+    });
+
+    return {
+        totalCredits: totalCredits,
+        overallGpa: totalGradedCredits > 0 ? (totalGradePoints / totalGradedCredits) : 0,
+        majorGpa: majorGradedCredits > 0 ? (majorGradePoints / majorGradedCredits) : 0,
+        gradeDistribution: gradeDistribution
+    };
+}
+
+// 덱 시뮬레이션 데이터 업데이트
+function updateDeckSimulationData() {
+    const selectA = document.getElementById('deck-select-a');
+    const selectB = document.getElementById('deck-select-b');
+    
+    if (!selectA || !selectB) return;
+    
+    const deckA = selectA.value;
+    const deckB = selectB.value;
+    
+    // 동일한 덱 선택 방지
+    if (deckA === deckB) {
+        // B 영역을 다른 덱으로 자동 변경
+        const availableDecks = [];
+        for (let i = 1; i <= deckCount; i++) {
+            const deckId = `deck${i}`;
+            if (deckId !== deckA) {
+                availableDecks.push(deckId);
+            }
+        }
+        if (availableDecks.length > 0) {
+            selectB.value = availableDecks[0];
+        }
+    }
+    
+    // 각 덱의 데이터 계산
+    const statsA = calculateDeckStats(selectA.value);
+    const statsB = calculateDeckStats(selectB.value);
+    
+    // 학점/평점 비교 업데이트
+    updateStatsComparison(statsA, statsB);
+    
+    // 도넛 차트 업데이트
+    updateGradeCharts(statsA, statsB);
+    
+    // 졸업요건 막대그래프 업데이트
+    updateRequirementsCharts(selectA.value, selectB.value);
+}
+
+// 학점/평점 비교 업데이트
+function updateStatsComparison(statsA, statsB) {
+    // A 영역 값 업데이트
+    const totalCreditsA = document.getElementById('total-credits-a');
+    const overallGpaA = document.getElementById('overall-gpa-a');
+    const majorGpaA = document.getElementById('major-gpa-a');
+    
+    if (totalCreditsA) totalCreditsA.textContent = Math.round(statsA.totalCredits);
+    if (overallGpaA) overallGpaA.textContent = statsA.overallGpa.toFixed(2);
+    if (majorGpaA) majorGpaA.textContent = statsA.majorGpa.toFixed(2);
+    
+    // B 영역 값 업데이트
+    const totalCreditsB = document.getElementById('total-credits-b');
+    const overallGpaB = document.getElementById('overall-gpa-b');
+    const majorGpaB = document.getElementById('major-gpa-b');
+    
+    if (totalCreditsB) totalCreditsB.textContent = Math.round(statsB.totalCredits);
+    if (overallGpaB) overallGpaB.textContent = statsB.overallGpa.toFixed(2);
+    if (majorGpaB) majorGpaB.textContent = statsB.majorGpa.toFixed(2);
+    
+    // 비교 색상 적용
+    applyComparisonColors('total-credits', statsA.totalCredits, statsB.totalCredits);
+    applyComparisonColors('overall-gpa', statsA.overallGpa, statsB.overallGpa);
+    applyComparisonColors('major-gpa', statsA.majorGpa, statsB.majorGpa);
+}
+
+// 비교 색상 적용
+function applyComparisonColors(statType, valueA, valueB) {
+    const elementA = document.getElementById(`${statType}-a`);
+    const elementB = document.getElementById(`${statType}-b`);
+    
+    if (!elementA || !elementB) return;
+    
+    // 기존 클래스 제거
+    elementA.classList.remove('higher', 'lower', 'equal');
+    elementB.classList.remove('higher', 'lower', 'equal');
+    
+    if (Math.abs(valueA - valueB) < 0.01) {
+        // 거의 같은 값
+        elementA.classList.add('equal');
+        elementB.classList.add('equal');
+    } else if (valueA > valueB) {
+        // A가 더 높음
+        elementA.classList.add('higher');
+        elementB.classList.add('lower');
+    } else {
+        // B가 더 높음
+        elementA.classList.add('lower');
+        elementB.classList.add('higher');
+    }
+}
+
+// 차트 인스턴스 저장
+let gradeChartA = null;
+let gradeChartB = null;
+
+// semester-container와 동일한 성적 색상 팔레트
+const gradeColors = {
+    'A+': '#044400',      // 진한 초록 (최고 성적)
+    'A':  '#4CAF50',      // 초록
+    'B+': '#D4E157',      // 연한 초록/노랑
+    'B':  '#FFEE58',      // 노랑
+    'C+': '#FFB74D',      // 주황
+    'C':  '#FF8A65',      // 연한 빨강
+    'D+': '#C62828',      // 빨강
+    'D':  '#800000',      // 진한 빨강
+    'F':  '#E0E0E0',      // 회색 (F)
+    'P':  '#BDBDBD',      // 회색 (P)
+    'NP': '#E0E0E0'       // 연한 회색 (NP)
+};
+
+// 도넛 차트 업데이트
+function updateGradeCharts(statsA, statsB) {
+    // A 영역 차트 업데이트
+    updateGradeChart('grade-chart-a', statsA.gradeDistribution, 'A');
+    updateGradeDataList('grade-data-a', statsA.gradeDistribution);
+    
+    // B 영역 차트 업데이트  
+    updateGradeChart('grade-chart-b', statsB.gradeDistribution, 'B');
+    updateGradeDataList('grade-data-b', statsB.gradeDistribution);
+}
+
+// 개별 도넛 차트 업데이트
+function updateGradeChart(canvasId, gradeDistribution, section) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // 기존 차트 제거
+    if (section === 'A' && gradeChartA) {
+        gradeChartA.destroy();
+        gradeChartA = null;
+    }
+    if (section === 'B' && gradeChartB) {
+        gradeChartB.destroy();
+        gradeChartB = null;
+    }
+    
+    // 데이터 준비 (0이 아닌 성적만 포함)
+    const labels = [];
+    const data = [];
+    const colors = [];
+    
+    Object.keys(gradeDistribution).forEach(grade => {
+        const count = gradeDistribution[grade];
+        if (count > 0) {
+            labels.push(grade);
+            data.push(count);
+            colors.push(gradeColors[grade] || 'rgba(150, 150, 150, 0.5)');
+        }
+    });
+    
+    // 데이터가 없는 경우 처리
+    if (data.length === 0) {
+        labels.push(getText('noCourseData'));
+        data.push(1);
+        colors.push('rgba(200, 200, 200, 0.3)');
+    }
+    
+    // 총 과목 수 계산
+    const totalCourses = data.reduce((sum, count) => sum + count, 0);
+    
+    // 차트 생성
+    const chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderColor: colors.map(color => color.replace(/0\.\d+\)$/, '1)')), // 테두리는 불투명하게
+                borderWidth: 2,
+                hoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%', // 도넛 홀 크기
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 10,
+                        font: {
+                            size: 12,
+                            family: 'Cafe24OhsquareAir-v2.0'
+                        },
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    titleFont: {
+                        family: 'Cafe24OhsquareAir-v2.0',
+                        size: 13
+                    },
+                    bodyFont: {
+                        family: 'Cafe24OhsquareAir-v2.0',
+                        size: 12
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            const grade = context.label;
+                            const count = context.parsed;
+                            const percentage = ((count / totalCourses) * 100).toFixed(1);
+                            return `${grade}: ${count}과목 (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: false,
+                duration: 800
+            },
+            onClick: (event, elements) => {
+                if (elements.length > 0) {
+                    const elementIndex = elements[0].index;
+                    const clickedGrade = labels[elementIndex];
+                    showGradeCoursesPopup(clickedGrade, section);
+                }
+            }
+        },
+        plugins: [{
+            beforeDraw: function(chart) {
+                if (totalCourses > 0 && labels[0] !== getText('noCourseData')) {
+                    const ctx = chart.ctx;
+                    const centerX = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
+                    const centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
+                    
+                    ctx.save();
+                    // 메인 텍스트 (과목 수) - 크기 증가
+                    ctx.font = 'bold 24px Cafe24OhsquareAir-v2.0';
+                    ctx.fillStyle = '#dc143c';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(`${totalCourses}${getText('courses') || '과목'}`, centerX, centerY - 8);
+                    
+                    // 서브 텍스트 (설명)
+                    ctx.font = '16px Cafe24OhsquareAir-v2.0';
+                    ctx.fillStyle = '#666';
+                    ctx.fillText(getText('totalCourses'), centerX, centerY + 14);
+                    ctx.restore();
+                }
+            }
+        }]
+    });
+    
+    // 차트 인스턴스 저장
+    if (section === 'A') {
+        gradeChartA = chart;
+    } else if (section === 'B') {
+        gradeChartB = chart;
+    }
+}
+
+// 성적별 데이터 목록 업데이트
+function updateGradeDataList(containerId, gradeDistribution) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // 기존 내용 초기화
+    container.innerHTML = '';
+    
+    // 총 과목 수 계산
+    const totalCourses = Object.values(gradeDistribution).reduce((sum, count) => sum + count, 0);
+    
+    if (totalCourses === 0) {
+        container.innerHTML = `<div class="no-data-message">${getText('noCourseData')}</div>`;
+        return;
+    }
+    
+    // 성적 순서대로 정렬 (A+부터 NP까지)
+    const gradeOrder = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F', 'P', 'NP'];
+    
+    gradeOrder.forEach(grade => {
+        const count = gradeDistribution[grade] || 0;
+        if (count > 0) {
+            const percentage = ((count / totalCourses) * 100).toFixed(1);
+            
+            const gradeItem = document.createElement('div');
+            gradeItem.className = 'grade-data-item';
+            
+            gradeItem.innerHTML = `
+                <div class="grade-label">
+                    <div class="grade-color-dot" style="background-color: ${gradeColors[grade]}"></div>
+                    <span>${grade}</span>
+                </div>
+                <div class="grade-info">${count}과목 (${percentage}%)</div>
+            `;
+            
+            container.appendChild(gradeItem);
+        }
+    });
+}
+
+// 졸업요건 막대그래프 업데이트
+function updateRequirementsCharts(deckIdA, deckIdB) {
+    // A 영역 졸업요건 차트 업데이트
+    updateRequirementsChart('requirements-chart-a', deckIdA);
+    
+    // B 영역 졸업요건 차트 업데이트
+    updateRequirementsChart('requirements-chart-b', deckIdB);
+}
+
+// 개별 졸업요건 차트 업데이트
+function updateRequirementsChart(containerId, deckId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // 기존 내용 초기화
+    container.innerHTML = '';
+    
+    // 해당 덱의 졸업요건 정보 확인
+    if (!decks[deckId] || !decks[deckId].majorSelections || decks[deckId].majorSelections.length === 0) {
+        container.innerHTML = `<div class="no-requirements-message">${getText('noRequirementsSet')}</div>`;
+        return;
+    }
+    
+    // 덱의 과목 데이터 수집
+    const deckCourses = [];
+    if (decks[deckId].years) {
+        Object.keys(decks[deckId].years).forEach(year => {
+            const yearData = decks[deckId].years[year];
+            Object.keys(yearData).forEach(semester => {
+                const courses = yearData[semester];
+                courses.forEach(course => {
+                    deckCourses.push(course);
+                });
+            });
+        });
+    }
+    
+    // 각 전공별로 졸업요건 진행률 계산
+    decks[deckId].majorSelections.forEach((selection, index) => {
+        const majorDiv = selection.majorDiv;
+        const year = selection.year;
+        const deptCd = selection.deptCd;
+        
+        // 해당 전공의 졸업요건 정보 가져오기
+        const deptInfo = getDepartmentInfo(majorDiv, year, deptCd);
+        if (!deptInfo) return;
+        
+        // 전공 제목 추가
+        const majorTitle = document.createElement('div');
+        majorTitle.className = 'requirements-major-title';
+        
+        // 전공명 처리 (다양한 형태 지원)
+        let majorName = `전공 ${index + 1}`;
+        if (deptInfo.name) {
+            if (typeof deptInfo.name === 'string') {
+                majorName = deptInfo.name;
+            } else if (typeof deptInfo.name === 'object') {
+                majorName = deptInfo.name.ko || deptInfo.name.kr || deptInfo.name.korean || JSON.stringify(deptInfo.name);
+            }
+        }
+        
+        majorTitle.textContent = majorName;
+        container.appendChild(majorTitle);
+        
+        // 각 그룹별 진행률 계산 및 표시
+        deptInfo.groups.forEach(group => {
+            const groupElement = createRequirementGroupElement(group, deckCourses);
+            container.appendChild(groupElement);
+        });
+        
+        // 전공 구분선 (마지막 전공이 아닌 경우)
+        if (index < decks[deckId].majorSelections.length - 1) {
+            const divider = document.createElement('hr');
+            divider.className = 'requirements-divider';
+            container.appendChild(divider);
+        }
+    });
+}
+
+// 졸업요건 그룹 요소 생성
+function createRequirementGroupElement(group, deckCourses) {
+    const groupElement = document.createElement('div');
+    groupElement.className = 'requirements-group-item';
+    
+    // 해당 그룹에 속하는 과목들 찾기
+    let currentCredit = 0;
+    const matchedCourses = [];
+    
+    deckCourses.forEach(course => {
+        const courseCode = course.code;
+        const grade = course.grade;
+        
+        // 그룹에 속하는 과목인지 확인
+        const isInGroup = group.courses.some(groupCourse => isEqualCourse(groupCourse, courseCode));
+        
+        if (isInGroup) {
+            // F나 NP가 아닌 경우만 학점 인정
+            if (grade !== 'F' && grade !== 'NP') {
+                currentCredit += parseFloat(course.credit) || 0;
+            }
+            matchedCourses.push(course);
+        }
+    });
+    
+    // 기준 학점 (최소 또는 최대)
+    const minCredit = parseFloat(group.minCredit) || 0;
+    const maxCredit = parseFloat(group.maxCredit) || 0;
+    const stdCredit = minCredit > 0 ? minCredit : maxCredit > 0 ? maxCredit : 0;
+    
+    // 진행률 계산
+    const progress = (stdCredit > 0) ? Math.min(100, (currentCredit / stdCredit * 100)) : 0;
+    
+    // HTML 구조 생성
+    groupElement.innerHTML = `
+        <div class="requirements-group-label">${group.name}</div>
+        <div class="requirements-group-progress">
+            <div class="requirements-progress-bar">
+                <div class="requirements-progress-fill" style="width: ${progress}%"></div>
+            </div>
+            <div class="requirements-progress-text">${currentCredit.toFixed(1)}/${stdCredit.toFixed(1)} (${progress.toFixed(0)}%)</div>
+        </div>
+    `;
+    
+    return groupElement;
+}
+
+// 부서 정보 가져오기 (기존 함수 활용)
+function getDepartmentInfo(majorDiv, year, deptCd) {
+    if (!info[year] || !info[year][majorDiv]) return null;
+    
+    const deptList = info[year][majorDiv];
+    return deptList.find(d => d.code === deptCd) || null;
+}
+
+// 성적별 과목 목록 팝업 표시
+function showGradeCoursesPopup(grade, section) {
+    // 현재 선택된 덱 확인
+    const selectElement = document.getElementById(`deck-select-${section.toLowerCase()}`);
+    if (!selectElement) return;
+    
+    const deckId = selectElement.value;
+    if (!decks[deckId] || !decks[deckId].years) return;
+    
+    // 해당 성적의 과목들 수집
+    const gradeCoursesData = [];
+    Object.keys(decks[deckId].years).forEach(year => {
+        const yearData = decks[deckId].years[year];
+        Object.keys(yearData).forEach(semester => {
+            const courses = yearData[semester];
+            courses.forEach(course => {
+                if (course.grade === grade) {
+                    gradeCoursesData.push({
+                        ...course,
+                        year: year,
+                        semester: semester
+                    });
+                }
+            });
+        });
+    });
+    
+    if (gradeCoursesData.length === 0) {
+        alert(`${grade} ${getText('noGradeCourses')}`);
+        return;
+    }
+    
+    // 기존 팝업 제거
+    const existingPopup = document.getElementById('grade-courses-popup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
+    // 팝업 생성
+    const popup = document.createElement('div');
+    popup.id = 'grade-courses-popup';
+    popup.className = 'grade-courses-popup';
+    
+    // 팝업 내용 생성
+    const popupContent = `
+        <div class="grade-courses-popup-content">
+            <div class="grade-courses-popup-header">
+                <h4>${grade} ${getText('gradeCoursesTitle')}</h4>
+                <button class="grade-courses-close-btn">×</button>
+            </div>
+            <div class="grade-courses-popup-body">
+                <div class="grade-courses-list" id="grade-courses-list">
+                    ${gradeCoursesData.map(course => `
+                        <div class="grade-course-item">
+                            <div class="course-info">
+                                <div class="course-name">${course.name}</div>
+                                <div class="course-details">${course.code} | ${course.credit}${getText('credit') || '학점'} | ${course.year}${getText('year') || '학년'} ${course.semester}</div>
+                            </div>
+                            <div class="course-grade" style="background-color: ${gradeColors[grade]}; color: ${['A+', 'A', 'C+', 'C', 'D+', 'D'].includes(grade) ? 'white' : '#333'}">${grade}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    popup.innerHTML = popupContent;
+    
+    // 팝업을 body에 추가
+    document.body.appendChild(popup);
+    
+    // 팝업 표시
+    popup.style.display = 'flex';
+    
+    // 닫기 버튼 이벤트
+    const closeBtn = popup.querySelector('.grade-courses-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            popup.remove();
+        });
+    }
+    
+    // 배경 클릭 시 닫기
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            popup.remove();
+        }
+    });
+    
+    // ESC 키로 닫기
+    const handleEscKey = (e) => {
+        if (e.key === 'Escape') {
+            popup.remove();
+            document.removeEventListener('keydown', handleEscKey);
+        }
+    };
+    document.addEventListener('keydown', handleEscKey);
 }
 
 // 덱 전환 함수
@@ -2125,6 +2843,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 showGpaGoalPopup();
                 return;
             }
+
+            if (e.target.id === 'deck-simulation-btn') {
+                e.preventDefault();
+                showDeckSimulationPopup();
+                return;
+            }
           
             // 검색 관련 버튼들
             if (e.target.id === 'dept-search-btn') {
@@ -2298,6 +3022,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.target.id === 'gpa-goal-close-btn') {
                 e.preventDefault();
                 closeGpaGoalPopup();
+                return;
+            }
+
+            // 덱 시뮬레이션 팝업 닫기 버튼
+            if (e.target.id === 'deck-simulation-close-btn') {
+                e.preventDefault();
+                closeDeckSimulationPopup();
                 return;
             }
           

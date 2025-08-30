@@ -1865,6 +1865,7 @@ body {
 .gpa-goal-section {
     display: flex;
     justify-content: center;
+    gap: 12px;
     margin: 8px 0;
 }
 
@@ -1896,6 +1897,40 @@ body {
 }
 
 .gpa-goal-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.1);
+}
+
+/* 덱 시뮬레이션 버튼 스타일 */
+.deck-simulation-btn {
+    background-color: white;
+    color: #333;
+    border: 2px solid rgba(220, 20, 60, 0.1);
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    white-space: nowrap;
+    min-width: 80px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.05);
+    font-weight: 500;
+}
+
+.deck-simulation-btn:hover {
+    background-color: rgba(220, 20, 60, 0.05);
+    border-color: rgba(220, 20, 60, 0.2);
+    box-shadow: 0 4px 16px rgba(220, 20, 60, 0.1);
+    transform: translateY(-1px);
+}
+
+.deck-simulation-btn:active {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(220, 20, 60, 0.1);
 }
@@ -2638,4 +2673,615 @@ body {
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+}
+
+/* 덱 시뮬레이션 팝업 스타일 */
+.deck-simulation-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.deck-simulation-popup-content {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(220, 20, 60, 0.1);
+    width: 95%;
+    height: 85%;
+    max-width: 1200px;
+    max-height: 800px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.deck-simulation-popup-header {
+    background: linear-gradient(135deg, #dc143c, #b22222);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.deck-simulation-popup-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.deck-simulation-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.deck-simulation-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.deck-simulation-popup-body {
+    padding: 20px;
+    background: white;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* 덱 비교 컨테이너 */
+.deck-comparison-container {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 8px;
+    height: 100%;
+}
+
+/* 덱 섹션 (A, B) */
+.deck-comparison-section {
+    display: flex;
+    flex-direction: column;
+    background: #fafafa;
+    border: 1px solid rgba(220, 20, 60, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    overflow-y: auto;
+    min-height: 0;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
+}
+
+/* 웹킷 기반 브라우저 스크롤바 스타일 */
+.deck-comparison-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.deck-comparison-section::-webkit-scrollbar-track {
+    background: rgba(220, 20, 60, 0.1);
+    border-radius: 3px;
+}
+
+.deck-comparison-section::-webkit-scrollbar-thumb {
+    background: rgba(220, 20, 60, 0.3);
+    border-radius: 3px;
+}
+
+.deck-comparison-section::-webkit-scrollbar-thumb:hover {
+    background: rgba(220, 20, 60, 0.5);
+}
+
+.deck-section-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 3px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(220, 20, 60, 0.1);
+    margin-top: -6px;
+}
+
+.deck-select {
+    padding: 6px 12px;
+    border: 2px solid rgba(220, 20, 60, 0.1);
+    border-radius: 8px;
+    background: white;
+    font-size: 0.9em;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.deck-select:focus {
+    outline: none;
+    border-color: #dc143c;
+    box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.deck-name-display {
+    font-weight: 600;
+    font-size: 1em;
+    color: #dc143c;
+}
+
+.deck-section-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+}
+
+/* 성적 분포 도넛 차트 */
+.grade-chart-container {
+    height: 250px;
+    background: white;
+    border: 1px solid rgba(220, 20, 60, 0.08);
+    border-radius: 8px;
+    padding: 12px;
+    flex-shrink: 0;
+}
+
+.grade-chart-wrapper {
+    display: flex;
+    height: 100%;
+    gap: 12px;
+}
+
+.grade-chart {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+
+.grade-data-list {
+    flex: 0 0 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px;
+    background: rgba(220, 20, 60, 0.02);
+    border-radius: 6px;
+    border: 1px solid rgba(220, 20, 60, 0.05);
+}
+
+.grade-data-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    transition: all 0.2s ease;
+}
+
+.grade-data-item:hover {
+    background: rgba(220, 20, 60, 0.05);
+}
+
+.grade-data-item .grade-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+
+.grade-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.grade-data-item .grade-info {
+    text-align: right;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.no-data-message {
+    text-align: center;
+    color: #999;
+    font-size: 0.8em;
+    padding: 20px 8px;
+    line-height: 1.4;
+}
+
+.no-requirements-message {
+    text-align: center;
+    color: #999;
+    font-size: 0.8em;
+    padding: 20px 8px;
+    line-height: 1.4;
+}
+
+/* 졸업요건 막대그래프 세부 스타일 */
+.requirements-major-title {
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #dc143c;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background: rgba(220, 20, 60, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #dc143c;
+}
+
+.requirements-group-item {
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background: rgba(220, 20, 60, 0.02);
+    border-radius: 6px;
+    border: 1px solid rgba(220, 20, 60, 0.05);
+}
+
+.requirements-group-label {
+    font-size: 0.75em;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.requirements-group-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.requirements-progress-bar {
+    flex: 1;
+    height: 12px;
+    background: rgba(220, 20, 60, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(220, 20, 60, 0.15);
+}
+
+.requirements-progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #dc143c, #b22222);
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+
+.requirements-progress-text {
+    font-size: 0.7em;
+    font-weight: 600;
+    color: #666;
+    min-width: 80px;
+    text-align: right;
+}
+
+.requirements-divider {
+    border: none;
+    border-top: 1px solid rgba(220, 20, 60, 0.1);
+    margin: 12px 0;
+}
+
+.deck-section-bottom {
+    display: grid;
+    gap: 12px;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+/* A 영역은 왼쪽에 졸업요건(3), 오른쪽에 학점/평점(1) */
+.deck-section-a .deck-section-bottom {
+    grid-template-columns: 3fr 1fr;
+}
+
+/* B 영역은 왼쪽에 학점/평점(1), 오른쪽에 졸업요건(3) */
+.deck-section-b .deck-section-bottom {
+    grid-template-columns: 1fr 3fr;
+}
+
+/* 졸업요건 막대그래프 */
+.requirements-chart-container {
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    overflow: visible;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 학점/평점 비교 섹션 */
+.stats-comparison-a, .stats-comparison-b {
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 120px;
+    overflow: visible;
+}
+
+.stat-value {
+    font-size: 1.1em;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    margin-top: 2px;
+}
+
+/* 중앙 비교 섹션 */
+.deck-comparison-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 80px;
+    padding: 0;
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+}
+
+.stat-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    height: 120px;
+    justify-content: flex-start;
+}
+
+.stat-label {
+    font-weight: 600;
+    font-size: 0.85em;
+    color: #333;
+    padding: 10px 6px;
+    background: rgba(220, 20, 60, 0.05);
+    border-radius: 6px;
+    white-space: nowrap;
+    text-align: center;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+/* 값 비교 색상 */
+.stat-value.higher {
+    background: rgba(220, 20, 60, 0.1);
+    color: #dc143c;
+    border: 1px solid rgba(220, 20, 60, 0.2);
+}
+
+.stat-value.lower {
+    background: rgba(100, 100, 100, 0.1);
+    color: #666;
+    border: 1px solid rgba(100, 100, 100, 0.2);
+}
+
+.stat-value.equal {
+    background: rgba(150, 150, 150, 0.1);
+    color: #777;
+    border: 1px solid rgba(150, 150, 150, 0.2);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
+    .deck-comparison-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 16px;
+    }
+    
+    .deck-comparison-center {
+        order: 2;
+        min-width: auto;
+        padding: 16px 0;
+    }
+    
+    .stat-labels {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+    
+    .deck-section-bottom {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .deck-simulation-popup-content {
+        width: 98%;
+        height: 90%;
+        margin: 1%;
+    }
+    
+    .deck-simulation-popup-body {
+        padding: 12px;
+    }
+    
+    .grade-chart-container {
+        height: 150px;
+    }
+}
+
+/* 성적별 과목 목록 팝업 스타일 */
+.grade-courses-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.grade-courses-popup-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(220, 20, 60, 0.1);
+    width: 90%;
+    max-width: 500px;
+    max-height: 70%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.grade-courses-popup-header {
+    background: linear-gradient(135deg, #dc143c, #b22222);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.grade-courses-popup-header h4 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    font-family: 'Cafe24OhsquareAir-v2.0';
+}
+
+.grade-courses-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.4em;
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.grade-courses-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.grade-courses-popup-body {
+    padding: 16px;
+    background: white;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.grade-courses-list {
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
+}
+
+.grade-courses-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.grade-courses-list::-webkit-scrollbar-track {
+    background: rgba(220, 20, 60, 0.1);
+    border-radius: 3px;
+}
+
+.grade-courses-list::-webkit-scrollbar-thumb {
+    background: rgba(220, 20, 60, 0.3);
+    border-radius: 3px;
+}
+
+.grade-courses-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(220, 20, 60, 0.5);
+}
+
+.grade-course-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #fafafa;
+    border: 1px solid rgba(220, 20, 60, 0.08);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.grade-course-item:hover {
+    background: rgba(220, 20, 60, 0.02);
+    border-color: rgba(220, 20, 60, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.1);
+}
+
+.course-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.course-name {
+    font-weight: 600;
+    font-size: 0.95em;
+    color: #333;
+    margin-bottom: 4px;
+    font-family: 'Cafe24OhsquareAir-v2.0';
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.course-details {
+    font-size: 0.8em;
+    color: #666;
+    font-family: 'Cafe24OhsquareAir-v2.0';
+}
+
+.course-grade {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9em;
+    font-family: 'Cafe24OhsquareAir-v2.0';
+    min-width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* 5과목까지만 보이게 하고 나머지는 스크롤 */
+.grade-courses-list {
+    max-height: calc(5 * 60px); /* 과목 아이템 5개 높이 */
 }
