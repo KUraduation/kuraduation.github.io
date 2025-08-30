@@ -39,9 +39,13 @@ const translations = {
         "copy": "복사",
         "paste": "붙여넣기",
         "deckReset": "덱 초기화",
+        "export": "내보내기",
+        "import": "가져오기",
         "copyTitle": "현재 덱 복사",
         "pasteTitle": "복사된 덱 붙여넣기",
         "resetTitle": "현재 덱 초기화",
+        "exportTitle": "데이터 내보내기",
+        "importTitle": "데이터 가져오기",
         "undoTitle": "실행 취소",
         "redoTitle": "다시 실행",
         "helpTitle": "도움말",
@@ -196,9 +200,13 @@ const translations = {
         "copy": "Copy",
         "paste": "Paste",
         "deckReset": "Reset",
+        "export": "Export",
+        "import": "Import",
         "copyTitle": "Copy current deck",
         "pasteTitle": "Paste copied deck",
         "resetTitle": "Reset current deck",
+        "exportTitle": "Export data",
+        "importTitle": "Import data",
         "undoTitle": "Undo",
         "redoTitle": "Redo",
         "helpTitle": "Help",
@@ -426,6 +434,16 @@ function updateTitles() {
     const resetBtn = document.getElementById('deck-reset-btn');
     if (resetBtn) {
         resetBtn.title = getText('resetTitle');
+    }
+
+    const exportBtn = document.getElementById('deck-export-btn');
+    if (exportBtn) {
+        exportBtn.title = getText('exportTitle');
+    }
+
+    const importBtn = document.getElementById('deck-import-btn');
+    if (importBtn) {
+        importBtn.title = getText('importTitle');
     }
 
     const undoBtn = document.getElementById('undo-btn');
@@ -877,6 +895,193 @@ function updateCopyPasteButton() {
             copyPasteBtn.title = getText('copyTitle');
             copyPasteBtn.classList.remove('paste-mode');
         }
+    }
+}
+
+// 데이터 내보내기 함수
+function exportData() {
+    try {
+        // 1. 현재 덱 저장
+        saveCurrentDeck();
+        
+        // 2. 현재 덱 데이터 확인
+        if (!decks[currentDeck]) {
+            alert('현재 덱 데이터를 찾을 수 없습니다.');
+            return;
+        }
+        
+        // 3. 내보낼 데이터 구조 생성
+        const currentDate = new Date();
+        const exportData = {
+            // 메타데이터
+            exportType: "single-deck",
+            exportDate: currentDate.toISOString(),
+            version: "2.1",
+            
+            // 덱 정보
+            deckName: decks[currentDeck].name || currentDeck,
+            
+            // 핵심 데이터
+            years: decks[currentDeck].years || {},
+            majorSelections: decks[currentDeck].majorSelections || [],
+            
+            // 추가 설정 (있다면)
+            customYearNames: decks[currentDeck].customYearNames || {}
+        };
+        
+        // 4. JSON 문자열로 변환
+        const jsonString = JSON.stringify(exportData, null, 2);
+        
+        // 5. 파일명 생성
+        const dateStr = currentDate.getFullYear() + '-' + 
+                       String(currentDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(currentDate.getDate()).padStart(2, '0');
+        const timeStr = String(currentDate.getHours()).padStart(2, '0') + '-' + 
+                       String(currentDate.getMinutes()).padStart(2, '0');
+        const fileName = `졸업계산기_${exportData.deckName}_${dateStr}_${timeStr}.json`;
+        
+        // 6. 파일 다운로드
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        // 성공 메시지
+        alert(`"${exportData.deckName}" 덱 데이터가 성공적으로 내보내졌습니다!\n파일명: ${fileName}`);
+        
+    } catch (error) {
+        console.error('내보내기 오류:', error);
+        alert('데이터 내보내기 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+}
+
+// 데이터 가져오기 함수
+function importData() {
+    // 파일 입력 요소 생성
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    
+    fileInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // 파일 읽기
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // 데이터 검증
+                if (!validateImportData(importedData)) {
+                    return;
+                }
+                
+                // 현재 덱에 데이터 적용하기 전 확인
+                const deckName = importedData.deckName || '알 수 없음';
+                const confirmMessage = `"${deckName}" 덱 데이터를 현재 덱("${decks[currentDeck].name}")에 불러오시겠습니까?\n\n⚠️ 현재 덱의 모든 데이터가 덮어쓰여집니다.`;
+                
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
+                
+                // 백업 생성 (히스토리에 현재 상태 저장)
+                saveToHistory();
+                
+                // 가져온 데이터를 현재 덱에 적용
+                applyImportedData(importedData);
+                
+                // 성공 메시지
+                alert(`"${deckName}" 덱 데이터가 성공적으로 불러와졌습니다!`);
+                
+            } catch (error) {
+                console.error('가져오기 오류:', error);
+                alert('파일을 읽는 중 오류가 발생했습니다.\nJSON 형식이 올바른지 확인해주세요.');
+            }
+        };
+        
+        reader.onerror = function() {
+            alert('파일을 읽을 수 없습니다.');
+        };
+        
+        reader.readAsText(file);
+    });
+    
+    // 파일 선택 대화상자 열기
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+}
+
+// 가져온 데이터 검증 함수
+function validateImportData(data) {
+    try {
+        // 필수 필드 검사
+        if (!data || typeof data !== 'object') {
+            alert('올바르지 않은 파일 형식입니다.');
+            return false;
+        }
+        
+        // exportType 확인
+        if (data.exportType !== 'single-deck') {
+            alert('이 파일은 단일 덱 데이터 파일이 아닙니다.\n올바른 내보내기 파일을 선택해주세요.');
+            return false;
+        }
+        
+        // version 확인 (호환성)
+        if (data.version && data.version !== '2.1') {
+            const continueImport = confirm(`다른 버전(${data.version})의 데이터 파일입니다.\n호환성 문제가 발생할 수 있습니다.\n계속 진행하시겠습니까?`);
+            if (!continueImport) {
+                return false;
+            }
+        }
+        
+        // 필수 데이터 구조 확인
+        if (!data.years || typeof data.years !== 'object') {
+            alert('과목 데이터가 없거나 올바르지 않습니다.');
+            return false;
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('데이터 검증 오류:', error);
+        alert('데이터 검증 중 오류가 발생했습니다.');
+        return false;
+    }
+}
+
+// 가져온 데이터를 현재 덱에 적용하는 함수
+function applyImportedData(importedData) {
+    try {
+        // 현재 덱 데이터 업데이트
+        decks[currentDeck].years = importedData.years || {};
+        decks[currentDeck].majorSelections = importedData.majorSelections || [];
+        
+        // 커스텀 학년명이 있다면 적용
+        if (importedData.customYearNames) {
+            decks[currentDeck].customYearNames = importedData.customYearNames;
+        }
+        
+        // UI 업데이트
+        loadDeck(currentDeck);
+        
+        // 졸업요건 UI 업데이트
+        loadDeckGraduationRequirements(currentDeck);
+        
+        // localStorage에 저장
+        saveStateToLocalStorage();
+        
+    } catch (error) {
+        console.error('데이터 적용 오류:', error);
+        alert('데이터를 적용하는 중 오류가 발생했습니다.');
     }
 }
 
@@ -1875,6 +2080,18 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.target.id === 'deck-reset-btn') {
                 e.preventDefault();
                 resetDeck(currentDeck);
+                return;
+            }
+
+            if (e.target.id === 'deck-export-btn') {
+                e.preventDefault();
+                exportData();
+                return;
+            }
+
+            if (e.target.id === 'deck-import-btn') {
+                e.preventDefault();
+                importData();
                 return;
             }
 

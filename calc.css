@@ -1039,6 +1039,15 @@ body {
     gap: 8px;
 }
 
+.deck-controls-center {
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 8px;
+    margin-bottom: -5px;
+    width: fit-content;
+}
+
 .deck-reset-btn {
     width: 5em;
     background-color: white;
@@ -1060,6 +1069,33 @@ body {
 }
 
 .deck-reset-btn:hover {
+    background-color: rgba(220, 20, 60, 0.05);
+    border-color: rgba(220, 20, 60, 0.2);
+    box-shadow: 0 4px 16px rgba(220, 20, 60, 0.1);
+    transform: translateY(-1px);
+}
+
+.deck-export-btn, .deck-import-btn {
+    width: 5em;
+    background-color: white;
+    color: #333;
+    border: 2px solid rgba(220, 20, 60, 0.1);
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.05);
+}
+
+.deck-export-btn:hover, .deck-import-btn:hover {
     background-color: rgba(220, 20, 60, 0.05);
     border-color: rgba(220, 20, 60, 0.2);
     box-shadow: 0 4px 16px rgba(220, 20, 60, 0.1);
