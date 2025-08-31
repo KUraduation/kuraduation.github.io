@@ -1306,6 +1306,13 @@ body {
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
 }
 
+/* selectContainer 스타일 */
+#selectContainer {
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+}
+
 /* 전공영역 추가 버튼 */
 .plus-line-container {
     width: 100%;
@@ -1324,6 +1331,10 @@ body {
     position: relative;
     height: 48px;
     /* 필요시 조절 */
+    z-index: 100;
+    overflow: visible;
+    margin-top: 20px;
+    padding-bottom: 10px;
 }
 
 .plus-rect-btn {
@@ -1342,6 +1353,9 @@ body {
     
     /* 크림슨 미니멀 스타일 */
     box-shadow: 0 2px 4px rgba(220, 20, 60, 0.1);
+    z-index: 1000;
+    position: relative;
+    pointer-events: auto;
 }
 
 .plus-rect-btn:hover {
@@ -2751,7 +2765,7 @@ body {
 /* 덱 비교 컨테이너 */
 .deck-comparison-container {
     display: grid;
-    grid-template-columns: 1fr 80px 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
     height: 100%;
 }
@@ -3019,7 +3033,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 8px;
+    gap: 4px;
     min-height: 120px;
     overflow: visible;
 }
@@ -3027,48 +3041,38 @@ body {
 .stat-value {
     font-size: 1.1em;
     font-weight: 600;
-    text-align: center;
-    padding: 6px;
-    border-radius: 6px;
+    text-align: right;
+    padding: 4px 8px;
+    border-radius: 4px;
     transition: all 0.3s ease;
-    margin-top: 2px;
+    margin: 0;
+    min-width: 50px;
+    background: rgba(220, 20, 60, 0.08);
+    border: 1px solid rgba(220, 20, 60, 0.1);
 }
 
-/* 중앙 비교 섹션 */
-.deck-comparison-center {
+/* 통계 항목 스타일 */
+.stat-item {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    flex-direction: row;
     align-items: center;
-    min-width: 80px;
-    padding: 0;
-    padding-bottom: 20px;
-    margin-bottom: 28px;
-}
-
-.stat-labels {
-    display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     gap: 8px;
-    text-align: center;
-    height: 120px;
-    justify-content: flex-start;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    background: rgba(220, 20, 60, 0.02);
+    border-radius: 6px;
+    border: 1px solid rgba(220, 20, 60, 0.05);
 }
 
 .stat-label {
     font-weight: 600;
     font-size: 0.85em;
     color: #333;
-    padding: 10px 6px;
-    background: rgba(220, 20, 60, 0.05);
-    border-radius: 6px;
     white-space: nowrap;
-    text-align: center;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 2px;
+    text-align: left;
+    margin: 0;
+    flex-shrink: 0;
 }
 
 /* 값 비교 색상 */
@@ -3094,20 +3098,11 @@ body {
 @media (max-width: 1024px) {
     .deck-comparison-container {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
+        grid-template-rows: auto auto;
         gap: 16px;
     }
     
-    .deck-comparison-center {
-        order: 2;
-        min-width: auto;
-        padding: 16px 0;
-    }
-    
-    .stat-labels {
-        flex-direction: row;
-        justify-content: space-around;
-    }
+
     
     .deck-section-bottom {
         grid-template-columns: 1fr;

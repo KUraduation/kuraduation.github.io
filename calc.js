@@ -2915,6 +2915,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (menu) {
                     menu.remove();
                     menu = null;
+                    document.removeEventListener('click', closeMenu);
                     return;
                 }
 
@@ -2945,8 +2946,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     item.addEventListener('mouseleave', () => item.style.background = '');
                     item.addEventListener('click', function (ev) {
                         ev.stopPropagation();
-                        menu.remove();
-                        menu = null;
+                        closeMenu();
                         createDeptDropdown(idx);
                         saveToHistory();
                     });
@@ -2963,9 +2963,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     menu.style.top = (window.innerHeight - menuRect.height - 8) + 'px';
                 }
 
-                setTimeout(() => {
-                    document.addEventListener('click', closeMenu);
-                }, 0);
+                // 즉시 이벤트 리스너 추가
+                document.addEventListener('click', closeMenu);
                 return;
             }
 
@@ -3034,21 +3033,12 @@ document.addEventListener('DOMContentLoaded', function () {
           
             // 메뉴 외부 클릭 시 메뉴 닫기
             if (menu && !menu.contains(e.target) && e.target.id !== 'major-add-btn') {
-                menu.remove();
-                menu = null;
-                document.removeEventListener('click', closeMenu);
+                closeMenu();
                 return;
             }
         });
 
-        // 메뉴 닫기 함수
-        function closeMenu() {
-            if (menu) {
-                menu.remove();
-                menu = null;
-            }
-            document.removeEventListener('click', closeMenu);
-        }
+
 
         // 전역 키보드 이벤트 위임
         document.addEventListener('keydown', function (e) {
@@ -3070,6 +3060,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.key === 'Escape') {
                 closeCoursePopup();
                 closeHelpPopup();
+                if (menu) {
+                    closeMenu();
+                }
                 if (isClickMoveMode) {
                     clearCourseSelection();
                 }
@@ -3365,6 +3358,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const plusBtn = document.getElementById('major-add-btn');
     let menu = null;
+    
+    // 전역 메뉴 닫기 함수
+    function closeMenu() {
+        if (menu) {
+            menu.remove();
+            menu = null;
+        }
+        document.removeEventListener('click', closeMenu);
+    }
 
     // plus 버튼과 divider 이벤트는 이벤트 위임으로 대체되었으므로 제거
 
