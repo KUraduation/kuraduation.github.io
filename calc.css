@@ -2804,6 +2804,48 @@ body {
     background: rgba(220, 20, 60, 0.5);
 }
 
+/* 태블릿 전용 스크롤 스타일 */
+@media (max-width: 1024px) and (min-width: 768px) {
+    .deck-simulation-popup-content {
+        height: 95%;
+        max-height: 95vh;
+    }
+    
+    .deck-comparison-section {
+        overflow-y: visible;
+        min-height: auto;
+    }
+    
+    .deck-comparison-section::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .deck-simulation-popup-body {
+        overflow-y: auto;
+        max-height: calc(95vh - 120px);
+        scrollbar-width: thin;
+        scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
+    }
+    
+    .deck-simulation-popup-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .deck-simulation-popup-body::-webkit-scrollbar-track {
+        background: rgba(220, 20, 60, 0.1);
+        border-radius: 4px;
+    }
+    
+    .deck-simulation-popup-body::-webkit-scrollbar-thumb {
+        background: rgba(220, 20, 60, 0.3);
+        border-radius: 4px;
+    }
+    
+    .deck-simulation-popup-body::-webkit-scrollbar-thumb:hover {
+        background: rgba(220, 20, 60, 0.5);
+    }
+}
+
 .deck-section-header {
     display: flex;
     justify-content: center;
@@ -3113,12 +3155,44 @@ body {
 @media (max-width: 768px) {
     .deck-simulation-popup-content {
         width: 98%;
-        height: 90%;
+        height: 95%;
         margin: 1%;
+        max-height: 95vh;
     }
     
     .deck-simulation-popup-body {
         padding: 12px;
+        overflow-y: auto;
+        max-height: calc(95vh - 100px);
+        scrollbar-width: thin;
+        scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
+    }
+    
+    .deck-simulation-popup-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .deck-simulation-popup-body::-webkit-scrollbar-track {
+        background: rgba(220, 20, 60, 0.1);
+        border-radius: 4px;
+    }
+    
+    .deck-simulation-popup-body::-webkit-scrollbar-thumb {
+        background: rgba(220, 20, 60, 0.3);
+        border-radius: 4px;
+    }
+    
+    .deck-simulation-popup-body::-webkit-scrollbar-thumb:hover {
+        background: rgba(220, 20, 60, 0.5);
+    }
+    
+    .deck-comparison-section {
+        overflow-y: visible;
+        min-height: auto;
+    }
+    
+    .deck-comparison-section::-webkit-scrollbar {
+        display: none;
     }
     
     .grade-chart-container {
