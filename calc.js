@@ -2770,6 +2770,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // === 이벤트 위임 시스템 구축 ===
     function setupEventDelegation() {
+        let menu = null; // 전공 추가 메뉴 변수
+        
         // 전역 클릭 이벤트 위임
         document.addEventListener('click', function (e) {
             // 덱 탭 클릭
@@ -2947,7 +2949,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         ev.stopPropagation();
                         menu.remove();
                         menu = null;
-                        createDeptDropdown(idx);
+                        createDeptDropdown(idx, years[years.length - 1], null);
                         saveToHistory();
                     });
                     menu.appendChild(item);
@@ -2964,10 +2966,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 setTimeout(() => {
-                    document.addEventListener('click', closeMenu);
+                    document.addEventListener('click', function() {
+                        if (menu) {
+                            menu.remove();
+                            menu = null;
+                        }
+                    });
                 }, 0);
                 return;
             }
+            
+
 
             // 과목 팝업 관련 버튼들
             if (e.target.classList.contains('course-popup-save-btn')) {
@@ -3036,19 +3045,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (menu && !menu.contains(e.target) && e.target.id !== 'major-add-btn') {
                 menu.remove();
                 menu = null;
-                document.removeEventListener('click', closeMenu);
                 return;
             }
         });
 
-        // 메뉴 닫기 함수
-        function closeMenu() {
-            if (menu) {
-                menu.remove();
-                menu = null;
-            }
-            document.removeEventListener('click', closeMenu);
-        }
+
 
         // 전역 키보드 이벤트 위임
         document.addEventListener('keydown', function (e) {
