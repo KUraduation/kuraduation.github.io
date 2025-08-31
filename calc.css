@@ -14,6 +14,12 @@
     font-family: 'Cafe24OhsquareAir-v2.0' !important;
 }
 
+/* HTML과 body에 스크롤 개선 적용 */
+html {
+    -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
+    overflow-x: hidden; /* 가로 스크롤 방지 */
+}
+
 /* 추가로 body에도 적용 */
 /* 추가로 body에도 적용 */
 body {
@@ -28,6 +34,7 @@ body {
     overflow: hidden; /* 전체 스크롤 방지 */
     margin: 0;
     padding: 0;
+    -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
 }
 
 /* 과목 정보 팝업 스타일 */
@@ -289,6 +296,7 @@ body {
     align-items: stretch; /* 자식 요소들이 같은 높이를 갖도록 함 */
     position: relative; /* 팝업 위치 기준점 */
     overflow: hidden; /* 전체 스크롤 방지 */
+    -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
 }
 
 /* 세 영역의 스타일 시작 */
@@ -752,6 +760,7 @@ body {
     
     /* 부드러운 전환 */
     transition: all 0.3s ease;
+    -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
 }
 
 #semester-scroll-container {
@@ -761,6 +770,7 @@ body {
     overflow-x: auto;
     scrollbar-width: none; /* Firefox */
     /*-ms-overflow-style: none; /* IE and Edge */
+    -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
 }
 
 
@@ -972,6 +982,7 @@ body {
     overflow-y: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
+    -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
     position: relative;
     
     /* 크림슨 미니멀 컨테이너 */
@@ -2806,42 +2817,28 @@ body {
 
 /* 태블릿 전용 스크롤 스타일 */
 @media (max-width: 1024px) and (min-width: 768px) {
-    .deck-simulation-popup-content {
-        height: 95%;
-        max-height: 95vh;
-    }
-    
-    .deck-comparison-section {
-        overflow-y: visible;
-        min-height: auto;
-    }
-    
-    .deck-comparison-section::-webkit-scrollbar {
-        display: none;
-    }
-    
-    .deck-simulation-popup-body {
+    .chart-container {
+        -webkit-overflow-scrolling: touch;
         overflow-y: auto;
-        max-height: calc(95vh - 120px);
-        scrollbar-width: thin;
-        scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
+        height: 100%;
+        max-height: 100vh;
     }
     
-    .deck-simulation-popup-body::-webkit-scrollbar {
+    .chart-container::-webkit-scrollbar {
         width: 8px;
     }
     
-    .deck-simulation-popup-body::-webkit-scrollbar-track {
+    .chart-container::-webkit-scrollbar-track {
         background: rgba(220, 20, 60, 0.1);
         border-radius: 4px;
     }
     
-    .deck-simulation-popup-body::-webkit-scrollbar-thumb {
+    .chart-container::-webkit-scrollbar-thumb {
         background: rgba(220, 20, 60, 0.3);
         border-radius: 4px;
     }
     
-    .deck-simulation-popup-body::-webkit-scrollbar-thumb:hover {
+    .chart-container::-webkit-scrollbar-thumb:hover {
         background: rgba(220, 20, 60, 0.5);
     }
 }
@@ -3155,48 +3152,23 @@ body {
 @media (max-width: 768px) {
     .deck-simulation-popup-content {
         width: 98%;
-        height: 95%;
+        height: 90%;
         margin: 1%;
-        max-height: 95vh;
     }
     
     .deck-simulation-popup-body {
         padding: 12px;
-        overflow-y: auto;
-        max-height: calc(95vh - 100px);
-        scrollbar-width: thin;
-        scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
-    }
-    
-    .deck-simulation-popup-body::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    .deck-simulation-popup-body::-webkit-scrollbar-track {
-        background: rgba(220, 20, 60, 0.1);
-        border-radius: 4px;
-    }
-    
-    .deck-simulation-popup-body::-webkit-scrollbar-thumb {
-        background: rgba(220, 20, 60, 0.3);
-        border-radius: 4px;
-    }
-    
-    .deck-simulation-popup-body::-webkit-scrollbar-thumb:hover {
-        background: rgba(220, 20, 60, 0.5);
-    }
-    
-    .deck-comparison-section {
-        overflow-y: visible;
-        min-height: auto;
-    }
-    
-    .deck-comparison-section::-webkit-scrollbar {
-        display: none;
     }
     
     .grade-chart-container {
         height: 150px;
+    }
+    
+    .chart-container {
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
+        height: 100%;
+        max-height: 100vh;
     }
 }
 
