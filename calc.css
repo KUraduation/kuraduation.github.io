@@ -286,7 +286,6 @@ body {
     flex-direction: row;
     width: 100%;
     height: 100vh;
-    min-height: 100vh;
     align-items: stretch; /* 자식 요소들이 같은 높이를 갖도록 함 */
     position: relative; /* 팝업 위치 기준점 */
     overflow: hidden; /* 전체 스크롤 방지 */
@@ -969,10 +968,10 @@ body {
 .chart-container {
     width: 18em;
     flex-shrink: 0; /* 창 크기가 줄어도 너비 고정 */
-    height: 100vh; /* 뷰포트 높이로 명시적 설정 */
+    height: 100%;
     overflow-y: auto;
-    scrollbar-width: none; /* Firefox - 데스크톱에서는 숨김 */
-    -ms-overflow-style: none; /* IE and Edge - 데스크톱에서는 숨김 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
     position: relative;
     
     /* 크림슨 미니멀 컨테이너 */
@@ -989,15 +988,6 @@ body {
     
     /* 부드러운 전환 */
     transition: all 0.3s ease;
-    
-    /* 터치 스크롤 개선 */
-    -webkit-overflow-scrolling: touch;
-<<<<<<< HEAD
-    
-    /* 노트북/태블릿 하이브리드 스크롤 최적화 */
-    scroll-behavior: smooth;
-=======
->>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
 }
 
 /* semester-container와 chart-container 사이의 중앙 구분선 - 제거됨 */
@@ -1321,15 +1311,19 @@ body {
     width: 100%;
     display: flex;
     justify-content: center;
+    /* 가로 중앙 */
     align-items: flex-start;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    /* 세로 상단 */
+    /* border-top: 2px solid #000; */
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
+    padding-top: 4px;
+    /* 버튼과 선 사이 간격 */
     background: transparent;
     position: relative;
-    height: auto;
-    min-height: 56px;
-    flex-shrink: 0; /* 스크롤 시 크기 고정 */
-    z-index: 10; /* 다른 요소보다 위에 표시 */
+    height: 48px;
+    /* 필요시 조절 */
 }
 
 .plus-rect-btn {
@@ -1345,8 +1339,6 @@ body {
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    position: relative;
-    z-index: 10;
     
     /* 크림슨 미니멀 스타일 */
     box-shadow: 0 2px 4px rgba(220, 20, 60, 0.1);
@@ -2759,8 +2751,8 @@ body {
 /* 덱 비교 컨테이너 */
 .deck-comparison-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 8px;
     height: 100%;
 }
 
@@ -3032,22 +3024,6 @@ body {
     overflow: visible;
 }
 
-.stat-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 4px 0;
-}
-
-.stat-label-inline {
-    font-weight: 600;
-    font-size: 0.85em;
-    color: #333;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
 .stat-value {
     font-size: 1.1em;
     font-weight: 600;
@@ -3058,7 +3034,42 @@ body {
     margin-top: 2px;
 }
 
-/* 중앙 비교 섹션 - 제거됨 */
+/* 중앙 비교 섹션 */
+.deck-comparison-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 80px;
+    padding: 0;
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+}
+
+.stat-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    height: 120px;
+    justify-content: flex-start;
+}
+
+.stat-label {
+    font-weight: 600;
+    font-size: 0.85em;
+    color: #333;
+    padding: 10px 6px;
+    background: rgba(220, 20, 60, 0.05);
+    border-radius: 6px;
+    white-space: nowrap;
+    text-align: center;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+}
 
 /* 값 비교 색상 */
 .stat-value.higher {
@@ -3083,8 +3094,19 @@ body {
 @media (max-width: 1024px) {
     .deck-comparison-container {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto;
+        grid-template-rows: auto auto auto;
         gap: 16px;
+    }
+    
+    .deck-comparison-center {
+        order: 2;
+        min-width: auto;
+        padding: 16px 0;
+    }
+    
+    .stat-labels {
+        flex-direction: row;
+        justify-content: space-around;
     }
     
     .deck-section-bottom {
@@ -3093,110 +3115,7 @@ body {
     }
 }
 
-<<<<<<< HEAD
-/* 태블릿용 chart-container 스크롤 개선 - 하이브리드 접근법 */
-@media (max-width: 1024px) and (min-width: 769px) {
-    .chart-container {
-        /* 태블릿에서 스크롤 강화 */
-        scrollbar-width: thin;
-        scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
-        overflow-y: scroll; /* auto 대신 scroll로 강제 */
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-y; /* 세로 터치 스크롤만 허용 */
-        
-        /* 스크롤 영역 최적화 */
-        min-height: 600px;
-        max-height: calc(100vh - 20px);
-    }
-    
-    .chart-container::-webkit-scrollbar {
-        width: 10px; /* 태블릿에서 더 큰 터치 영역 */
-        display: block !important; /* 강제 표시 */
-    }
-    
-    .chart-container::-webkit-scrollbar-track {
-        background: rgba(220, 20, 60, 0.15);
-        border-radius: 6px;
-        border: 1px solid rgba(220, 20, 60, 0.1);
-=======
-/* 태블릿용 chart-container 스크롤 개선 */
-@media (max-width: 1024px) and (min-width: 769px) {
-    .chart-container {
-        height: 100vh;
-        max-height: 100vh;
-        scrollbar-width: thin; /* 태블릿에서는 스크롤바 보이게 */
-        scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
-    }
-    
-    .chart-container::-webkit-scrollbar {
-        width: 10px; /* 태블릿에서 더 큰 스크롤바 */
-    }
-    
-    .chart-container::-webkit-scrollbar-track {
-        background: rgba(220, 20, 60, 0.1);
-        border-radius: 5px;
->>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
-    }
-    
-    .chart-container::-webkit-scrollbar-thumb {
-        background: rgba(220, 20, 60, 0.4);
-<<<<<<< HEAD
-        border-radius: 6px;
-        border: 2px solid rgba(220, 20, 60, 0.2);
-        min-height: 40px; /* 최소 터치 영역 */
-=======
-        border-radius: 5px;
->>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
-    }
-    
-    .chart-container::-webkit-scrollbar-thumb:hover {
-        background: rgba(220, 20, 60, 0.6);
-    }
-    
-<<<<<<< HEAD
-    .chart-container::-webkit-scrollbar-thumb:active {
-        background: rgba(220, 20, 60, 0.8);
-=======
-    /* 졸업요건 영역 터치 스크롤 강화 */
-    .dept-select-container {
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
-    }
-    
-    /* 전공 추가 버튼 태블릿 최적화 */
-    .plus-line-container {
-        position: sticky;
-        bottom: 0;
-        background: white;
-        border-top: 1px solid rgba(220, 20, 60, 0.1);
-        margin-top: auto;
-        z-index: 100;
-        box-shadow: 0 -2px 8px rgba(220, 20, 60, 0.1);
-    }
-    
-    #major-add-btn {
-        width: 48px;
-        height: 40px;
-        font-size: 1.8em;
->>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
-    }
-}
-
 @media (max-width: 768px) {
-    /* chart-container 모바일 최적화 */
-    .chart-container {
-        height: calc(100vh - 20px);
-        padding: 12px;
-        scrollbar-width: auto; /* 모바일에서도 스크롤바 보이게 */
-        -webkit-overflow-scrolling: touch;
-<<<<<<< HEAD
-        overflow-y: scroll; /* 모바일에서도 강제 스크롤 */
-        touch-action: pan-y;
-=======
->>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
-    }
-    
-    /* 덱 비교 팝업 */
     .deck-simulation-popup-content {
         width: 98%;
         height: 90%;

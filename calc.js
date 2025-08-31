@@ -2770,8 +2770,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // === 이벤트 위임 시스템 구축 ===
     function setupEventDelegation() {
-        let menu = null; // 전공 추가 메뉴 변수
-        
         // 전역 클릭 이벤트 위임
         document.addEventListener('click', function (e) {
             // 덱 탭 클릭
@@ -2949,7 +2947,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         ev.stopPropagation();
                         menu.remove();
                         menu = null;
-                        createDeptDropdown(idx, years[years.length - 1], null);
+                        createDeptDropdown(idx);
                         saveToHistory();
                     });
                     menu.appendChild(item);
@@ -2966,17 +2964,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 setTimeout(() => {
-                    document.addEventListener('click', function() {
-                        if (menu) {
-                            menu.remove();
-                            menu = null;
-                        }
-                    });
+                    document.addEventListener('click', closeMenu);
                 }, 0);
                 return;
             }
-            
-
 
             // 과목 팝업 관련 버튼들
             if (e.target.classList.contains('course-popup-save-btn')) {
@@ -3045,11 +3036,19 @@ document.addEventListener('DOMContentLoaded', function () {
             if (menu && !menu.contains(e.target) && e.target.id !== 'major-add-btn') {
                 menu.remove();
                 menu = null;
+                document.removeEventListener('click', closeMenu);
                 return;
             }
         });
 
-
+        // 메뉴 닫기 함수
+        function closeMenu() {
+            if (menu) {
+                menu.remove();
+                menu = null;
+            }
+            document.removeEventListener('click', closeMenu);
+        }
 
         // 전역 키보드 이벤트 위임
         document.addEventListener('keydown', function (e) {
@@ -3558,19 +3557,18 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     groupToggleArea.appendChild(groupListDiv);
     container.appendChild(groupToggleArea);
 
-    // 토글 버튼 제거 - 항상 펼쳐진 상태로 유지
-    // const toggleBtn = document.createElement('button');
-    // toggleBtn.type = 'button';
-    // toggleBtn.className = 'group-toggle-btn';
-    // toggleBtn.textContent = '△';
-    // container.appendChild(toggleBtn);
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'group-toggle-btn';
+    toggleBtn.textContent = '△';
+    container.appendChild(toggleBtn);
 
-    // let expanded = true;
-    // toggleBtn.addEventListener('click', () => {
-    //     expanded = !expanded;
-    //     groupToggleArea.classList.toggle('collapsed', !expanded);
-    //     toggleBtn.textContent = expanded ? '△' : '▽';
-    // });
+    let expanded = true;
+    toggleBtn.addEventListener('click', () => {
+        expanded = !expanded;
+        groupToggleArea.classList.toggle('collapsed', !expanded);
+        toggleBtn.textContent = expanded ? '△' : '▽';
+    });
 
     container.appendChild(document.createElement('hr'));
     select.addEventListener('change', () => {
