@@ -3557,18 +3557,19 @@ function createDeptDropdown(majorDiv, selectedYear, selectedDeptCd) {
     groupToggleArea.appendChild(groupListDiv);
     container.appendChild(groupToggleArea);
 
-    const toggleBtn = document.createElement('button');
-    toggleBtn.type = 'button';
-    toggleBtn.className = 'group-toggle-btn';
-    toggleBtn.textContent = '△';
-    container.appendChild(toggleBtn);
+    // 토글 버튼 제거 - 항상 펼쳐진 상태로 유지
+    // const toggleBtn = document.createElement('button');
+    // toggleBtn.type = 'button';
+    // toggleBtn.className = 'group-toggle-btn';
+    // toggleBtn.textContent = '△';
+    // container.appendChild(toggleBtn);
 
-    let expanded = true;
-    toggleBtn.addEventListener('click', () => {
-        expanded = !expanded;
-        groupToggleArea.classList.toggle('collapsed', !expanded);
-        toggleBtn.textContent = expanded ? '△' : '▽';
-    });
+    // let expanded = true;
+    // toggleBtn.addEventListener('click', () => {
+    //     expanded = !expanded;
+    //     groupToggleArea.classList.toggle('collapsed', !expanded);
+    //     toggleBtn.textContent = expanded ? '△' : '▽';
+    // });
 
     container.appendChild(document.createElement('hr'));
     select.addEventListener('change', () => {
