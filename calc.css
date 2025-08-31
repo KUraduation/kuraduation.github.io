@@ -286,6 +286,7 @@ body {
     flex-direction: row;
     width: 100%;
     height: 100vh;
+    min-height: 100vh;
     align-items: stretch; /* 자식 요소들이 같은 높이를 갖도록 함 */
     position: relative; /* 팝업 위치 기준점 */
     overflow: hidden; /* 전체 스크롤 방지 */
@@ -991,9 +992,12 @@ body {
     
     /* 터치 스크롤 개선 */
     -webkit-overflow-scrolling: touch;
+<<<<<<< HEAD
     
     /* 노트북/태블릿 하이브리드 스크롤 최적화 */
     scroll-behavior: smooth;
+=======
+>>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
 }
 
 /* semester-container와 chart-container 사이의 중앙 구분선 - 제거됨 */
@@ -1317,19 +1321,15 @@ body {
     width: 100%;
     display: flex;
     justify-content: center;
-    /* 가로 중앙 */
     align-items: flex-start;
-    /* 세로 상단 */
-    /* border-top: 2px solid #000; */
-    border-right: none;
-    border-bottom: none;
-    border-left: none;
-    padding-top: 4px;
-    /* 버튼과 선 사이 간격 */
+    padding-top: 8px;
+    padding-bottom: 8px;
     background: transparent;
     position: relative;
-    height: 48px;
-    /* 필요시 조절 */
+    height: auto;
+    min-height: 56px;
+    flex-shrink: 0; /* 스크롤 시 크기 고정 */
+    z-index: 10; /* 다른 요소보다 위에 표시 */
 }
 
 .plus-rect-btn {
@@ -1345,6 +1345,8 @@ body {
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    position: relative;
+    z-index: 10;
     
     /* 크림슨 미니멀 스타일 */
     box-shadow: 0 2px 4px rgba(220, 20, 60, 0.1);
@@ -3091,6 +3093,7 @@ body {
     }
 }
 
+<<<<<<< HEAD
 /* 태블릿용 chart-container 스크롤 개선 - 하이브리드 접근법 */
 @media (max-width: 1024px) and (min-width: 769px) {
     .chart-container {
@@ -3115,21 +3118,67 @@ body {
         background: rgba(220, 20, 60, 0.15);
         border-radius: 6px;
         border: 1px solid rgba(220, 20, 60, 0.1);
+=======
+/* 태블릿용 chart-container 스크롤 개선 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .chart-container {
+        height: 100vh;
+        max-height: 100vh;
+        scrollbar-width: thin; /* 태블릿에서는 스크롤바 보이게 */
+        scrollbar-color: rgba(220, 20, 60, 0.3) rgba(220, 20, 60, 0.1);
+    }
+    
+    .chart-container::-webkit-scrollbar {
+        width: 10px; /* 태블릿에서 더 큰 스크롤바 */
+    }
+    
+    .chart-container::-webkit-scrollbar-track {
+        background: rgba(220, 20, 60, 0.1);
+        border-radius: 5px;
+>>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
     }
     
     .chart-container::-webkit-scrollbar-thumb {
         background: rgba(220, 20, 60, 0.4);
+<<<<<<< HEAD
         border-radius: 6px;
         border: 2px solid rgba(220, 20, 60, 0.2);
         min-height: 40px; /* 최소 터치 영역 */
+=======
+        border-radius: 5px;
+>>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
     }
     
     .chart-container::-webkit-scrollbar-thumb:hover {
         background: rgba(220, 20, 60, 0.6);
     }
     
+<<<<<<< HEAD
     .chart-container::-webkit-scrollbar-thumb:active {
         background: rgba(220, 20, 60, 0.8);
+=======
+    /* 졸업요건 영역 터치 스크롤 강화 */
+    .dept-select-container {
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+    }
+    
+    /* 전공 추가 버튼 태블릿 최적화 */
+    .plus-line-container {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        border-top: 1px solid rgba(220, 20, 60, 0.1);
+        margin-top: auto;
+        z-index: 100;
+        box-shadow: 0 -2px 8px rgba(220, 20, 60, 0.1);
+    }
+    
+    #major-add-btn {
+        width: 48px;
+        height: 40px;
+        font-size: 1.8em;
+>>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
     }
 }
 
@@ -3140,8 +3189,11 @@ body {
         padding: 12px;
         scrollbar-width: auto; /* 모바일에서도 스크롤바 보이게 */
         -webkit-overflow-scrolling: touch;
+<<<<<<< HEAD
         overflow-y: scroll; /* 모바일에서도 강제 스크롤 */
         touch-action: pan-y;
+=======
+>>>>>>> 8d4bc423e5562384a0a7b0697bbf1fba2dc0be9a
     }
     
     /* 덱 비교 팝업 */
