@@ -3910,8 +3910,7 @@ function updateChart(options = { save: true }) {
         majorGpaElement.textContent = 'N/A';
     }
 
-    // 각 전공별 그룹 업데이트(타과 인정 과목은 중복 적용 허용)
-    // 여기서 takenCourses를 변경하므로 아래에서 사용 시 주의
+    // 각 전공별 그룹 업데이트(한 과목이 여러 졸업요건에 중복 적용 가능)
     myMajors.forEach(myMajor => {
         const year = myMajor.querySelector('.year-select').value;
         const majorDiv = myMajor.dataset.majorDiv;
@@ -3927,61 +3926,23 @@ function updateChart(options = { save: true }) {
             groupContainer.dataset.currentCredit = 0;
         });
 
-        const joinedCourses = []; // 중복 추가 방지
         takenCourses.forEach(takenCourse => {
             const courseCode = takenCourse.dataset.courseCode;
 
-            const foundGroup = dept.groups.find(group => {
-                // 과목코드로 매칭
-                return group.courses.some(courseCd => isEqualCourse(courseCd, courseCode));
-            });
-
-            if (foundGroup) {
-                // 그룹 코드 일치하는 곳에 추가
-                const groupContainer = Array.from(groupContainers).find(gc =>
-                    gc.dataset.groupCd === foundGroup.code
-                );
-                if (groupContainer) {
-                    addCourese(groupContainer, takenCourse);
-                    joinedCourses.push(takenCourse);
-                }
-            }
-        });
-        // 타과 인정 과목이 아닌 경우에만 중복 방지를 위해 제거
-        joinedCourses.forEach(courses => {
-            // 타과 인정 과목인지 확인 (타과 인정 과목 카테고리에 있는지 체크)
-            const isOtherDeptCourse = Array.from(myMajors).some(major => {
-                const majorYear = major.querySelector('.year-select').value;
-                const majorMajorDiv = major.dataset.majorDiv;
-                const majorSelectedDeptCd = major.querySelector('.dept-select').value;
-                const majorDeptList = info[majorYear] ? info[majorYear][majorMajorDiv] : [];
-                const majorDept = majorDeptList ? majorDeptList.find(d => d.code === majorSelectedDeptCd) : null;
+            // 모든 그룹에서 해당 과목을 찾아서 추가
+            dept.groups.forEach(group => {
+                const isInGroup = group.courses.some(courseCd => isEqualCourse(courseCd, courseCode));
                 
-                if (!majorDept) return false;
-                
-                // 타과 인정 과목 카테고리 찾기
-                const otherDeptGroup = majorDept.groups.find(group => 
-                    group.name && (group.name.includes('타과') || group.name.includes('인정'))
-                );
-                
-                if (otherDeptGroup) {
-                    return otherDeptGroup.courses.some(courseCd => 
-                        isEqualCourse(courseCd, courses.dataset.courseCode)
+                if (isInGroup) {
+                    // 그룹 코드 일치하는 곳에 추가
+                    const groupContainer = Array.from(groupContainers).find(gc =>
+                        gc.dataset.groupCd === group.code
                     );
-                }
-                return false;
-            });
-            
-            // 타과 인정 과목이 아닌 경우에만 제거
-            if (!isOtherDeptCourse) {
-                takenCourses.some((takenCourse, index) => {
-                    if (courses === takenCourse) {
-                        takenCourses.splice(index, 1);
-                        return true;
+                    if (groupContainer) {
+                        addCourese(groupContainer, takenCourse);
                     }
-                    return false;
-                });
-            }
+                }
+            });
         });
     });
 
