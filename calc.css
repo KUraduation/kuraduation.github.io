@@ -2651,6 +2651,11 @@ body {
     color: #666;
 }
 
+.retake-effect.abandon {
+    color: #f44336;
+    font-weight: 700;
+}
+
 
 
 .no-retake-courses {

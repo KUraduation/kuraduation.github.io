@@ -3910,7 +3910,7 @@ function updateChart(options = { save: true }) {
         majorGpaElement.textContent = 'N/A';
     }
 
-    // 각 전공별 그룹 업데이트(한 강의는 1개의 전공영역에만 적용)
+    // 각 전공별 그룹 업데이트(타과 인정 과목은 중복 적용 허용)
     // 여기서 takenCourses를 변경하므로 아래에서 사용 시 주의
     myMajors.forEach(myMajor => {
         const year = myMajor.querySelector('.year-select').value;
@@ -3947,15 +3947,41 @@ function updateChart(options = { save: true }) {
                 }
             }
         });
-        // 중복 방지를 위해 제거
+        // 타과 인정 과목이 아닌 경우에만 중복 방지를 위해 제거
         joinedCourses.forEach(courses => {
-            takenCourses.some((takenCourse, index) => {
-                if (courses === takenCourse) {
-                    takenCourses.splice(index, 1);
-                    return true;
+            // 타과 인정 과목인지 확인 (타과 인정 과목 카테고리에 있는지 체크)
+            const isOtherDeptCourse = Array.from(myMajors).some(major => {
+                const majorYear = major.querySelector('.year-select').value;
+                const majorMajorDiv = major.dataset.majorDiv;
+                const majorSelectedDeptCd = major.querySelector('.dept-select').value;
+                const majorDeptList = info[majorYear] ? info[majorYear][majorMajorDiv] : [];
+                const majorDept = majorDeptList ? majorDeptList.find(d => d.code === majorSelectedDeptCd) : null;
+                
+                if (!majorDept) return false;
+                
+                // 타과 인정 과목 카테고리 찾기
+                const otherDeptGroup = majorDept.groups.find(group => 
+                    group.name && (group.name.includes('타과') || group.name.includes('인정'))
+                );
+                
+                if (otherDeptGroup) {
+                    return otherDeptGroup.courses.some(courseCd => 
+                        isEqualCourse(courseCd, courses.dataset.courseCode)
+                    );
                 }
                 return false;
             });
+            
+            // 타과 인정 과목이 아닌 경우에만 제거
+            if (!isOtherDeptCourse) {
+                takenCourses.some((takenCourse, index) => {
+                    if (courses === takenCourse) {
+                        takenCourses.splice(index, 1);
+                        return true;
+                    }
+                    return false;
+                });
+            }
         });
     });
 
@@ -4943,8 +4969,19 @@ function updateRetakeCoursesList() {
     `;
     
     retakeCandidates.forEach((course, index) => {
-        const improvement = course.targetGradePoint - course.currentGradePoint;
-        const improvementText = improvement > 0 ? `+${improvement.toFixed(1)}` : improvement.toFixed(1);
+        let improvementText;
+        let effectClass;
+        
+        if (course.targetGrade === 'abandon') {
+            // 학점 포기인 경우
+            improvementText = '제외';
+            effectClass = 'abandon';
+        } else {
+            // 일반 재수강인 경우
+            const improvement = course.targetGradePoint - course.currentGradePoint;
+            improvementText = improvement > 0 ? `+${improvement.toFixed(1)}` : improvement.toFixed(1);
+            effectClass = improvement > 0 ? 'positive' : 'neutral';
+        }
         
         // 언어 전환 시 과목명을 다시 가져오기
         let courseName = course.courseName;
@@ -4958,13 +4995,14 @@ function updateRetakeCoursesList() {
                 <div class="retake-current-grade">${course.currentGrade} (${course.currentGradePoint})</div>
                 <div class="retake-target-grade">
                     <select class="retake-grade-select" onchange="updateRetakeGrade(${index}, this.value)">
+                        <option value="abandon" ${course.targetGrade === 'abandon' ? 'selected' : ''}>학점 포기</option>
                         ${Object.keys(gradeSystem).map(grade => 
                             `<option value="${grade}" ${grade === course.targetGrade ? 'selected' : ''}>${grade} (${gradeSystem[grade]})</option>`
                         ).join('')}
                     </select>
                 </div>
                 <div class="retake-credit">${course.credit}</div>
-                <div class="retake-effect ${improvement > 0 ? 'positive' : 'neutral'}">${improvementText}</div>
+                <div class="retake-effect ${effectClass}">${improvementText}</div>
             </div>
         `;
     });
@@ -4977,17 +5015,30 @@ function updateRetakeCoursesList() {
 function updateRetakeGrade(index, newGrade) {
     if (currentRetakeCandidates[index]) {
         currentRetakeCandidates[index].targetGrade = newGrade;
-        currentRetakeCandidates[index].targetGradePoint = gradeSystem[newGrade];
+        
+        // 학점 포기인 경우 특별 처리
+        if (newGrade === 'abandon') {
+            currentRetakeCandidates[index].targetGradePoint = 'abandon';
+        } else {
+            currentRetakeCandidates[index].targetGradePoint = gradeSystem[newGrade];
+        }
         
         // 해당 행의 개선 효과 업데이트
         const row = document.querySelector(`[data-index="${index}"]`);
         if (row) {
             const effectElement = row.querySelector('.retake-effect');
-            const improvement = currentRetakeCandidates[index].targetGradePoint - currentRetakeCandidates[index].currentGradePoint;
-            const improvementText = improvement > 0 ? `+${improvement.toFixed(1)}` : improvement.toFixed(1);
             
-            effectElement.textContent = improvementText;
-            effectElement.className = `retake-effect ${improvement > 0 ? 'positive' : 'neutral'}`;
+            if (newGrade === 'abandon') {
+                // 학점 포기인 경우: 현재 평점과 학점을 모두 제거하는 효과
+                effectElement.textContent = '제외';
+                effectElement.className = 'retake-effect abandon';
+            } else {
+                const improvement = currentRetakeCandidates[index].targetGradePoint - currentRetakeCandidates[index].currentGradePoint;
+                const improvementText = improvement > 0 ? `+${improvement.toFixed(1)}` : improvement.toFixed(1);
+                
+                effectElement.textContent = improvementText;
+                effectElement.className = `retake-effect ${improvement > 0 ? 'positive' : 'neutral'}`;
+            }
         }
     }
 }
@@ -5119,18 +5170,28 @@ function updateGpaGoalWithRetakeChanges() {
         
         // 재수강 변경사항을 반영한 평점 계산
         let totalGradePoints = currentGpa * currentCredit;
+        let adjustedTotalCredit = currentCredit;
         
         changes.forEach(change => {
-            const currentGradePoint = gradeSystem[change.currentGrade];
-            const targetGradePoint = gradeSystem[change.targetGrade];
-            const gradePointDifference = targetGradePoint - currentGradePoint;
-            
-            if (gradePointDifference !== 0) {
-                totalGradePoints += gradePointDifference * change.credit;
+            if (change.targetGrade === 'abandon') {
+                // 학점 포기인 경우: 해당 과목의 학점과 평점을 완전히 제거
+                const currentGradePoint = gradeSystem[change.currentGrade];
+                const removedGradePoints = currentGradePoint * change.credit;
+                totalGradePoints -= removedGradePoints;
+                adjustedTotalCredit -= change.credit;
+            } else {
+                // 일반 재수강인 경우: 평점만 변경
+                const currentGradePoint = gradeSystem[change.currentGrade];
+                const targetGradePoint = gradeSystem[change.targetGrade];
+                const gradePointDifference = targetGradePoint - currentGradePoint;
+                
+                if (gradePointDifference !== 0) {
+                    totalGradePoints += gradePointDifference * change.credit;
+                }
             }
         });
         
-        const adjustedGpa = totalGradePoints / currentCredit;
+        const adjustedGpa = adjustedTotalCredit > 0 ? totalGradePoints / adjustedTotalCredit : 0;
         
         // 목표평점계산기 팝업이 열려있다면 반영평점과 필요평점 업데이트
         const gpaGoalPopup = document.getElementById('gpa-goal-popup');
@@ -5151,9 +5212,9 @@ function updateGpaGoalWithRetakeChanges() {
                 const remainingCredits = parseInt(totalRemainingCreditsInput.value);
                 
                 if (!isNaN(targetGpa) && !isNaN(remainingCredits)) {
-                    // 필요평점 계산: (목표 총 평점 × (현재 총학점 + 남은 학점) - 현재 총 평점 × 현재 총학점) ÷ 남은 학점
-                    const totalCredits = currentCredit + remainingCredits;
-                    const requiredGpa = ((targetGpa * totalCredits) - (adjustedGpa * currentCredit)) / remainingCredits;
+                    // 필요평점 계산: (목표 총 평점 × (조정된 총학점 + 남은 학점) - 조정된 총 평점 × 조정된 총학점) ÷ 남은 학점
+                    const totalCredits = adjustedTotalCredit + remainingCredits;
+                    const requiredGpa = ((targetGpa * totalCredits) - (adjustedGpa * adjustedTotalCredit)) / remainingCredits;
                     
                     const requiredGpaElement = document.getElementById('required-gpa-result');
                     if (requiredGpaElement) {
