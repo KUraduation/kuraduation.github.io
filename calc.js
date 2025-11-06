@@ -699,6 +699,185 @@ const gradeOptions = Object.keys(gradeSystem);
 const pnpOptions = ['P', 'NP']; // P/NP 옵션 추가
 
 // 덱 시스템 변수들
+// --- 다중 선택 및 일괄 평점 변경 ---
+let multiSelectedCourses = new Set();
+
+function highlightMultiSelection(courseEl, selected) {
+    if (!courseEl) return;
+    if (selected) {
+        courseEl.classList.add('multi-selected');
+        courseEl.style.outline = '2px solid #dc143c';
+        courseEl.style.outlineOffset = '1px';
+        courseEl.style.borderRadius = '6px';
+    } else {
+        courseEl.classList.remove('multi-selected');
+        courseEl.style.outline = '';
+        courseEl.style.outlineOffset = '';
+        courseEl.style.borderRadius = '';
+    }
+}
+
+function toggleMultiCourseSelection(courseEl) {
+    if (!courseEl || !courseEl.classList.contains('taken-course')) return false;
+    if (multiSelectedCourses.has(courseEl)) {
+        multiSelectedCourses.delete(courseEl);
+        highlightMultiSelection(courseEl, false);
+        return false;
+    } else {
+        multiSelectedCourses.add(courseEl);
+        highlightMultiSelection(courseEl, true);
+        return true;
+    }
+}
+
+function clearMultiCourseSelection() {
+    multiSelectedCourses.forEach(el => highlightMultiSelection(el, false));
+    multiSelectedCourses.clear();
+}
+
+// Ctrl(또는 Meta) 누르고 과목 클릭 시 선택 토글
+document.addEventListener('click', (e) => {
+    const courseEl = e.target.closest && e.target.closest('.taken-course');
+    if (!courseEl) return;
+    // semester-cell 내부 클릭만 허용
+    const inSemester = courseEl.closest && courseEl.closest('.semester-cell');
+    if (!inSemester) return;
+
+    if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const added = toggleMultiCourseSelection(courseEl);
+        // 2개 이상 선택되면 자동 팝업
+        if (added && multiSelectedCourses.size >= 2) {
+            openBulkGradePopup(e.clientX, e.clientY);
+        }
+    }
+});
+
+// 과목 이외를 클릭하면 팝업 즉시 해제 및 선택 해제
+document.addEventListener('click', (e) => {
+    const isCourse = e.target.closest && e.target.closest('.taken-course');
+    const isPopup = currentPopup && currentPopup.contains(e.target);
+    if (!isCourse && !isPopup) {
+        if (currentPopup) closeCoursePopup();
+        if (!e.ctrlKey && !e.metaKey) clearMultiCourseSelection();
+    }
+}, true);
+
+// ESC로 선택 해제
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        clearMultiCourseSelection();
+        if (currentPopup) closeCoursePopup();
+    }
+});
+
+function openBulkGradePopup(x = null, y = null) {
+    if (multiSelectedCourses.size === 0) return;
+
+    // 기존 팝업 닫기
+    if (currentPopup) closeCoursePopup();
+
+    const popup = document.createElement('div');
+    popup.className = 'course-popup';
+    popup.style.minWidth = '240px';
+
+    const header = document.createElement('div');
+    header.className = 'course-popup-header';
+    header.textContent = `선택 과목 평점 일괄 적용 (${multiSelectedCourses.size})`;
+    popup.appendChild(header);
+
+    const gradeSection = document.createElement('div');
+    gradeSection.className = 'course-popup-grade';
+    gradeSection.style.marginTop = '10px';
+    gradeSection.style.marginBottom = '12px';
+    const gradeSelect = document.createElement('select');
+    gradeSelect.className = 'grade-select';
+    gradeSelect.style.width = '100%';
+    gradeSelect.style.padding = '6px';
+    gradeSelect.style.marginTop = '8px';
+    gradeSelect.style.marginBottom = '4px';
+
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = getText('selectGrade');
+    gradeSelect.appendChild(defaultOption);
+    gradeOptions.forEach(grade => {
+        const option = document.createElement('option');
+        option.value = grade;
+        option.textContent = `${grade} (${gradeSystem[grade]})`;
+        gradeSelect.appendChild(option);
+    });
+    pnpOptions.forEach(pnp => {
+        const option = document.createElement('option');
+        option.value = pnp;
+        option.textContent = pnp;
+        gradeSelect.appendChild(option);
+    });
+    gradeSection.appendChild(gradeSelect);
+    popup.appendChild(gradeSection);
+
+    const buttons = document.createElement('div');
+    buttons.className = 'course-popup-buttons';
+
+    const applyBtn = document.createElement('button');
+    applyBtn.className = 'course-popup-save-btn';
+    applyBtn.textContent = '적용';
+    applyBtn.style.backgroundColor = '#28a745';
+    applyBtn.style.color = 'white';
+    applyBtn.style.border = 'none';
+    applyBtn.style.padding = '8px 16px';
+    applyBtn.style.borderRadius = '4px';
+    applyBtn.style.cursor = 'pointer';
+    applyBtn.addEventListener('click', () => {
+        const selectedGrade = gradeSelect.value;
+        if (selectedGrade === '') { closeCoursePopup(); return; }
+        // 적용
+        multiSelectedCourses.forEach(courseEl => {
+            courseEl.dataset.grade = selectedGrade;
+            const courseName = getCourseNameFromElement(courseEl);
+            const credit = getCourseCreditFromElement(courseEl);
+            const gradeText = selectedGrade ? ` (${selectedGrade})` : '';
+            courseEl.title = `${courseName} (${credit})${gradeText}`;
+        });
+        updateChart();
+        saveToHistory();
+        clearCourseSelection();
+        closeCoursePopup();
+    });
+    buttons.appendChild(applyBtn);
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'course-popup-close-btn';
+    cancelBtn.textContent = getText('cancelSetting');
+    cancelBtn.addEventListener('click', () => {
+        closeCoursePopup();
+    });
+    buttons.appendChild(cancelBtn);
+
+    popup.appendChild(buttons);
+
+    document.body.appendChild(popup);
+    const rect = popup.getBoundingClientRect();
+    let px = x ?? (window.innerWidth / 2 - rect.width / 2);
+    let py = y ?? (window.innerHeight / 2 - rect.height / 2);
+    popup.style.left = Math.max(10, Math.min(px, window.innerWidth - rect.width - 10)) + 'px';
+    popup.style.top = Math.max(10, Math.min(py, window.innerHeight - rect.height - 10)) + 'px';
+    currentPopup = popup;
+
+    setTimeout(() => {
+        document.addEventListener('click', handleOutsideClick);
+    }, 0);
+}
+
+// Ctrl+G 단축키: 선택된 과목이 있을 때 팝업 열기
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'g' || e.key === 'G')) {
+        if (multiSelectedCourses.size > 0) {
+            e.preventDefault();
+            openBulkGradePopup();
+        }
+    }
+});
 let currentDeck = 'deck1';
 let deckCount = 3;
 const maxDeckCount = 5;
@@ -2055,12 +2234,15 @@ function showCoursePopup(courseElement, event) {//todo
     const gradeSection = document.createElement('div');
     gradeSection.className = 'course-popup-grade';
     gradeSection.innerHTML = `<div><strong>${getText('grade')}:</strong></div>`;
+    gradeSection.style.marginTop = '10px';
+    gradeSection.style.marginBottom = '12px';
 
     const gradeSelect = document.createElement('select');
     gradeSelect.className = 'grade-select';
     gradeSelect.style.width = '100%';
-    gradeSelect.style.padding = '4px';
-    gradeSelect.style.marginTop = '4px';
+    gradeSelect.style.padding = '6px';
+    gradeSelect.style.marginTop = '8px';
+    gradeSelect.style.marginBottom = '4px';
 
     // 기본 옵션 (평점 미입력)
     const defaultOption = document.createElement('option');
@@ -2569,7 +2751,22 @@ function createTakenCourseElement(courseData) {
 
     takenCourse.addEventListener('click', (e) => {
         // 드래그 중이면 클릭 이벤트 무시
-        if (draggedCourse === takenCourse || !clickTimeout) {
+        if (draggedCourse === takenCourse) {
+            return;
+        }
+        // 느린 클릭으로 clickTimeout이 만료된 경우라도, Ctrl/Cmd 클릭이면 계속 처리
+        if (!clickTimeout && !(e.ctrlKey || e.metaKey)) {
+            return;
+        }
+
+        // Ctrl/Cmd 클릭: 멀티 선택 토글 및 필요 시 일괄 팝업
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            e.stopPropagation();
+        const added = toggleMultiCourseSelection(takenCourse);
+            if (added && multiSelectedCourses.size >= 2) {
+                openBulkGradePopup(e.clientX, e.clientY);
+            }
             return;
         }
 
@@ -3596,6 +3793,19 @@ function initGroups(selectContainer) {
     const selectedDeptCd = selectContainer.querySelector('.dept-select').value;
     const dept = deptList.find(d => d.code === selectedDeptCd);
     if (dept) {
+        // 제외 토글 저장소 초기화
+        decks[currentDeck].excludedGroupRequirements = decks[currentDeck].excludedGroupRequirements || {};
+
+        // 현재 선택 컨텍스트 키 생성 함수
+        const getExcludeKey = (groupCode) => {
+            return [
+                selectContainer.dataset.majorDiv,
+                year,
+                selectedDeptCd,
+                groupCode || ''
+            ].join('|');
+        };
+
         dept.groups.forEach(group => {
             const groupContainer = document.createElement('div');
             const groupLabel = document.createElement('span');
@@ -3613,6 +3823,45 @@ function initGroups(selectContainer) {
             groupContainer.dataset.maxCredit = group.maxCredit;
             groupContainer._takenCourses = [];
 
+            // Academic English 졸업요건 제외 토글
+            const groupName = (group.name || '').toString();
+            const isAcademicEnglishGroup = /academic english/i.test(groupName)
+                || groupName.includes('학문의기초(고급영어)')
+                || groupName.includes('고급영어')
+                || groupName.includes('Academic English 영역');
+
+            if (isAcademicEnglishGroup) {
+                const excludeWrap = document.createElement('label');
+                excludeWrap.style.marginLeft = '8px';
+                excludeWrap.style.display = 'inline-flex';
+                excludeWrap.style.verticalAlign = 'middle';
+                const excludeChk = document.createElement('input');
+                excludeChk.type = 'checkbox';
+
+                const key = getExcludeKey(group.code);
+                if (decks[currentDeck].excludedGroupRequirements[key]) {
+                    groupContainer.dataset.excluded = 'true';
+                    excludeChk.checked = true;
+                }
+
+                excludeChk.addEventListener('change', () => {
+                    const checked = excludeChk.checked;
+                    if (checked) {
+                        groupContainer.dataset.excluded = 'true';
+                        decks[currentDeck].excludedGroupRequirements[key] = true;
+                    } else {
+                        delete decks[currentDeck].excludedGroupRequirements[key];
+                        groupContainer.dataset.excluded = 'false';
+                    }
+                    updateGroupProgress(groupContainer);
+                    saveStateToLocalStorage();
+                });
+
+                excludeWrap.appendChild(excludeChk);
+                // 라벨 바로 오른쪽에 토글 배치 (진행률 바 앞)
+                groupContainer.insertBefore(excludeWrap, groupProgress);
+            }
+
             groupContainer.addEventListener('mouseenter', () => {
                 groupContainer._takenCourses.forEach(courseEl => courseEl.classList.add('highlight'));
             });
@@ -3627,7 +3876,8 @@ function initGroups(selectContainer) {
 }
 
 function updateGroupProgress(groupContainer) {
-    const minCredit = parseFloat(groupContainer.dataset.minCredit);
+    const excluded = groupContainer.dataset.excluded === 'true';
+    const minCredit = excluded ? 0 : parseFloat(groupContainer.dataset.minCredit);
     const maxCredit = parseFloat(groupContainer.dataset.maxCredit);
     let currentCredit = parseFloat(groupContainer.dataset.currentCredit);
     currentCredit = maxCredit > 0 ? Math.min(maxCredit, currentCredit) : currentCredit;
@@ -3638,12 +3888,21 @@ function updateGroupProgress(groupContainer) {
     const progress = (stdCredit > 0) ? (currentCredit / stdCredit * 100).toFixed(0) : 0;
     const groupProgress = groupContainer.querySelector('.group-progress');
 
-    groupProgress.textContent = `${Number.isInteger(currentCredit) ? currentCredit.toString() : currentCredit.toFixed(1)}/${Number.isInteger(stdCredit) ? stdCredit.toString() : stdCredit.toFixed(1)} (${progress}%)`;
+    if (excluded) {
+        groupProgress.textContent = `제외됨`;
+    } else {
+        groupProgress.textContent = `${Number.isInteger(currentCredit) ? currentCredit.toString() : currentCredit.toFixed(1)}/${Number.isInteger(stdCredit) ? stdCredit.toString() : stdCredit.toFixed(1)} (${progress}%)`;
+    }
 
     const progressPercent = Math.min(100, parseFloat(progress));
 
     // 둥근 모서리를 위한 배경 설정
-    if (progressPercent > 0) {
+    if (excluded) {
+        groupProgress.style.background = 'linear-gradient(135deg, #f1f3f5, #e9ecef)';
+        groupProgress.style.border = '1px dashed #adb5bd';
+        groupProgress.style.color = '#495057';
+        groupProgress.style.boxShadow = 'none';
+    } else if (progressPercent > 0) {
         groupProgress.style.background = `linear-gradient(to right, #dc143c ${progressPercent}%, rgba(220, 20, 60, 0.15) ${progressPercent}%)`;
         groupProgress.style.border = '1px solid rgba(220, 20, 60, 0.3)';
     } else {
@@ -3651,7 +3910,7 @@ function updateGroupProgress(groupContainer) {
         groupProgress.style.border = '1px solid #dee2e6';
     }
 
-    if (progressPercent >= 100) {
+    if (!excluded && progressPercent >= 100) {
         groupProgress.style.color = 'white';
         groupProgress.style.background = 'linear-gradient(135deg, #dc143c, #b22222)';
         groupProgress.style.border = '1px solid #b22222';
@@ -3715,7 +3974,9 @@ function calculateMajorGPA(majorContainer) {
 
     majorContainer.querySelectorAll('.group-container').forEach(groupContainer => {
         groupContainer._takenCourses.forEach(course => {
-            if (course.dataset.isMajor !== 'true') return;
+            // 전공 여부는 설정값이 없을 수 있으므로, 항상 판별 함수 사용
+            const isMajor = isMajorCourse(course);
+            if (!isMajor) return;
             const grade = course.dataset.grade;
             const credit = parseFloat(course.dataset.credit) || 0;
             
