@@ -763,11 +763,37 @@ document.addEventListener('click', (e) => {
     }
 }, true);
 
-// ESC로 선택 해제
+// ESC로 선택 해제, Del로 선택된 과목 삭제
 document.addEventListener('keydown', (e) => {
+    // 입력 필드에 포커스가 있으면 단축키 무시
+    const activeElement = document.activeElement;
+    if (activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.isContentEditable
+    )) {
+        return;
+    }
+
     if (e.key === 'Escape') {
         clearMultiCourseSelection();
         if (currentPopup) closeCoursePopup();
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Del 또는 Backspace 키로 선택된 과목 삭제
+        if (multiSelectedCourses.size > 0) {
+            e.preventDefault();
+            if (confirm(getText('confirmDeleteCourse') || `선택한 ${multiSelectedCourses.size}개의 과목을 삭제하시겠습니까?`)) {
+                // 선택된 모든 과목 삭제
+                multiSelectedCourses.forEach(courseEl => {
+                    courseEl.remove();
+                });
+                updateChart();
+                saveToHistory();
+                clearMultiCourseSelection();
+                if (currentPopup) closeCoursePopup();
+                refreshSearchResults(); // 검색 결과의 취소선 업데이트
+            }
+        }
     }
 });
 
@@ -846,6 +872,31 @@ function openBulkGradePopup(x = null, y = null) {
     });
     buttons.appendChild(applyBtn);
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'course-popup-delete-btn';
+    deleteBtn.textContent = getText('deleteCourse') || '삭제';
+    deleteBtn.style.backgroundColor = '#dc3545';
+    deleteBtn.style.color = 'white';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.padding = '8px 16px';
+    deleteBtn.style.borderRadius = '4px';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.marginRight = '8px';
+    deleteBtn.addEventListener('click', () => {
+        if (confirm(getText('confirmDeleteCourse') || `선택한 ${multiSelectedCourses.size}개의 과목을 삭제하시겠습니까?`)) {
+            // 선택된 모든 과목 삭제
+            multiSelectedCourses.forEach(courseEl => {
+                courseEl.remove();
+            });
+            updateChart();
+            saveToHistory();
+            clearMultiCourseSelection();
+            closeCoursePopup();
+            refreshSearchResults(); // 검색 결과의 취소선 업데이트
+        }
+    });
+    buttons.appendChild(deleteBtn);
+
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'course-popup-close-btn';
     cancelBtn.textContent = getText('cancelSetting');
@@ -878,6 +929,70 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// Ctrl+숫자 단축키: 덱 전환 (Ctrl+1, Ctrl+2, ... Ctrl+n)
+document.addEventListener('keydown', (e) => {
+    // 입력 필드에 포커스가 있으면 단축키 무시
+    const activeElement = document.activeElement;
+    if (activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.isContentEditable
+    )) {
+        return;
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+        const key = e.key;
+        // 숫자 키 1-5 확인
+        if (key >= '1' && key <= '5') {
+            const deckNumber = parseInt(key);
+            const deckId = `deck${deckNumber}`;
+            
+            // 해당 덱이 존재하는지 확인
+            if (decks[deckId]) {
+                e.preventDefault();
+                switchDeck(deckId);
+            }
+        }
+    }
+});
+
+// 덱 관련 단축키: Ctrl+A(복사/붙여넣기 토글), Ctrl+S(초기화), Ctrl+D(내보내기), Ctrl+F(가져오기)
+document.addEventListener('keydown', (e) => {
+    // 입력 필드에 포커스가 있으면 단축키 무시
+    const activeElement = document.activeElement;
+    if (activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.isContentEditable
+    )) {
+        return;
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+        const key = e.key.toLowerCase();
+        
+        if (key === 'a') {
+            // Ctrl+A: 덱 복사/붙여넣기 토글 (복사된 덱이 있으면 붙여넣기, 없으면 복사)
+            e.preventDefault();
+            copyOrPasteDeck();
+        } else if (key === 's') {
+            // Ctrl+S: 덱 초기화
+            e.preventDefault();
+            resetDeck(currentDeck);
+        } else if (key === 'd') {
+            // Ctrl+D: 내보내기
+            e.preventDefault();
+            exportData();
+        } else if (key === 'f') {
+            // Ctrl+F: 가져오기
+            e.preventDefault();
+            importData();
+        }
+    }
+});
+
 let currentDeck = 'deck1';
 let deckCount = 3;
 const maxDeckCount = 5;
@@ -2089,7 +2204,12 @@ function restoreFromHistory(historyIndex) {
 
     currentHistoryIndex = historyIndex;
     updateHistoryButtons();
-    updateChart({ save: false }); // 히스토리 복원 시에는 저장하지 않음
+    updateChart({ save: false }); // UI 업데이트만 수행 (저장은 별도로)
+    
+    // 히스토리 복원 후 현재 화면 상태를 decks 객체에 반영하고 localStorage에 저장
+    // 이렇게 하면 새로고침해도 Undo/Redo 결과가 유지됨
+    saveCurrentDeck();
+    saveStateToLocalStorage();
 }
 
 function undo() {
@@ -2749,6 +2869,66 @@ function createTakenCourseElement(courseData) {
         }, 200);
     });
 
+    // 태블릿 롱프레스 감지를 위한 변수
+    let longPressTimer = null;
+    let isLongPress = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const LONG_PRESS_DURATION = 500; // 500ms
+
+    // 터치 시작
+    takenCourse.addEventListener('touchstart', (e) => {
+        isLongPress = false;
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        
+        longPressTimer = setTimeout(() => {
+            isLongPress = true;
+            // 롱프레스 시각적 피드백 (선택적으로)
+            takenCourse.style.opacity = '0.7';
+        }, LONG_PRESS_DURATION);
+    }, { passive: true });
+
+    // 터치 이동 (드래그 감지)
+    takenCourse.addEventListener('touchmove', (e) => {
+        if (longPressTimer) {
+            const touch = e.touches[0];
+            const deltaX = Math.abs(touch.clientX - touchStartX);
+            const deltaY = Math.abs(touch.clientY - touchStartY);
+            // 일정 거리 이상 이동하면 롱프레스 취소
+            if (deltaX > 10 || deltaY > 10) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                isLongPress = false;
+                takenCourse.style.opacity = '';
+            }
+        }
+    }, { passive: true });
+
+    // 터치 종료
+    takenCourse.addEventListener('touchend', (e) => {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+        
+        takenCourse.style.opacity = '';
+        
+        // 롱프레스가 감지되었으면 다중선택 처리
+        if (isLongPress) {
+            e.preventDefault();
+            e.stopPropagation();
+            const added = toggleMultiCourseSelection(takenCourse);
+            if (added && multiSelectedCourses.size >= 2) {
+                const touch = e.changedTouches[0];
+                openBulkGradePopup(touch.clientX, touch.clientY);
+            }
+            isLongPress = false;
+            return;
+        }
+    }, { passive: false });
+
     takenCourse.addEventListener('click', (e) => {
         // 드래그 중이면 클릭 이벤트 무시
         if (draggedCourse === takenCourse) {
@@ -3239,15 +3419,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 전역 키보드 이벤트 위임
         document.addEventListener('keydown', function (e) {
+            // 입력 필드에 포커스가 있으면 단축키 무시
+            const activeElement = document.activeElement;
+            if (activeElement && (
+                activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable
+            )) {
+                // Ctrl+Z와 Ctrl+X는 입력 필드에서도 작동하도록 허용 (일반적인 동작)
+                if (!((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z' || e.key === 'x' || e.key === 'X'))) {
+                    return;
+                }
+            }
+
             // Ctrl+Z (실행 취소)
-            if (e.ctrlKey && e.key === 'z') {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
                 e.preventDefault();
                 undo();
                 return;
             }
 
-            // Ctrl+Y (다시 실행)
-            if (e.ctrlKey && e.key === 'y') {
+            // Ctrl+X (다시 실행)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'x' || e.key === 'X')) {
                 e.preventDefault();
                 redo();
                 return;
