@@ -997,8 +997,37 @@ body {
         0 2px 16px rgba(220, 20, 60, 0.04),
         0 1px 4px rgba(0, 0, 0, 0.02);
     
-    /* 부드러운 전환 */
-    transition: all 0.3s ease;
+    /* 부드러운 전환 - semester section과 동일하게 */
+    transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.chart-container.collapsed {
+    width: 0;
+    padding: 0;
+    border: none;
+    margin-left: 0;
+    overflow: hidden;
+}
+
+/* 졸업요건 섹션 접기/펼치기 버튼 컨테이너 */
+#chart-container-divider {
+    width: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-right: 1px solid white;
+    padding-right: 2px;
+}
+
+/* 접힌 상태일 때 아이콘 회전 - semester section과 동일 */
+.chart-container-toggle-btn.collapsed .toggle-icon {
+    transform: scale(0.9);
+}
+
+.chart-container-toggle-btn.collapsed:hover .toggle-icon {
+    transform: scale(1.1);
 }
 
 /* semester-container와 chart-container 사이의 중앙 구분선 - 제거됨 */

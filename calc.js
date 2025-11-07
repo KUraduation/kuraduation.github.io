@@ -1055,6 +1055,9 @@ let currentShortcutsPopup = null;
 // 평점 표시 기준 변수 (false: 4.5 만점, true: 100점 만점)
 let use100PointScale = localStorage.getItem('use100PointScale') === 'true' || false;
 
+// 졸업요건 섹션 접기 상태 변수
+let isChartContainerCollapsed = localStorage.getItem('isChartContainerCollapsed') === 'true' || false;
+
 // 평점 변환 함수 (4.5 만점 <-> 100점 만점)
 function formatGpa(gpa) {
     if (gpa === 'N/A' || gpa === null || gpa === undefined) return 'N/A';
@@ -1085,6 +1088,31 @@ function updateGpaScaleToggleButton() {
         // 현재 표시 기준을 버튼에 표시 (100점 만점이면 "100", 4.5 만점이면 "4.5")
         toggleBtn.textContent = use100PointScale ? '100' : '4.5';
         toggleBtn.title = getText('gpaScaleToggleTitle');
+    }
+}
+
+// 졸업요건 섹션 접기/펼치기 토글 함수
+function toggleChartContainer() {
+    isChartContainerCollapsed = !isChartContainerCollapsed;
+    localStorage.setItem('isChartContainerCollapsed', isChartContainerCollapsed.toString());
+    updateChartContainerToggle();
+}
+
+// 졸업요건 섹션 접기/펼치기 상태 업데이트
+function updateChartContainerToggle() {
+    const chartContainer = document.getElementById('chart-container');
+    const toggleBtn = document.getElementById('chart-container-toggle-btn');
+    
+    if (!chartContainer || !toggleBtn) return;
+    
+    if (isChartContainerCollapsed) {
+        // 접힌 상태: semester section과 동일하게 width와 padding을 0으로
+        chartContainer.classList.add('collapsed');
+        toggleBtn.classList.add('collapsed');
+    } else {
+        // 펼친 상태: collapsed 클래스 제거
+        chartContainer.classList.remove('collapsed');
+        toggleBtn.classList.remove('collapsed');
     }
 }
 
@@ -3385,6 +3413,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 toggleGpaScale();
                 return;
             }
+
+            if (e.target.id === 'chart-container-toggle-btn') {
+                e.preventDefault();
+                toggleChartContainer();
+                return;
+            }
             
             // 목표 평점 계산 버튼
             if (e.target.id === 'gpa-goal-btn') {
@@ -3664,6 +3698,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 평점 표시 기준 토글 버튼 초기화
     updateGpaScaleToggleButton();
+
+    // 졸업요건 섹션 접기/펼치기 상태 초기화
+    updateChartContainerToggle();
 
     window.addEventListener('coursesLoaded', () => {
         loadStateFromLocalStorage();
