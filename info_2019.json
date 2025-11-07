@@ -22008,10 +22008,25 @@
                         "STAT424",
                         "STAT431",
                         "STAT436",
-                        "STAT443"
+                        "STAT443",
+                        "ECON301",
+                        "ECON302",
+                        "MATH211",
+                        "MATH212",
+                        "MATH221",
+                        "MATH222",
+                        "MATH240",
+                        "MATH342",
+                        "MATH344",
+                        "MATH453",
+                        "IMEN216",
+                        "IMEN319",
+                        "COSE212",
+                        "COSE213",
+                        "COSE214"
                     ],
                     "code": "Y30002",
-                    "maxCredit": 0,
+                    "maxCredit": 27,
                     "name": "전공선택-통계",
                     "minCredit": -1
                 },
@@ -72887,12 +72902,27 @@
                         "STAT424",
                         "STAT431",
                         "STAT436",
-                        "STAT443"
+                        "STAT443",
+                        "ECON301",
+                        "ECON302",
+                        "MATH211",
+                        "MATH212",
+                        "MATH221",
+                        "MATH222",
+                        "MATH240",
+                        "MATH342",
+                        "MATH344",
+                        "MATH453",
+                        "IMEN216",
+                        "IMEN319",
+                        "COSE212",
+                        "COSE213",
+                        "COSE214"
                     ],
                     "code": "Y30002",
                     "maxCredit": 0,
                     "name": "전공선택-통계",
-                    "minCredit": -1
+                    "minCredit": 27
                 }
             ]
         },
@@ -80588,12 +80618,27 @@
                         "STAT424",
                         "STAT431",
                         "STAT436",
-                        "STAT443"
+                        "STAT443",
+                        "ECON301",
+                        "ECON302",
+                        "MATH211",
+                        "MATH212",
+                        "MATH221",
+                        "MATH222",
+                        "MATH240",
+                        "MATH342",
+                        "MATH344",
+                        "MATH453",
+                        "IMEN216",
+                        "IMEN319",
+                        "COSE212",
+                        "COSE213",
+                        "COSE214"
                     ],
                     "code": "Y30002",
                     "maxCredit": 0,
                     "name": "전공선택-통계",
-                    "minCredit": -1
+                    "minCredit": 27
                 }
             ]
         },
@@ -87118,12 +87163,27 @@
                         "STAT424",
                         "STAT431",
                         "STAT436",
-                        "STAT443"
+                        "STAT443",
+                        "ECON301",
+                        "ECON302",
+                        "MATH211",
+                        "MATH212",
+                        "MATH221",
+                        "MATH222",
+                        "MATH240",
+                        "MATH342",
+                        "MATH344",
+                        "MATH453",
+                        "IMEN216",
+                        "IMEN319",
+                        "COSE212",
+                        "COSE213",
+                        "COSE214"
                     ],
                     "code": "Y30002",
                     "maxCredit": 0,
                     "name": "전공선택-통계",
-                    "minCredit": -1
+                    "minCredit": 27
                 }
             ]
         },
@@ -117440,10 +117500,25 @@
                         "STAT424",
                         "STAT431",
                         "STAT436",
-                        "STAT443"
+                        "STAT443",
+                        "ECON301",
+                        "ECON302",
+                        "MATH211",
+                        "MATH212",
+                        "MATH221",
+                        "MATH222",
+                        "MATH240",
+                        "MATH342",
+                        "MATH344",
+                        "MATH453",
+                        "IMEN216",
+                        "IMEN319",
+                        "COSE212",
+                        "COSE213",
+                        "COSE214"
                     ],
                     "code": "Y30002",
-                    "maxCredit": 0,
+                    "maxCredit": 51,
                     "name": "전공선택-통계",
                     "minCredit": -1
                 },
