@@ -1062,8 +1062,8 @@ function formatGpa(gpa) {
     if (isNaN(gpaValue)) return gpa;
     
     if (use100PointScale) {
-        // 4.5 만점을 100점 만점으로 변환
-        return ((gpaValue / 4.5) * 100).toFixed(1);
+        // 4.5 만점을 100점 만점으로 변환: 환산점수 = (원래 평균 평점) × 10 + 55
+        return ((gpaValue * 10) + 55).toFixed(1);
     } else {
         // 4.5 만점 그대로 표시
         return gpaValue.toFixed(2);
