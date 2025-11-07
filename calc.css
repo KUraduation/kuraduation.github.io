@@ -771,6 +771,8 @@ body {
     scrollbar-width: none; /* Firefox */
     /*-ms-overflow-style: none; /* IE and Edge */
     -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
+    flex-grow: 1; /* 남은 공간을 차지하도록 설정 */
+    min-width: 0; /* flex item이 최소 크기 제약을 받지 않도록 */
 }
 
 
@@ -785,6 +787,8 @@ body {
     text-align: center;
     margin-left: 0px; /* 원래 위치로 복원 */
     margin-top: 12px; /* 아래로 이동 */
+    width: 34px; /* 고정 너비 설정 - chart-container collapsed 시에도 유지 */
+    flex-shrink: 0; /* flex 컨테이너에서 크기 축소 방지 */
 }
 
 .row-header {
@@ -798,11 +802,27 @@ body {
     background: linear-gradient(135deg, rgba(220, 20, 60, 0.08), rgba(178, 34, 34, 0.05));
     border: 1px solid rgba(220, 20, 60, 0.12);
     border-radius: 12px;
-    padding: 8px;
+    padding: 2px; /* 테두리와 텍스트 사이 간격 축소 */
     color: #333;
     transition: all 0.2s ease;
     box-shadow: 0 1px 3px rgba(220, 20, 60, 0.1);
     min-height: 40px; /* semester cell과 비슷한 높이 */
+    width: 100%; /* 부모 컨테이너의 전체 너비 사용 */
+    box-sizing: border-box; /* padding과 border를 width에 포함 */
+}
+
+/* 한국어: 세로 배치 */
+html[lang="ko"] .row-header {
+    writing-mode: vertical-rl; /* 텍스트를 세로로 배치 */
+    text-orientation: upright; /* 글자를 세로로 서게 함 */
+    letter-spacing: 0.1em; /* 세로 배치 시 가독성을 위한 자간 조정 */
+}
+
+/* 영어: 가로 배치 */
+html[lang="en"] .row-header {
+    writing-mode: horizontal-tb; /* 텍스트를 가로로 배치 (기본값) */
+    text-orientation: mixed; /* 글자를 가로로 서게 함 (기본값) */
+    letter-spacing: normal; /* 가로 배치 시 기본 자간 */
 }
 
 #semester-grid-container {

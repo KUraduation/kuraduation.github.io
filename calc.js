@@ -382,6 +382,10 @@ const translations = {
 function switchLanguage(lang) {
     currentLanguage = lang;
     localStorage.setItem('preferredLanguage', lang);
+    
+    // HTML의 lang 속성 업데이트 (row-header 스타일링을 위해)
+    document.documentElement.setAttribute('lang', lang);
+    
     updateAllTexts(); // 모든 텍스트 업데이트
     
     // 단축키 팝업이 열려있으면 다시 표시하여 언어 업데이트
@@ -3332,6 +3336,8 @@ function editYearTitle(yearTitleElement, year) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // 초기 언어에 맞게 HTML lang 속성 설정
+    document.documentElement.setAttribute('lang', currentLanguage);
 
     // === 이벤트 위임 시스템 구축 ===
     function setupEventDelegation() {
