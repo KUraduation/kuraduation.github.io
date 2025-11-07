@@ -1284,6 +1284,64 @@ body {
     cursor: not-allowed;
 }
 
+/* 단축키 안내 버튼 스타일 */
+.shortcuts-btn {
+    width: auto;
+    min-width: 5em;
+    background-color: white;
+    color: #333;
+    border: 2px solid rgba(220, 20, 60, 0.1);
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.05);
+}
+
+.shortcuts-btn:hover {
+    background-color: rgba(220, 20, 60, 0.05);
+    border-color: rgba(220, 20, 60, 0.2);
+    box-shadow: 0 4px 16px rgba(220, 20, 60, 0.1);
+    transform: translateY(-1px);
+}
+
+/* 평점 표시 기준 토글 버튼 스타일 */
+.gpa-scale-toggle-btn {
+    width: auto;
+    min-width: 4em;
+    background-color: white;
+    color: #333;
+    border: 2px solid rgba(220, 20, 60, 0.1);
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.05);
+}
+
+.gpa-scale-toggle-btn:hover {
+    background-color: rgba(220, 20, 60, 0.05);
+    border-color: rgba(220, 20, 60, 0.2);
+    box-shadow: 0 4px 16px rgba(220, 20, 60, 0.1);
+    transform: translateY(-1px);
+}
+
 /* 도움말 버튼 스타일 */
 .help-btn {
     position: absolute;

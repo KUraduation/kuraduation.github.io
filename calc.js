@@ -49,6 +49,10 @@ const translations = {
         "undoTitle": "실행 취소",
         "redoTitle": "다시 실행",
         "helpTitle": "도움말",
+        "shortcuts": "단축키 안내",
+        "shortcutsTitle": "단축키 안내",
+        "gpaScaleToggle": "100점",
+        "gpaScaleToggleTitle": "평점 표시 기준 변경 (4.5 만점 ↔ 100점 만점)",
 
         // 도움말
         "helpContent": "졸업학점계산기 사용법입니다.",
@@ -224,6 +228,10 @@ const translations = {
         "undoTitle": "Undo",
         "redoTitle": "Redo",
         "helpTitle": "Help",
+        "shortcuts": "Keyboard Shortcuts",
+        "shortcutsTitle": "Keyboard Shortcuts",
+        "gpaScaleToggle": "100pt",
+        "gpaScaleToggleTitle": "Toggle GPA scale (4.5 scale ↔ 100 scale)",
 
         // Help
         "helpContent": "How to use the graduation credit calculator.",
@@ -375,6 +383,15 @@ function switchLanguage(lang) {
     currentLanguage = lang;
     localStorage.setItem('preferredLanguage', lang);
     updateAllTexts(); // 모든 텍스트 업데이트
+    
+    // 단축키 팝업이 열려있으면 다시 표시하여 언어 업데이트
+    if (currentShortcutsPopup) {
+        showShortcutsPopup();
+    }
+    
+    // 평점 표시 기준 토글 버튼 텍스트 업데이트
+    updateGpaScaleToggleButton();
+    
     console.log(`언어가 ${lang}로 변경되었습니다.`);
 }
 
@@ -421,6 +438,9 @@ function updateAllTexts() {
     
     // 재수강 계산기 텍스트 업데이트
     updateRetakeCalculatorTexts();
+
+    // 평점 표시 기준 토글 버튼 업데이트
+    updateGpaScaleToggleButton();
 
     loadDeck(currentDeck);
     updateChart({save: false}); // 차트 업데이트
@@ -487,6 +507,11 @@ function updateTitles() {
     const helpBtn = document.getElementById('help-btn');
     if (helpBtn) {
         helpBtn.title = getText('helpTitle');
+    }
+
+    const shortcutsBtn = document.getElementById('shortcuts-btn');
+    if (shortcutsBtn) {
+        shortcutsBtn.title = getText('shortcutsTitle');
     }
 
     // 검색 버튼 title 업데이트
@@ -958,7 +983,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// 덱 관련 단축키: Ctrl+A(복사/붙여넣기 토글), Ctrl+S(초기화), Ctrl+D(내보내기), Ctrl+F(가져오기)
+// 덱 관련 단축키: Ctrl+C(복사), Ctrl+V(붙여넣기), Ctrl+Del(초기화), Ctrl+E(내보내기), Ctrl+I(가져오기)
 document.addEventListener('keydown', (e) => {
     // 입력 필드에 포커스가 있으면 단축키 무시
     const activeElement = document.activeElement;
@@ -973,23 +998,35 @@ document.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey) {
         const key = e.key.toLowerCase();
         
-        if (key === 'a') {
-            // Ctrl+A: 덱 복사/붙여넣기 토글 (복사된 덱이 있으면 붙여넣기, 없으면 복사)
+        if (key === 'c') {
+            // Ctrl+C: 덱 복사
             e.preventDefault();
-            copyOrPasteDeck();
-        } else if (key === 's') {
-            // Ctrl+S: 덱 초기화
+            if (!decks[currentDeck]) return;
+            copiedDeckData = JSON.parse(JSON.stringify(decks[currentDeck])); // Deep copy
+            updateCopyPasteButton();
+        } else if (key === 'v') {
+            // Ctrl+V: 덱 붙여넣기
             e.preventDefault();
-            resetDeck(currentDeck);
-        } else if (key === 'd') {
-            // Ctrl+D: 내보내기
+            if (copiedDeckData) {
+                pasteDeck(currentDeck);
+                copiedDeckData = null;
+                updateCopyPasteButton();
+            }
+        } else if (key === 'e') {
+            // Ctrl+E: 내보내기
             e.preventDefault();
             exportData();
-        } else if (key === 'f') {
-            // Ctrl+F: 가져오기
+        } else if (key === 'i') {
+            // Ctrl+I: 가져오기
             e.preventDefault();
             importData();
         }
+    }
+    
+    // Ctrl+Del: 덱 초기화 (Delete 키는 별도로 처리)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Delete') {
+        e.preventDefault();
+        resetDeck(currentDeck);
     }
 });
 
@@ -1011,6 +1048,45 @@ let isClickMoveMode = false;
 
 // 도움말 팝업 변수
 let currentHelpPopup = null;
+
+// 단축키 안내 팝업 변수
+let currentShortcutsPopup = null;
+
+// 평점 표시 기준 변수 (false: 4.5 만점, true: 100점 만점)
+let use100PointScale = localStorage.getItem('use100PointScale') === 'true' || false;
+
+// 평점 변환 함수 (4.5 만점 <-> 100점 만점)
+function formatGpa(gpa) {
+    if (gpa === 'N/A' || gpa === null || gpa === undefined) return 'N/A';
+    const gpaValue = parseFloat(gpa);
+    if (isNaN(gpaValue)) return gpa;
+    
+    if (use100PointScale) {
+        // 4.5 만점을 100점 만점으로 변환
+        return ((gpaValue / 4.5) * 100).toFixed(1);
+    } else {
+        // 4.5 만점 그대로 표시
+        return gpaValue.toFixed(2);
+    }
+}
+
+// 평점 표시 기준 토글 함수
+function toggleGpaScale() {
+    use100PointScale = !use100PointScale;
+    localStorage.setItem('use100PointScale', use100PointScale.toString());
+    updateGpaScaleToggleButton();
+    updateChart({ save: false }); // UI만 업데이트 (저장하지 않음)
+}
+
+// 평점 표시 기준 토글 버튼 업데이트
+function updateGpaScaleToggleButton() {
+    const toggleBtn = document.getElementById('gpa-scale-toggle-btn');
+    if (toggleBtn) {
+        // 현재 표시 기준을 버튼에 표시 (100점 만점이면 "100", 4.5 만점이면 "4.5")
+        toggleBtn.textContent = use100PointScale ? '100' : '4.5';
+        toggleBtn.title = getText('gpaScaleToggleTitle');
+    }
+}
 
 // 덱 데이터 구조
 let decks = {
@@ -2513,6 +2589,9 @@ function handleOutsideClick(event) {
     if (currentHelpPopup && !currentHelpPopup.contains(event.target)) {
         closeHelpPopup();
     }
+    if (currentShortcutsPopup && !currentShortcutsPopup.contains(event.target)) {
+        closeShortcutsPopup();
+    }
 }
 
 // 과목 삭제 함수
@@ -2593,6 +2672,87 @@ function closeHelpPopup() {
     if (currentHelpPopup) {
         currentHelpPopup.remove();
         currentHelpPopup = null;
+        document.removeEventListener('click', handleOutsideClick);
+    }
+}
+
+// 단축키 안내 팝업 표시 함수
+function showShortcutsPopup() {
+    // 기존 팝업이 있으면 제거
+    if (currentShortcutsPopup) {
+        currentShortcutsPopup.remove();
+        currentShortcutsPopup = null;
+    }
+
+    // 팝업 생성
+    const popup = document.createElement('div');
+    popup.className = 'help-popup';
+
+    // 제목
+    const title = document.createElement('div');
+    title.className = 'help-popup-title';
+    title.textContent = currentLanguage === 'ko' ? '⌨ 단축키 안내' : '⌨ Keyboard Shortcuts';
+    popup.appendChild(title);
+
+    // 단축키 내용
+    const content = document.createElement('div');
+    content.className = 'help-popup-content';
+    
+    const shortcutsList = currentLanguage === 'ko' 
+        ? `
+            <p><strong>Ctrl+1, 2, ...:</strong> 1, 2, ...번 덱 변경</p>
+            <p><strong>Ctrl+C:</strong> 덱 복사</p>
+            <p><strong>Ctrl+V:</strong> 덱 붙여넣기</p>
+            <p><strong>Ctrl+Del:</strong> 덱 초기화</p>
+            <p><strong>Ctrl+E:</strong> 내보내기</p>
+            <p><strong>Ctrl+I:</strong> 가져오기</p>
+            <p><strong>Ctrl+Z:</strong> 실행취소</p>
+            <p><strong>Ctrl+X:</strong> 다시실행</p>
+        `
+        : `
+            <p><strong>Ctrl+1, 2, ...:</strong> Switch to deck 1, 2, ...</p>
+            <p><strong>Ctrl+C:</strong> Copy deck</p>
+            <p><strong>Ctrl+V:</strong> Paste deck</p>
+            <p><strong>Ctrl+Del:</strong> Reset deck</p>
+            <p><strong>Ctrl+E:</strong> Export data</p>
+            <p><strong>Ctrl+I:</strong> Import data</p>
+            <p><strong>Ctrl+Z:</strong> Undo</p>
+            <p><strong>Ctrl+X:</strong> Redo</p>
+        `;
+    
+    content.innerHTML = shortcutsList;
+    popup.appendChild(content);
+
+    // 닫기 버튼
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'help-popup-close-btn';
+    closeBtn.textContent = getText('helpClose');
+    closeBtn.addEventListener('click', closeShortcutsPopup);
+    popup.appendChild(closeBtn);
+
+    // 팝업 위치 설정 (화면 중앙)
+    document.body.appendChild(popup);
+
+    const rect = popup.getBoundingClientRect();
+    const x = (window.innerWidth - rect.width) / 2;
+    const y = (window.innerHeight - rect.height) / 2;
+
+    popup.style.left = x + 'px';
+    popup.style.top = y + 'px';
+
+    currentShortcutsPopup = popup;
+
+    // 외부 클릭 시 팝업 닫기
+    setTimeout(() => {
+        document.addEventListener('click', handleOutsideClick);
+    }, 0);
+}
+
+// 단축키 안내 팝업 닫기 함수
+function closeShortcutsPopup() {
+    if (currentShortcutsPopup) {
+        currentShortcutsPopup.remove();
+        currentShortcutsPopup = null;
         document.removeEventListener('click', handleOutsideClick);
     }
 }
@@ -3213,6 +3373,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 showHelpPopup();
                 return;
             }
+
+            if (e.target.id === 'shortcuts-btn') {
+                e.preventDefault();
+                showShortcutsPopup();
+                return;
+            }
+
+            if (e.target.id === 'gpa-scale-toggle-btn') {
+                e.preventDefault();
+                toggleGpaScale();
+                return;
+            }
             
             // 목표 평점 계산 버튼
             if (e.target.id === 'gpa-goal-btn') {
@@ -3489,6 +3661,9 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // 재수강 계산기 이벤트 리스너 설정
     setupRetakeCalculatorEventListeners();
+
+    // 평점 표시 기준 토글 버튼 초기화
+    updateGpaScaleToggleButton();
 
     window.addEventListener('coursesLoaded', () => {
         loadStateFromLocalStorage();
@@ -4151,7 +4326,7 @@ function updateCellCredit(cell) {
     // 평균 평점 계산 및 표시
     if (gradedCourseCount > 0) {
         const gpa = (totalGradePoints / gradedCourseCount).toFixed(2);
-        displayText += ` (${getText('average')}: ${gpa})`;
+        displayText += ` (${getText('average')}: ${formatGpa(gpa)})`;
     } else if (cell.querySelectorAll('.taken-course').length > 0) {
         displayText += ` (${getText('average')}: N/A)`;
     }
@@ -4209,7 +4384,7 @@ function updateMajorGPADisplay() {
         // 평점 표시 요소 생성
         const gpaElement = document.createElement('div');
         gpaElement.className = 'major-gpa-display';
-        gpaElement.textContent = `${getText('majorGpaDisplay')} ${gpa}`;
+        gpaElement.textContent = `${getText('majorGpaDisplay')} ${formatGpa(gpa)}`;
         gpaElement.style.cssText = `
             font-size: 0.9em;
             color: #dc143c;
@@ -4326,7 +4501,7 @@ function updateChart(options = { save: true }) {
     const overallGpaElement = document.getElementById('overall-gpa');
     if (totalGradedCredits > 0) {
         const overallGpa = (totalGradePoints / totalGradedCredits).toFixed(2);
-        overallGpaElement.textContent = overallGpa;
+        overallGpaElement.textContent = formatGpa(overallGpa);
     } else {
         overallGpaElement.textContent = 'N/A';
     }
@@ -4359,7 +4534,7 @@ function updateChart(options = { save: true }) {
     const majorGpaElement = document.getElementById('major-gpa');
     if (majorGradedCredits > 0) {
         const majorGpa = (majorGradePoints / majorGradedCredits).toFixed(2);
-        majorGpaElement.textContent = majorGpa;
+        majorGpaElement.textContent = formatGpa(majorGpa);
     } else {
         majorGpaElement.textContent = 'N/A';
     }
@@ -4462,14 +4637,14 @@ function updateYearStats() {
         let gpaText = 'N/A';
         if (gradedCourseCount > 0) {
             const gpa = (totalGradePoints / gradedCourseCount).toFixed(2);
-            gpaText = gpa;
+            gpaText = formatGpa(gpa);
         }
 
         // 전공 평점 평균 계산
         let majorGpaText = 'N/A';
         if (majorGradedCredits > 0) {
             const majorGpa = (majorGradePoints / majorGradedCredits).toFixed(2);
-            majorGpaText = majorGpa;
+            majorGpaText = formatGpa(majorGpa);
         }
 
         // 학점, 평점, 전공평점 업데이트 (한 줄로 표시)
