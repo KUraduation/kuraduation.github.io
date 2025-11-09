@@ -720,20 +720,22 @@ body {
 }
 
 .toggle-btn .toggle-icon {
-    transform: rotate(180deg);
+    /* 펼쳐진 상태: 오른쪽 화살표 (접을 수 있음을 의미) */
+    transform: rotate(0deg);
 }
 
 .toggle-btn:hover .toggle-icon {
     border-left-color: #b22222;
-    transform: scale(1.1) rotate(180deg);
+    transform: scale(1.1) rotate(0deg);
 }
 
 .toggle-btn.collapsed .toggle-icon {
-    transform: scale(0.9);
+    /* 접힌 상태: 왼쪽 화살표 (펼칠 수 있음을 의미) */
+    transform: rotate(180deg);
 }
 
 .toggle-btn.collapsed:hover .toggle-icon {
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(180deg);
 }
 
 .semester-container {
@@ -1041,13 +1043,33 @@ html[lang="en"] .row-header {
     padding-right: 2px;
 }
 
-/* 접힌 상태일 때 아이콘 회전 - semester section과 동일 */
+/* semester section (container-toggle-btn) 화살표 방향 - 졸업요건과 반대 */
+#container-toggle-btn .toggle-icon {
+    /* 펼쳐진 상태: 왼쪽 화살표 (접을 수 있음을 의미) */
+    transform: rotate(180deg);
+}
+
+#container-toggle-btn:hover .toggle-icon {
+    border-left-color: #b22222;
+    transform: scale(1.1) rotate(180deg);
+}
+
+#container-toggle-btn.collapsed .toggle-icon {
+    /* 접힌 상태: 오른쪽 화살표 (펼칠 수 있음을 의미) */
+    transform: rotate(0deg);
+}
+
+#container-toggle-btn.collapsed:hover .toggle-icon {
+    transform: scale(1.1) rotate(0deg);
+}
+
+/* 접힌 상태일 때 아이콘 회전 - 졸업요건 섹션 */
 .chart-container-toggle-btn.collapsed .toggle-icon {
-    transform: scale(0.9);
+    transform: rotate(180deg);
 }
 
 .chart-container-toggle-btn.collapsed:hover .toggle-icon {
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(180deg);
 }
 
 /* semester-container와 chart-container 사이의 중앙 구분선 - 제거됨 */
