@@ -3408,7 +3408,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            if (e.target.id === 'shortcuts-btn') {
+            if (e.target.id === 'shortcuts-btn' || e.target.closest('#shortcuts-btn')) {
                 e.preventDefault();
                 showShortcutsPopup();
                 return;
